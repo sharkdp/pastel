@@ -11,6 +11,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
+regex = "1"
 ansi_term = "0.9"
 palette = "0.4"
 

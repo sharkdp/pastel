@@ -1,10 +1,12 @@
 #[macro_use]
 extern crate clap;
 
+use ansi_term::{Colour, Style};
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
-use ansi_term::{Style, Colour};
 
-use palette::{Srgb};
+mod parser;
+
+use crate::parser::parse_color;
 
 #[derive(Debug, PartialEq)]
 enum PastelError {
@@ -23,10 +25,6 @@ type Result<T> = std::result::Result<T, PastelError>;
 
 type ExitCode = i32;
 
-fn parse_color(color: &str) -> Srgb {
-    Srgb::new(0.2, 0.2, 0.9)
-}
-
 fn run() -> Result<ExitCode> {
     let app = ClapApp::new(crate_name!())
         .version(crate_version!())
@@ -42,22 +40,16 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("show")
                 .about("Show the given color on the terminal")
-                .arg(
-                    Arg::with_name("color")
-                        .help("Color to show")
-                        .required(true)
-                ),
+                .arg(Arg::with_name("color").help("Color to show").required(true)),
         );
 
     let global_matches = app.get_matches();
 
     if let Some(matches) = global_matches.subcommand_matches("show") {
-        let color = parse_color(matches.value_of("color").unwrap());
+        let color_arg = matches.value_of("color").unwrap();
+        let color = parse_color(color_arg).ok_or(PastelError::ColorParseError)?;
 
-        let terminal_color = Colour::RGB(
-            (255. * color.red) as u8,
-            (255. * color.blue) as u8,
-            (255. * color.green) as u8);
+        let terminal_color = Colour::RGB(color.red, color.green, color.blue);
         let style = Style::new().on(terminal_color);
 
         println!();
