@@ -1,16 +1,16 @@
 #[macro_use]
 extern crate clap;
 
-use ansi_term::{Colour, Style};
+use ansi_term::Colour;
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 use palette::Srgb;
 
+mod canvas;
 mod parser;
 mod x11colors;
-mod canvas;
 
-use crate::parser::parse_color;
 use crate::canvas::Canvas;
+use crate::parser::parse_color;
 
 #[derive(Debug, PartialEq)]
 enum PastelError {
@@ -34,8 +34,34 @@ type Color = Srgb<u8>;
 fn show_color(color: Color) {
     let terminal_color = Colour::RGB(color.red, color.green, color.blue);
 
-    let mut canvas = Canvas::new(12, 32);
-    canvas.draw_rect(2, 4, 8, 16, terminal_color);
+    const RECT_HEIGHT: usize = 8;
+    const RECT_WIDTH: usize = 16;
+    const RECT_PADDING_X: usize = 4;
+    const RECT_PADDING_Y: usize = 2;
+
+    const TEXT_POSITION_X: usize = 2 * RECT_PADDING_X + RECT_WIDTH;
+
+    let mut canvas = Canvas::new(12, 64);
+    canvas.draw_rect(
+        RECT_PADDING_Y,
+        RECT_PADDING_X,
+        RECT_HEIGHT,
+        RECT_WIDTH,
+        terminal_color,
+    );
+    canvas.draw_text(
+        RECT_PADDING_Y + 1,
+        TEXT_POSITION_X,
+        &format!(
+            "Hex: #{:02x}{:02x}{:02x}",
+            color.red, color.green, color.blue
+        ),
+    );
+    canvas.draw_text(
+        RECT_PADDING_Y + 2,
+        TEXT_POSITION_X,
+        &format!("RGB: rgb({}, {}, {})", color.red, color.green, color.blue),
+    );
     canvas.print();
 }
 
