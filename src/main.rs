@@ -41,7 +41,7 @@ fn show_color(color: Color) {
 
     const TEXT_POSITION_X: usize = 2 * RECT_PADDING_X + RECT_WIDTH;
 
-    let mut canvas = Canvas::new(12, 64);
+    let mut canvas = Canvas::new(12, 50);
     canvas.draw_rect(
         RECT_PADDING_Y,
         RECT_PADDING_X,
