@@ -5,6 +5,7 @@ use ansi_term::{Colour, Style};
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
 
 mod parser;
+mod x11colors;
 
 use crate::parser::parse_color;
 

@@ -1,6 +1,8 @@
 use palette::Srgb;
 use regex::Regex;
 
+use crate::x11colors::{NamedColor, X11_COLORS};
+
 pub fn parse_color(color: &str) -> Option<Srgb<u8>> {
     // RRGGBB
     let re_rrggbb = Regex::new(r"^#?([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})$").unwrap();
@@ -15,6 +17,12 @@ pub fn parse_color(color: &str) -> Option<Srgb<u8>> {
         let bb = u8::from_str_radix(bb, 16).unwrap();
 
         return Some(Srgb::from_components((rr, gg, bb)));
+    }
+
+    for &NamedColor(name, r, g, b) in X11_COLORS.iter() {
+        if color == name {
+            return Some(Srgb::from_components((r, g, b)));
+        }
     }
 
     None
