@@ -1,0 +1,19 @@
+[package]
+authors = ["David Peter <mail@david-peter.de>"]
+categories = ["command-line-utilities"]
+description = "A command-line tool for working with colors"
+homepage = "https://github.com/sharkdp/pastel"
+license = "MIT/Apache-2.0"
+name = "pastel"
+readme = "README.md"
+repository = "https://github.com/sharkdp/pastel"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+ansi_term = "0.9"
+palette = "0.4"
+
+[dependencies.clap]
+version = "2"
+features = ["suggestions", "color", "wrap_help"]
