@@ -3,11 +3,14 @@ extern crate clap;
 
 use ansi_term::{Colour, Style};
 use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
+use palette::Srgb;
 
 mod parser;
 mod x11colors;
+mod canvas;
 
 use crate::parser::parse_color;
+use crate::canvas::Canvas;
 
 #[derive(Debug, PartialEq)]
 enum PastelError {
@@ -25,6 +28,16 @@ impl PastelError {
 type Result<T> = std::result::Result<T, PastelError>;
 
 type ExitCode = i32;
+
+type Color = Srgb<u8>;
+
+fn show_color(color: Color) {
+    let terminal_color = Colour::RGB(color.red, color.green, color.blue);
+
+    let mut canvas = Canvas::new(12, 32);
+    canvas.draw_rect(2, 4, 8, 16, terminal_color);
+    canvas.print();
+}
 
 fn run() -> Result<ExitCode> {
     let app = ClapApp::new(crate_name!())
@@ -50,14 +63,7 @@ fn run() -> Result<ExitCode> {
         let color_arg = matches.value_of("color").unwrap();
         let color = parse_color(color_arg).ok_or(PastelError::ColorParseError)?;
 
-        let terminal_color = Colour::RGB(color.red, color.green, color.blue);
-        let style = Style::new().on(terminal_color);
-
-        println!();
-        for _ in 0..8 {
-            println!("    {}", style.paint("                "));
-        }
-        println!();
+        show_color(color);
     } else {
         unreachable!("Unknown subcommand");
     }
