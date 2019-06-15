@@ -15,8 +15,17 @@ pub fn parse_color(color: &str) -> Option<Srgb<u8>> {
     let color = color.trim();
 
     // #RRGGBB
-    let re_hex_rrggbb =
-        Regex::new(r"^#?([[:xdigit:]]{2})([[:xdigit:]]{2})([[:xdigit:]]{2})$").unwrap();
+    let re_hex_rrggbb = Regex::new(
+        r"(?x)
+            ^
+            \#?                # optional '#' character
+            ([[:xdigit:]]{2})  # two hexadecimal digits (red)
+            ([[:xdigit:]]{2})  # two hexadecimal digits (green)
+            ([[:xdigit:]]{2})  # two hexadecimal digits (blue)
+            $
+        ",
+    )
+    .unwrap();
 
     if let Some(caps) = re_hex_rrggbb.captures(color) {
         let r = hex_to_u8(caps.get(1).unwrap().as_str());
@@ -27,7 +36,17 @@ pub fn parse_color(color: &str) -> Option<Srgb<u8>> {
     }
 
     // #RGB
-    let re_hex_rgb = Regex::new(r"^#?([[:xdigit:]])([[:xdigit:]])([[:xdigit:]])$").unwrap();
+    let re_hex_rgb = Regex::new(
+        r"(?x)
+            ^
+            \#?             # optional '#' character
+            ([[:xdigit:]])  # one hexadecimal digit (red)
+            ([[:xdigit:]])  # one hexadecimal digit (green)
+            ([[:xdigit:]])  # one hexadecimal digit (blue)
+            $
+        ",
+    )
+    .unwrap();
 
     if let Some(caps) = re_hex_rgb.captures(color) {
         let r = hex_to_u8(caps.get(1).unwrap().as_str());
