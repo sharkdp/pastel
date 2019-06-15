@@ -39,6 +39,23 @@ impl Canvas {
         }
     }
 
+    pub fn draw_checkerboard(
+        &mut self,
+        row: usize,
+        col: usize,
+        height: usize,
+        width: usize,
+        dark: Colour,
+        light: Colour,
+    ) {
+        for i in 0..height {
+            for j in 0..width {
+                let color = if (i + j / 2) % 2 == 0 { dark } else { light };
+                *self.pixel_mut(row + i, col + j) = Pixel::Color(color);
+            }
+        }
+    }
+
     pub fn draw_text(&mut self, row: usize, col: usize, text: &str) {
         let mut j = 0;
         for c in text.chars() {
@@ -61,10 +78,14 @@ impl Canvas {
     }
 
     fn pixel(&self, i: usize, j: usize) -> &Pixel {
+        assert!(i < self.height);
+        assert!(j < self.width);
         &self.pixels[i * self.width + j]
     }
 
     fn pixel_mut(&mut self, i: usize, j: usize) -> &mut Pixel {
+        assert!(i < self.height);
+        assert!(j < self.width);
         &mut self.pixels[i * self.width + j]
     }
 }
