@@ -34,31 +34,32 @@ type Color = Srgb<u8>;
 fn show_color(color: Color) {
     let terminal_color = Colour::RGB(color.red, color.green, color.blue);
 
-    const RECT_HEIGHT: usize = 8;
-    const RECT_WIDTH: usize = 16;
-    const RECT_PADDING_X: usize = 6;
-    const RECT_PADDING_Y: usize = 3;
+    const PADDING: usize = 1;
+    const CHECKERBOARD_SIZE: usize = 12;
+    const COLOR_PANEL_SIZE: usize = 8;
 
-    const TEXT_POSITION_X: usize = 2 * RECT_PADDING_X + RECT_WIDTH;
+    const COLOR_PANEL_POSITION: usize = PADDING + (CHECKERBOARD_SIZE - COLOR_PANEL_SIZE) / 2;
+    const TEXT_POSITION_X: usize = CHECKERBOARD_SIZE + 2 * PADDING;
 
-    let mut canvas = Canvas::new(16, 60);
+    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 30);
     canvas.draw_checkerboard(
-        1,
-        2,
-        RECT_HEIGHT + 2 * RECT_PADDING_Y - 2,
-        RECT_WIDTH + 2 * RECT_PADDING_X - 4,
+        PADDING,
+        PADDING,
+        CHECKERBOARD_SIZE,
+        CHECKERBOARD_SIZE,
         ansi_term::Color::RGB(240, 240, 240),
         ansi_term::Color::RGB(180, 180, 180),
     );
     canvas.draw_rect(
-        RECT_PADDING_Y,
-        RECT_PADDING_X,
-        RECT_HEIGHT,
-        RECT_WIDTH,
+        COLOR_PANEL_POSITION,
+        COLOR_PANEL_POSITION,
+        COLOR_PANEL_SIZE,
+        COLOR_PANEL_SIZE,
         terminal_color,
     );
+
     canvas.draw_text(
-        RECT_PADDING_Y + 1,
+        PADDING + 1,
         TEXT_POSITION_X,
         &format!(
             "Hex: #{:02x}{:02x}{:02x}",
@@ -66,9 +67,9 @@ fn show_color(color: Color) {
         ),
     );
     canvas.draw_text(
-        RECT_PADDING_Y + 2,
+        PADDING + 2,
         TEXT_POSITION_X,
-        &format!("RGB: rgb({}, {}, {})", color.red, color.green, color.blue),
+        &format!("RGB: rgb({},{},{})", color.red, color.green, color.blue),
     );
     canvas.print();
 }

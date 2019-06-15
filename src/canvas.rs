@@ -3,7 +3,7 @@ use ansi_term::{Colour, Style};
 #[derive(Debug, Clone)]
 pub enum Pixel {
     Empty,
-    Char(char),
+    Chars(char, char),
     Color(Colour),
 }
 
@@ -50,7 +50,7 @@ impl Canvas {
     ) {
         for i in 0..height {
             for j in 0..width {
-                let color = if (i + j / 2) % 2 == 0 { dark } else { light };
+                let color = if (i + j) % 2 == 0 { dark } else { light };
                 *self.pixel_mut(row + i, col + j) = Pixel::Color(color);
             }
         }
@@ -58,9 +58,14 @@ impl Canvas {
 
     pub fn draw_text(&mut self, row: usize, col: usize, text: &str) {
         let mut j = 0;
-        for c in text.chars() {
-            *self.pixel_mut(row, col + j) = Pixel::Char(c);
+        let mut chars = text.chars().peekable();
+
+        while let Some(c1) = chars.next() {
+            let c = chars.peek();
+            let c2 = if let Some(c) = c { *c } else { ' ' };
+            *self.pixel_mut(row, col + j) = Pixel::Chars(c1, c2);
             j += 1;
+            chars.next();
         }
     }
 
@@ -68,9 +73,9 @@ impl Canvas {
         for i in 0..self.height {
             for j in 0..self.width {
                 match self.pixel(i, j) {
-                    Pixel::Empty => print!(" "),
-                    Pixel::Color(color) => print!("{}", Style::new().on(*color).paint(" ")),
-                    Pixel::Char(c) => print!("{}", c),
+                    Pixel::Empty => print!("  "),
+                    Pixel::Color(color) => print!("{}", Style::new().on(*color).paint("  ")),
+                    Pixel::Chars(c1, c2) => print!("{}{}", c1, c2),
                 }
             }
             println!();
