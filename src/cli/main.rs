@@ -40,7 +40,7 @@ fn show_color(color: Color) {
     const COLOR_PANEL_POSITION: usize = PADDING + (CHECKERBOARD_SIZE - COLOR_PANEL_SIZE) / 2;
     const TEXT_POSITION_X: usize = CHECKERBOARD_SIZE + 2 * PADDING;
 
-    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 40);
+    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 26);
     canvas.draw_checkerboard(
         PADDING,
         PADDING,
