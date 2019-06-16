@@ -74,8 +74,8 @@ fn show_color_tty(color: Color) {
         PADDING,
         CHECKERBOARD_SIZE,
         CHECKERBOARD_SIZE,
-        ansi_term::Color::RGB(240, 240, 240),
-        ansi_term::Color::RGB(180, 180, 180),
+        TermColor::RGB(240, 240, 240),
+        TermColor::RGB(180, 180, 180),
     );
     canvas.draw_rect(
         COLOR_PANEL_POSITION,
