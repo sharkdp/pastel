@@ -158,6 +158,13 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("rotate")
+                .about("Rotate the 'hue' of the given color by the given amount.")
+                .setting(AppSettings::AllowNegativeNumbers)
+                .arg(Arg::with_name("degrees").help("angle by which to rotate (in degrees)").required(true))
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("complement")
                 .about("Get the complementary color (hue rotated by 180°)")
                 .arg(color_arg.clone()),
@@ -210,6 +217,10 @@ fn run() -> Result<ExitCode> {
         let amount = number_arg(matches, "amount")?;
         let color = color_arg(matches)?;
         show_color(color.darken(amount));
+    } else if let Some(matches) = global_matches.subcommand_matches("rotate") {
+        let degrees = number_arg(matches, "degrees")?;
+        let color = color_arg(matches)?;
+        show_color(color.rotate_hue(degrees));
     } else if let Some(matches) = global_matches.subcommand_matches("complement") {
         let color = color_arg(matches)?;
         show_color(color.complementary());
