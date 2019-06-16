@@ -128,6 +128,21 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("saturate")
+                .about(
+                    "Increase the saturation of a color by adding a certain amount (number between \
+                    -1.0 and 1.0) to the saturation channel.",
+                )
+                .arg(Arg::with_name("amount").help("amount of saturation to add").required(true))
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
+            SubCommand::with_name("desaturate")
+                .about("Opposite of 'saturate'.")
+                .arg(Arg::with_name("amount").help("amount of saturation to subtract").required(true))
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("lighten")
                 .about(
                     "Lighten a color by adding a certain amount (number between -1.0 and 1.0) \
@@ -179,6 +194,14 @@ fn run() -> Result<ExitCode> {
     if let Some(matches) = global_matches.subcommand_matches("show") {
         let color = color_arg(matches)?;
         show_color(color);
+    } else if let Some(matches) = global_matches.subcommand_matches("saturate") {
+        let amount = number_arg(matches, "amount")?;
+        let color = color_arg(matches)?;
+        show_color(color.saturate(amount));
+    } else if let Some(matches) = global_matches.subcommand_matches("desaturate") {
+        let amount = number_arg(matches, "amount")?;
+        let color = color_arg(matches)?;
+        show_color(color.desaturate(amount));
     } else if let Some(matches) = global_matches.subcommand_matches("lighten") {
         let amount = number_arg(matches, "amount")?;
         let color = color_arg(matches)?;

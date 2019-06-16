@@ -223,6 +223,23 @@ impl Color {
     pub fn darken(&self, f: Scalar) -> Color {
         self.lighten(-f)
     }
+
+    /// Increase the saturation of a color by adding a certain amount (number between -1.0 and 1.0)
+    /// to the saturation channel. If the number is negative, the color is desaturated.
+    pub fn saturate(&self, f: Scalar) -> Color {
+        Self::from_hsla(
+            self.hue.value(),
+            self.saturation + f,
+            self.lightness,
+            self.alpha,
+        )
+    }
+
+    /// Decrease the saturation of a color by subtracting a certain amount (number between -1.0 and
+    /// 1.0) from the saturation channel. If the number is negative, the color is saturated.
+    pub fn desaturate(&self, f: Scalar) -> Color {
+        self.saturate(-f)
+    }
 }
 
 impl PartialEq for Color {
