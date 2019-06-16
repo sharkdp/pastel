@@ -13,7 +13,6 @@ use std::io::{self, BufRead};
 use crate::canvas::Canvas;
 use crate::parser::parse_color;
 
-extern crate pastel;
 use pastel::Color;
 
 #[derive(Debug, PartialEq)]
