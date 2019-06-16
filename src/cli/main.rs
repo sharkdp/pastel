@@ -130,6 +130,29 @@ fn show_color(color: Color) {
     }
 }
 
+fn show_color_list(sort_order: &str) {
+    let mut colors: Vec<&NamedColor> = X11_COLORS.iter().map(|r| r).collect();
+    if sort_order == "brightness" {
+        colors.sort_by_key(|nc| (-nc.color.brightness() * 1000.0) as i32);
+    } else if sort_order == "hue" {
+        colors.sort_by_key(|nc| (nc.color.to_lch().h * 1000.0) as i32);
+    } else if sort_order == "chroma" {
+        colors.sort_by_key(|nc| (nc.color.to_lch().c * 1000.0) as i32);
+    }
+    colors.dedup_by(|n1, n2| n1.color == n2.color);
+
+    for nc in colors {
+        let bg = &nc.color;
+        let fg = bg.text_color();
+        println!(
+            "{}",
+            to_termcolor(&fg)
+                .on(to_termcolor(&bg))
+                .paint(format!("{:25}", nc.name))
+        );
+    }
+}
+
 fn run() -> Result<ExitCode> {
     let color_arg = Arg::with_name("color")
         .help(
@@ -221,6 +244,11 @@ fn run() -> Result<ExitCode> {
                 .about("Get the complementary color (hue rotated by 180°)")
                 .long_about("Compute the complementary color by rotating the hue channel by 180°.")
                 .arg(color_arg.clone()),
+        )
+        .subcommand(
+            SubCommand::with_name("list")
+                .about("Print a list of available color names")
+                .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "hue", "chroma"]).default_value("name"))
         );
 
     let global_matches = app.get_matches();
@@ -277,6 +305,9 @@ fn run() -> Result<ExitCode> {
     } else if let Some(matches) = global_matches.subcommand_matches("complement") {
         let color = color_arg(matches)?;
         show_color(color.complementary());
+    } else if let Some(matches) = global_matches.subcommand_matches("list") {
+        let sort_order = matches.value_of("sort").unwrap();
+        show_color_list(sort_order);
     } else {
         unreachable!("Unknown subcommand");
     }
