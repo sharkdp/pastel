@@ -187,9 +187,19 @@ impl Color {
         Color::from_hsl(0.0, 0.0, 1.0)
     }
 
-    /// Create a gray tone from a lightness value (0.0 is black, 1.0 is white)
+    /// Create a gray tone from a lightness value (0.0 is black, 1.0 is white).
     pub fn gray(lightness: Scalar) -> Color {
         Color::from_hsl(0.0, 0.0, lightness)
+    }
+
+    /// Rotate along the "hue" axis.
+    pub fn rotate_hue(&self, delta: Scalar) -> Color {
+        Self::from_hsla(self.hue.value() + delta, self.saturation, self.lightness, self.alpha)
+    }
+
+    /// Get the complementary color (hue rotated by 180°).
+    pub fn complementary(&self) -> Color {
+        self.rotate_hue(180.0)
     }
 }
 
@@ -338,5 +348,21 @@ mod tests {
         for degree in 0..360 {
             roundtrip(Scalar::from(degree), 0.5, 0.8);
         }
+    }
+
+    #[test]
+    fn test_rotate_hue() {
+        assert_eq!(Color::from_rgb(0, 255, 0), Color::from_rgb(255, 0, 0).rotate_hue(120.0));
+    }
+
+    #[test]
+    fn test_complementary() {
+        let magenta = Color::from_rgb(255,0,255);
+        let lime = Color::from_rgb(0, 255, 0);
+        assert_eq!(magenta, lime.complementary());
+
+        let magenta = Color::from_rgb(255,0,255);
+        let lime = Color::from_rgb(0, 255, 0);
+        assert_eq!(magenta, lime.complementary());
     }
 }
