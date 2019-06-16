@@ -126,12 +126,6 @@ pub fn parse_color(color: &str) -> Option<Color> {
         };
     }
 
-    for &NamedColor(name, r, g, b) in X11_COLORS.iter() {
-        if color == name {
-            return Some(rgb(r, g, b));
-        }
-    }
-
     // hsl(280,35%,40$)
     let re_hsl = Regex::new(
         r"(?x)
@@ -170,6 +164,12 @@ pub fn parse_color(color: &str) -> Option<Color> {
             }
             _ => {}
         };
+    }
+
+    for &NamedColor(name, r, g, b) in X11_COLORS.iter() {
+        if color.to_lowercase() == name {
+            return Some(rgb(r, g, b));
+        }
     }
 
     None
@@ -229,4 +229,14 @@ fn parse_hsl() {
     assert_eq!(None, parse_color("hsl(280,20,50%)"));
     assert_eq!(None, parse_color("hsl(280%,20%,50%)"));
     assert_eq!(None, parse_color("hsl(280,20%)"));
+}
+
+#[test]
+fn parse_predefined_name() {
+    assert_eq!(Some(rgb(0, 0, 255)), parse_color("blue"));
+    assert_eq!(Some(rgb(0, 0, 255)), parse_color("Blue"));
+    assert_eq!(Some(rgb(0, 0, 255)), parse_color("BLUE"));
+    assert_eq!(Some(rgb(255, 20, 147)), parse_color("deeppink"));
+    assert_eq!(None, parse_color("whatever"));
+    assert_eq!(None, parse_color("red blue"));
 }
