@@ -206,6 +206,23 @@ impl Color {
     pub fn complementary(&self) -> Color {
         self.rotate_hue(180.0)
     }
+
+    /// Lighten a color by adding a certain amount (number between -1.0 and 1.0) to the lightness
+    /// channel. If the number is negative, the color is darkened.
+    pub fn lighten(&self, f: Scalar) -> Color {
+        Self::from_hsla(
+            self.hue.value(),
+            self.saturation,
+            self.lightness + f,
+            self.alpha,
+        )
+    }
+
+    /// Darken a color by subtracting a certain amount (number between -1.0 and 1.0) from the
+    /// lightness channel. If the number is negative, the color is lightened.
+    pub fn darken(&self, f: Scalar) -> Color {
+        self.lighten(-f)
+    }
 }
 
 impl PartialEq for Color {
@@ -372,5 +389,17 @@ mod tests {
         let magenta = Color::from_rgb(255, 0, 255);
         let lime = Color::from_rgb(0, 255, 0);
         assert_eq!(magenta, lime.complementary());
+    }
+
+    #[test]
+    fn test_lighten() {
+        assert_eq!(
+            Color::from_hsl(90.0, 0.5, 0.7),
+            Color::from_hsl(90.0, 0.5, 0.3).lighten(0.4)
+        );
+        assert_eq!(
+            Color::from_hsl(90.0, 0.5, 1.0),
+            Color::from_hsl(90.0, 0.5, 0.3).lighten(0.8)
+        );
     }
 }
