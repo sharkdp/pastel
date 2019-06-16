@@ -21,6 +21,7 @@ enum PastelError {
     ColorParseError,
     CouldNotReadFromStdin,
     ColorArgRequired,
+    CouldNotParseNumber,
 }
 
 impl PastelError {
@@ -31,6 +32,7 @@ impl PastelError {
             PastelError::ColorArgRequired => {
                 "Please provide a color argument on the command line or via a pipe"
             }
+            PastelError::CouldNotParseNumber => "Could not parse number",
         }
     }
 }
@@ -126,6 +128,21 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("lighten")
+                .about(
+                    "Lighten a color by adding a certain amount (number between -1.0 and 1.0) \
+                     to the lightness channel.",
+                )
+                .arg(Arg::with_name("amount").help("amount of lightness to add"))
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
+            SubCommand::with_name("darken")
+                .about("Opposite of 'lighten'.")
+                .arg(Arg::with_name("amount").help("amount of lightness to subtract"))
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("complement")
                 .about("Get the complementary color (hue rotated by 180°)")
                 .arg(color_arg.clone()),
@@ -152,9 +169,24 @@ fn run() -> Result<ExitCode> {
         }
     };
 
+    let number_arg = |matches: &ArgMatches, name: &str| -> Result<f64> {
+        let value_str = matches.value_of(name).unwrap();
+        value_str
+            .parse::<f64>()
+            .map_err(|_| PastelError::CouldNotParseNumber)
+    };
+
     if let Some(matches) = global_matches.subcommand_matches("show") {
         let color = color_arg(matches)?;
         show_color(color);
+    } else if let Some(matches) = global_matches.subcommand_matches("lighten") {
+        let amount = number_arg(matches, "amount")?;
+        let color = color_arg(matches)?;
+        show_color(color.lighten(amount));
+    } else if let Some(matches) = global_matches.subcommand_matches("darken") {
+        let amount = number_arg(matches, "amount")?;
+        let color = color_arg(matches)?;
+        show_color(color.darken(amount));
     } else if let Some(matches) = global_matches.subcommand_matches("complement") {
         let color = color_arg(matches)?;
         show_color(color.complementary());
