@@ -105,7 +105,7 @@ fn show_color_tty(color: Color) {
             100.0 * hsla.l
         ),
     );
-    canvas.draw_text(TEXT_POSITION_Y + 4, TEXT_POSITION_X, "Similar:");
+    canvas.draw_text(TEXT_POSITION_Y + 4, TEXT_POSITION_X, "Most similar:");
     let similar = similar_colors(&color);
     for (i, nc) in similar.iter().enumerate().take(3) {
         canvas.draw_text(
