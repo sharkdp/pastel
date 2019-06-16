@@ -117,6 +117,31 @@ impl Color {
         Self::from_rgba_scaled(r, g, b, 1.0)
     }
 
+    /// Create a `Color` from XYZ coordinates in the CIE 1931 color space. Note that a `Color`
+    /// always represents a color in the sRGB gamut (colors that can be represented on a typical
+    /// computer screen) while the XYZ color space is bigger. This function will tend to create
+    /// fully saturated colors at the edge of the sRGB gamut if the coordinates lie outside the
+    /// sRGB range.
+    ///
+    /// See:
+    /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
+    /// - https://en.wikipedia.org/wiki/SRGB
+    pub fn from_xyz(x: Scalar, y: Scalar, z: Scalar) -> Color {
+        let f = |c| {
+            if c <= 0.0031308 {
+                12.92 * c
+            } else {
+                1.055 * Scalar::powf(c, 1.0 / 2.4) - 0.055
+            }
+        };
+
+        let r = f(3.2406 * x - 1.5372 * y - 0.4986 * z);
+        let g = f(-0.9689 * x + 1.8758 * y + 0.0415 * z);
+        let b = f(0.0557 * x - 0.2040 * y + 1.0570 * z);
+
+        Self::from_rgb_scaled(r, g, b)
+    }
+
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
     /// in degrees, as a number between 0.0 and 360.0. Saturation, lightness and alpha are numbers
     /// between 0.0 and 1.0.
@@ -173,6 +198,32 @@ impl Color {
             r: col.0 + m,
             g: col.1 + m,
             b: col.2 + m,
+            alpha: self.alpha,
+        }
+    }
+
+    pub fn to_xyz(&self) -> XYZ {
+        let finv = |c_| {
+            if c_ <= 0.04045 {
+                c_ / 12.92
+            } else {
+                Scalar::powf((c_ + 0.055) / 1.055, 2.4)
+            }
+        };
+
+        let rec = self.to_rgba_scaled();
+        let r = finv(rec.r);
+        let g = finv(rec.g);
+        let b = finv(rec.b);
+
+        let x = 0.4124 * r + 0.3576 * g + 0.1805 * b;
+        let y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        let z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
+
+        XYZ {
+            x,
+            y,
+            z,
             alpha: self.alpha,
         }
     }
@@ -258,7 +309,11 @@ impl Color {
     /// Return a readable foreground text color (either `black` or `white`) for a
     /// given background color.
     pub fn text_color(&self) -> Color {
-        if self.is_light() { Self::black() } else { Self::white() }
+        if self.is_light() {
+            Self::black()
+        } else {
+            Self::white()
+        }
     }
 }
 
@@ -281,6 +336,14 @@ pub struct HSLA {
     pub h: Scalar,
     pub s: Scalar,
     pub l: Scalar,
+    pub alpha: Scalar,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct XYZ {
+    pub x: Scalar,
+    pub y: Scalar,
+    pub z: Scalar,
     pub alpha: Scalar,
 }
 
@@ -387,7 +450,7 @@ mod tests {
     }
 
     #[test]
-    fn test_roundtrip_conversion() {
+    fn test_RGB_roundtrip_conversion() {
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
             let rgb = color1.to_rgba();
@@ -406,6 +469,33 @@ mod tests {
 
         for degree in 0..360 {
             roundtrip(Scalar::from(degree), 0.5, 0.8);
+        }
+    }
+
+    #[test]
+    fn test_xyz_conversion() {
+        assert_eq!(Color::white(), Color::from_xyz(0.9505, 1.0, 1.0890));
+        assert_eq!(
+            Color::from_rgb(255, 0, 0),
+            Color::from_xyz(0.4123, 0.2126, 0.01933)
+        );
+        assert_eq!(
+            Color::from_hsl(109.999, 0.08654, 0.407843),
+            Color::from_xyz(0.13123, 0.15372, 0.13174)
+        );
+
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let xyz1 = color1.to_xyz();
+            let color2 = Color::from_xyz(xyz1.x, xyz1.y, xyz1.z);
+            let xyz2 = color2.to_xyz();
+            assert_relative_eq!(xyz1.x, xyz2.x, max_relative = 0.01);
+            assert_relative_eq!(xyz1.y, xyz2.y, max_relative = 0.01);
+            assert_relative_eq!(xyz1.z, xyz2.z, max_relative = 0.01);
+        };
+
+        for hue in 0..360 {
+            roundtrip(Scalar::from(hue), 0.2, 0.8);
         }
     }
 
