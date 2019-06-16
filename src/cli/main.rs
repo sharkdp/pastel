@@ -1,5 +1,7 @@
 use ansi_term::Color as TermColor;
-use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
+use clap::{
+    crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand,
+};
 
 mod canvas;
 mod parser;
@@ -81,6 +83,12 @@ fn show_color(color: Color) {
 }
 
 fn run() -> Result<ExitCode> {
+    let color_arg = Arg::with_name("color")
+        .help(
+            "Color argument. Can be specified in many different formats, \
+             such as RRGGBB, 'rgb(…,…,…)', 'hsl(…,…,…)' or as a color name.",
+        )
+        .required(true);
     let app = App::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
@@ -95,16 +103,28 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("show")
                 .about("Show the given color on the terminal")
-                .arg(Arg::with_name("color").help("Color to show").required(true)),
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
+            SubCommand::with_name("complement")
+                .about("Get the complementary color (hue rotated by 180°)")
+                .arg(color_arg.clone()),
         );
 
     let global_matches = app.get_matches();
 
-    if let Some(matches) = global_matches.subcommand_matches("show") {
+    let color_arg = |matches: &ArgMatches| -> Result<Color> {
         let color_arg = matches.value_of("color").unwrap();
         let color = parse_color(color_arg).ok_or(PastelError::ColorParseError)?;
+        Ok(color)
+    };
 
+    if let Some(matches) = global_matches.subcommand_matches("show") {
+        let color = color_arg(matches)?;
         show_color(color);
+    } else if let Some(matches) = global_matches.subcommand_matches("complement") {
+        let color = color_arg(matches)?;
+        show_color(color.complementary());
     } else {
         unreachable!("Unknown subcommand");
     }

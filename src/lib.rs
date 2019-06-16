@@ -194,7 +194,12 @@ impl Color {
 
     /// Rotate along the "hue" axis.
     pub fn rotate_hue(&self, delta: Scalar) -> Color {
-        Self::from_hsla(self.hue.value() + delta, self.saturation, self.lightness, self.alpha)
+        Self::from_hsla(
+            self.hue.value() + delta,
+            self.saturation,
+            self.lightness,
+            self.alpha,
+        )
     }
 
     /// Get the complementary color (hue rotated by 180°).
@@ -352,16 +357,19 @@ mod tests {
 
     #[test]
     fn test_rotate_hue() {
-        assert_eq!(Color::from_rgb(0, 255, 0), Color::from_rgb(255, 0, 0).rotate_hue(120.0));
+        assert_eq!(
+            Color::from_rgb(0, 255, 0),
+            Color::from_rgb(255, 0, 0).rotate_hue(120.0)
+        );
     }
 
     #[test]
     fn test_complementary() {
-        let magenta = Color::from_rgb(255,0,255);
+        let magenta = Color::from_rgb(255, 0, 255);
         let lime = Color::from_rgb(0, 255, 0);
         assert_eq!(magenta, lime.complementary());
 
-        let magenta = Color::from_rgb(255,0,255);
+        let magenta = Color::from_rgb(255, 0, 255);
         let lime = Color::from_rgb(0, 255, 0);
         assert_eq!(magenta, lime.complementary());
     }
