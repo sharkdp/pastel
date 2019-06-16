@@ -1,8 +1,5 @@
-#[macro_use]
-extern crate clap;
-
-use ansi_term::Colour;
-use clap::{App as ClapApp, AppSettings, Arg, SubCommand};
+use ansi_term::Color as TermColor;
+use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 use palette::Srgb;
 
 mod canvas;
@@ -11,6 +8,8 @@ mod x11colors;
 
 use crate::canvas::Canvas;
 use crate::parser::parse_color;
+
+extern crate pastel;
 
 #[derive(Debug, PartialEq)]
 enum PastelError {
@@ -32,7 +31,7 @@ type ExitCode = i32;
 type Color = Srgb<u8>;
 
 fn show_color(color: Color) {
-    let terminal_color = Colour::RGB(color.red, color.green, color.blue);
+    let terminal_color = TermColor::RGB(color.red, color.green, color.blue);
 
     const PADDING: usize = 1;
     const CHECKERBOARD_SIZE: usize = 12;
@@ -75,7 +74,7 @@ fn show_color(color: Color) {
 }
 
 fn run() -> Result<ExitCode> {
-    let app = ClapApp::new(crate_name!())
+    let app = App::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
         .global_setting(AppSettings::ColoredHelp)

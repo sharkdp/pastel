@@ -1,10 +1,10 @@
-use ansi_term::{Colour, Style};
+use ansi_term::{Color as TermColor, Style};
 
 #[derive(Debug, Clone)]
 pub enum Pixel {
     Empty,
     Chars(char, char),
-    Color(Colour),
+    Color(TermColor),
 }
 
 pub struct Canvas {
@@ -30,7 +30,7 @@ impl Canvas {
         col: usize,
         height: usize,
         width: usize,
-        color: Colour,
+        color: TermColor,
     ) {
         for i in 0..height {
             for j in 0..width {
@@ -45,8 +45,8 @@ impl Canvas {
         col: usize,
         height: usize,
         width: usize,
-        dark: Colour,
-        light: Colour,
+        dark: TermColor,
+        light: TermColor,
     ) {
         for i in 0..height {
             for j in 0..width {
