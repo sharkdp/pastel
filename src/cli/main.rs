@@ -137,10 +137,18 @@ fn show_color(color: Color) {
 fn run() -> Result<ExitCode> {
     let color_arg = Arg::with_name("color")
         .help(
-            "Color argument. Can be specified in many different formats, \
-             such as RRGGBB, 'rgb(…,…,…)', 'hsl(…,…,…)' or as a color name. \
+            "Colors can be specified in many different formats, such as #RRGGBB, RRGGBB, \
+             #RGB, 'rgb(…, …, …)', 'hsl(…, …, …)' or simply by the name of the color. \
              If the color argument is not specified, the color will be read \
-             from standard input.",
+             from standard input.\n\
+             Examples:\
+             \n  - cyan\
+             \n  - salmon\
+             \n  - skyblue\
+             \n  - '#ff0077'\
+             \n  - f07\
+             \n  - 'rgb(216, 180, 140)'\
+             \n  - 'hsl(128, 100%, 54%)'",
         )
         .required(false);
     let app = App::new(crate_name!())
@@ -157,48 +165,65 @@ fn run() -> Result<ExitCode> {
         .about(crate_description!())
         .subcommand(
             SubCommand::with_name("show")
-                .about("Show the given color on the terminal")
+                .about("Display information about the given color on the terminal")
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("saturate")
-                .about(
-                    "Increase the saturation of a color by adding a certain amount (number between \
-                    -1.0 and 1.0) to the saturation channel.",
+                .long_about(
+                    "Increase the saturation of a color by adding a certain amount to the \
+                     saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
+                     the color will be desaturated."
                 )
+                .about("Increase color saturation by a specified amount")
                 .arg(Arg::with_name("amount").help("amount of saturation to add").required(true))
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("desaturate")
-                .about("Opposite of 'saturate'.")
+                .about("Decrease color saturation by a specified amount")
+                .long_about(
+                    "Decrease the saturation of a color by subtracting a certain amount from the \
+                     saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
+                     the color will be saturated."
+                )
                 .arg(Arg::with_name("amount").help("amount of saturation to subtract").required(true))
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("lighten")
-                .about(
-                    "Lighten a color by adding a certain amount (number between -1.0 and 1.0) \
-                     to the lightness channel.",
+                .long_about(
+                    "Lighten a color by adding a certain amount to the lightness channel (a number \
+                     between 0.0 and 1.0). If the amount is negative, the color will be darkened.",
                 )
+                .about("Lighten color by a specified amount")
                 .arg(Arg::with_name("amount").help("amount of lightness to add").required(true))
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("darken")
-                .about("Opposite of 'lighten'.")
+                .long_about(
+                    "Darken a color by subtracting a certain amount from the lightness channel (a \
+                     number between 0.0 and 1.0). If the amount is negative, the color will be \
+                     lightened."
+                )
+                .about("Darken color by a specified amount")
                 .arg(Arg::with_name("amount").help("amount of lightness to subtract").required(true))
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("rotate")
-                .about("Rotate the 'hue' of the given color by the given amount.")
+                .about("Rotate the hue channel by a specified angle")
+                .long_about("Rotate the hue channel of a color by the specified angle (in degrees). \
+                             A rotation by 180° returns the complementary color. A rotation by 360° \
+                             returns to the original color.")
                 .arg(Arg::with_name("degrees").help("angle by which to rotate (in degrees)").required(true))
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("complement")
                 .about("Get the complementary color (hue rotated by 180°)")
+                .long_about("Compute the complementary color by rotating the hue channel by 180°.")
                 .arg(color_arg.clone()),
         );
 
