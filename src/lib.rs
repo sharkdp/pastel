@@ -106,6 +106,16 @@ impl Color {
         Self::from_rgba_scaled(r, g, b, 1.0)
     }
 
+    /// Convert a `Color` to its hue, saturation, lightness and alpha values.
+    pub fn to_hsla(&self) -> HSLA {
+        HSLA {
+            h: self.hue.value(),
+            s: self.saturation,
+            l: self.lightness,
+            alpha: self.alpha,
+        }
+    }
+
     /// Convert a `Color` to its red, green, blue and alpha values. The RGB values
     /// are integers in the range from 0 to 255. The alpha channel is a number
     /// between 0.0 and 1.0.
@@ -174,6 +184,14 @@ pub struct RGBA<T> {
     pub r: T,
     pub g: T,
     pub b: T,
+    pub alpha: Scalar,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct HSLA {
+    pub h: Scalar,
+    pub s: Scalar,
+    pub l: Scalar,
     pub alpha: Scalar,
 }
 

@@ -29,8 +29,9 @@ type Result<T> = std::result::Result<T, PastelError>;
 type ExitCode = i32;
 
 fn show_color(color: Color) {
-    let rgb = color.to_rgba();
-    let terminal_color = TermColor::RGB(rgb.r, rgb.g, rgb.b);
+    let rgba = color.to_rgba();
+    let hsla = color.to_hsla();
+    let terminal_color = TermColor::RGB(rgba.r, rgba.g, rgba.b);
 
     const PADDING: usize = 1;
     const CHECKERBOARD_SIZE: usize = 12;
@@ -39,7 +40,7 @@ fn show_color(color: Color) {
     const COLOR_PANEL_POSITION: usize = PADDING + (CHECKERBOARD_SIZE - COLOR_PANEL_SIZE) / 2;
     const TEXT_POSITION_X: usize = CHECKERBOARD_SIZE + 2 * PADDING;
 
-    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 30);
+    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 40);
     canvas.draw_checkerboard(
         PADDING,
         PADDING,
@@ -59,12 +60,22 @@ fn show_color(color: Color) {
     canvas.draw_text(
         PADDING + 1,
         TEXT_POSITION_X,
-        &format!("Hex: #{:02x}{:02x}{:02x}", rgb.r, rgb.g, rgb.b),
+        &format!("Hex: #{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b),
     );
     canvas.draw_text(
         PADDING + 2,
         TEXT_POSITION_X,
-        &format!("RGB: rgb({},{},{})", rgb.r, rgb.g, rgb.b),
+        &format!("RGB: rgb({},{},{})", rgba.r, rgba.g, rgba.b),
+    );
+    canvas.draw_text(
+        PADDING + 3,
+        TEXT_POSITION_X,
+        &format!(
+            "HSL: hsl({:.0},{:.0}%,{:.0}%)",
+            hsla.h,
+            100.0 * hsla.s,
+            100.0 * hsla.l
+        ),
     );
     canvas.print();
 }
