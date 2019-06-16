@@ -42,6 +42,11 @@ pub struct Color {
     alpha: Scalar,
 }
 
+// Illuminant D65 constants used for Lab color space conversions.
+const D65_XN: Scalar = 0.950470;
+const D65_YN: Scalar = 1.0;
+const D65_ZN: Scalar = 1.088830;
+
 impl Color {
     pub fn from_hsla(hue: Scalar, saturation: Scalar, lightness: Scalar, alpha: Scalar) -> Color {
         Color {
@@ -142,6 +147,29 @@ impl Color {
         Self::from_rgb_scaled(r, g, b)
     }
 
+    /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
+    /// space. Note: See documentation for `xyz`. The same restrictions apply here.
+    ///
+    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    pub fn from_lab(l: Scalar, a: Scalar, b: Scalar) -> Color {
+        const DELTA: Scalar = 6.0 / 29.0;
+
+        let finv = |t| {
+            if t > DELTA {
+                Scalar::powf(t, 3.0)
+            } else {
+                3.0 * DELTA * DELTA * (t - 4.0 / 29.0)
+            }
+        };
+
+        let l_ = (l + 16.0) / 116.0;
+        let x = D65_XN * finv(l_ + a / 500.0);
+        let y = D65_YN * finv(l_);
+        let z = D65_ZN * finv(l_ - b / 200.0);
+
+        Self::from_xyz(x, y, z)
+    }
+
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
     /// in degrees, as a number between 0.0 and 360.0. Saturation, lightness and alpha are numbers
     /// between 0.0 and 1.0.
@@ -202,6 +230,11 @@ impl Color {
         }
     }
 
+    /// Get XYZ coordinates according to the CIE 1931 color space.
+    ///
+    /// See:
+    /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
+    /// - https://en.wikipedia.org/wiki/SRGB
     pub fn to_xyz(&self) -> XYZ {
         let finv = |c_| {
             if c_ <= 0.04045 {
@@ -224,6 +257,35 @@ impl Color {
             x,
             y,
             z,
+            alpha: self.alpha,
+        }
+    }
+
+    /// Get L, a and b coordinates according to the Lab color space.
+    ///
+    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    pub fn to_lab(&self) -> Lab {
+        let rec = self.to_xyz();
+
+        let cut = Scalar::powf(6.0 / 29.0, 3.0);
+        let f = |t| {
+            if t > cut {
+                Scalar::powf(t, 1.0 / 3.0)
+            } else {
+                (1.0 / 3.0) * Scalar::powf(29.0 / 6.0, 2.0) * t + 4.0 / 29.0
+            }
+        };
+
+        let fy = f(rec.y / D65_YN);
+
+        let l = 116.0 * fy - 16.0;
+        let a = 500.0 * (f(rec.x / D65_XN) - fy);
+        let b = 200.0 * (fy - f(rec.z / D65_ZN));
+
+        Lab {
+            l,
+            a,
+            b,
             alpha: self.alpha,
         }
     }
@@ -347,10 +409,27 @@ pub struct XYZ {
     pub alpha: Scalar,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct Lab {
+    pub l: Scalar,
+    pub a: Scalar,
+    pub b: Scalar,
+    pub alpha: Scalar,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
+
+    fn assert_almost_equal(c1: &Color, c2: &Color) {
+        let c1 = c1.to_rgba();
+        let c2 = c2.to_rgba();
+
+        assert!((c1.r as i32 - c2.r as i32).abs() <= 1);
+        assert!((c1.g as i32 - c2.g as i32).abs() <= 1);
+        assert!((c1.b as i32 - c2.b as i32).abs() <= 1);
+    }
 
     #[test]
     fn test_mod_positive() {
@@ -450,7 +529,7 @@ mod tests {
     }
 
     #[test]
-    fn test_RGB_roundtrip_conversion() {
+    fn test_rgb_roundtrip_conversion() {
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
             let rgb = color1.to_rgba();
@@ -488,10 +567,26 @@ mod tests {
             let color1 = Color::from_hsl(h, s, l);
             let xyz1 = color1.to_xyz();
             let color2 = Color::from_xyz(xyz1.x, xyz1.y, xyz1.z);
-            let xyz2 = color2.to_xyz();
-            assert_relative_eq!(xyz1.x, xyz2.x, max_relative = 0.01);
-            assert_relative_eq!(xyz1.y, xyz2.y, max_relative = 0.01);
-            assert_relative_eq!(xyz1.z, xyz2.z, max_relative = 0.01);
+            assert_almost_equal(&color1, &color2);
+        };
+
+        for hue in 0..360 {
+            roundtrip(Scalar::from(hue), 0.2, 0.8);
+        }
+    }
+
+    #[test]
+    fn test_lab_conversion() {
+        assert_eq!(
+            Color::from_rgb(255, 0, 0),
+            Color::from_lab(53.233, 80.109, 67.22)
+        );
+
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let lab1 = color1.to_lab();
+            let color2 = Color::from_lab(lab1.l, lab1.a, lab1.b);
+            assert_almost_equal(&color1, &color2);
         };
 
         for hue in 0..360 {
