@@ -69,11 +69,15 @@ pub fn parse_color(color: &str) -> Option<Color> {
         r"(?x)
             ^
             rgb\(
+                \s*
                 ([0-9]{1,3})
                 ,
+                \s*
                 ([0-9]{1,3})
                 ,
+                \s*
                 ([0-9]{1,3})
+                \s*
             \)
             $
         ",
@@ -151,10 +155,12 @@ fn parse_hex_rgb() {
 #[test]
 fn parse_rgb() {
     assert_eq!(Some(rgb(255, 0, 119)), parse_color("rgb(255,0,119)"));
+    assert_eq!(Some(rgb(255, 8, 119)), parse_color("  rgb( 255,  8,  119 )  "));
     assert_eq!(Some(rgb(255, 0, 119)), parse_color("255,0,119"));
     assert_eq!(Some(rgb(1, 2, 3)), parse_color("1,2,3"));
 
     assert_eq!(None, parse_color("rgb(256,0,0)"));
     assert_eq!(None, parse_color("rgb(255,0)"));
     assert_eq!(None, parse_color("rgb(255,0,0"));
+    assert_eq!(None, parse_color("rgb (256,0,0)"));
 }
