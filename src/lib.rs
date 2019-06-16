@@ -124,19 +124,6 @@ impl Color {
     }
 
     pub fn to_rgba_scaled(&self) -> RGBA<Scalar> {
-        // toRGBA' (HSLA h s l a) = { r: col.r + m, g: col.g + m, b: col.b + m, a }
-        //   where
-        //     h'  = clipHue h / 60.0
-        //     chr = (1.0 - abs (2.0 * l - 1.0)) * s
-        //     m   = l - chr / 2.0
-        //     x   = chr * (1.0 - abs (h' % 2.0 - 1.0))
-        //     col |              h' < 1.0 = { r: chr, g: x  , b: 0.0 }
-        //         | 1.0 <= h' && h' < 2.0 = { r: x  , g: chr, b: 0.0 }
-        //         | 2.0 <= h' && h' < 3.0 = { r: 0.0, g: chr, b: x   }
-        //         | 3.0 <= h' && h' < 4.0 = { r: 0.0, g: x  , b: chr }
-        //         | 4.0 <= h' && h' < 5.0 = { r: x  , g: 0.0, b: chr }
-        //         | otherwise             = { r: chr, g: 0.0, b: x   }
-
         let h_s = self.hue.value() / 60.0;
         let chr = (1.0 - Scalar::abs(2.0 * self.lightness - 1.0)) * self.saturation;
         let m = self.lightness - chr / 2.0;
