@@ -148,7 +148,7 @@ impl Color {
     }
 
     /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
-    /// space. Note: See documentation for `xyz`. The same restrictions apply here.
+    /// space. Note: See documentation for `from_xyz`. The same restrictions apply here.
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
     pub fn from_lab(l: Scalar, a: Scalar, b: Scalar) -> Color {
@@ -168,6 +168,20 @@ impl Color {
         let z = D65_ZN * finv(l_ - b / 200.0);
 
         Self::from_xyz(x, y, z)
+    }
+
+    /// Create a `Color` from lightness, chroma and hue coordinates in the CIE LCh color space.
+    /// This is a cylindrical transform of the Lab color space. Note: See documentation for
+    /// `from_xyz`. The same restrictions apply here.
+    ///
+    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    pub fn from_lch(l: Scalar, c: Scalar, h: Scalar) -> Color {
+        const DEG2RAD: Scalar = std::f64::consts::PI / 180.0;
+
+        let a = c * Scalar::cos(h * DEG2RAD);
+        let b = c * Scalar::sin(h * DEG2RAD);
+
+        Self::from_lab(l, a, b)
     }
 
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
@@ -288,6 +302,20 @@ impl Color {
             b,
             alpha: self.alpha,
         }
+    }
+
+    /// Get L, C and h coordinates according to the CIE LCh color space.
+    ///
+    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    pub fn to_lch(&self) -> LCh {
+        let Lab { l, a, b, alpha } = self.to_lab();
+
+        const RAD2DEG: Scalar = 180.0 / std::f64::consts::PI;
+
+        let c = Scalar::sqrt(a * a + b * b);
+        let h = mod_positive(Scalar::atan2(b, a) * RAD2DEG, 360.0);
+
+        LCh { l, c, h, alpha }
     }
 
     /// Pure black.
@@ -425,6 +453,14 @@ pub struct Lab {
     pub l: Scalar,
     pub a: Scalar,
     pub b: Scalar,
+    pub alpha: Scalar,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct LCh {
+    pub l: Scalar,
+    pub c: Scalar,
+    pub h: Scalar,
     pub alpha: Scalar,
 }
 
@@ -597,6 +633,25 @@ mod tests {
             let color1 = Color::from_hsl(h, s, l);
             let lab1 = color1.to_lab();
             let color2 = Color::from_lab(lab1.l, lab1.a, lab1.b);
+            assert_almost_equal(&color1, &color2);
+        };
+
+        for hue in 0..360 {
+            roundtrip(Scalar::from(hue), 0.2, 0.8);
+        }
+    }
+
+    #[test]
+    fn test_lch_conversion() {
+        assert_eq!(
+            Color::from_hsl(0.0, 1.0, 0.245),
+            Color::from_lch(24.829, 60.093, 38.18)
+        );
+
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let lch1 = color1.to_lch();
+            let color2 = Color::from_lch(lch1.l, lch1.c, lch1.h);
             assert_almost_equal(&color1, &color2);
         };
 
