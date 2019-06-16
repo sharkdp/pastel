@@ -65,7 +65,7 @@ pub fn parse_color(color: &str) -> Option<Color> {
     }
 
     // rgb(255,0,119)
-    let re_hex_rgb = Regex::new(
+    let re_rgb = Regex::new(
         r"(?x)
             ^
             rgb\(
@@ -84,7 +84,7 @@ pub fn parse_color(color: &str) -> Option<Color> {
     )
     .unwrap();
 
-    if let Some(caps) = re_hex_rgb.captures(color) {
+    if let Some(caps) = re_rgb.captures(color) {
         let mr = dec_to_u8(caps.get(1).unwrap().as_str());
         let mg = dec_to_u8(caps.get(2).unwrap().as_str());
         let mb = dec_to_u8(caps.get(3).unwrap().as_str());
@@ -96,7 +96,7 @@ pub fn parse_color(color: &str) -> Option<Color> {
     }
 
     // 255,0,119
-    let re_hex_rgb2 = Regex::new(
+    let re_rgb2 = Regex::new(
         r"(?x)
             ^
             ([0-9]{1,3})
@@ -109,7 +109,7 @@ pub fn parse_color(color: &str) -> Option<Color> {
     )
     .unwrap();
 
-    if let Some(caps) = re_hex_rgb2.captures(color) {
+    if let Some(caps) = re_rgb2.captures(color) {
         let mr = dec_to_u8(caps.get(1).unwrap().as_str());
         let mg = dec_to_u8(caps.get(2).unwrap().as_str());
         let mb = dec_to_u8(caps.get(3).unwrap().as_str());
