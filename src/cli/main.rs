@@ -15,6 +15,8 @@ use crate::parser::parse_color;
 
 use pastel::Color;
 
+use x11colors::{NamedColor, X11_COLORS};
+
 #[derive(Debug, PartialEq)]
 enum PastelError {
     ColorParseError,
@@ -40,10 +42,23 @@ type Result<T> = std::result::Result<T, PastelError>;
 
 type ExitCode = i32;
 
+fn to_termcolor(c: &Color) -> TermColor {
+    let rgba = c.to_rgba();
+    TermColor::RGB(rgba.r, rgba.g, rgba.b)
+}
+
+/// Returns a list of named colors, sorted by the perceived distance to the given color
+fn similar_colors(color: &Color) -> Vec<&NamedColor> {
+    let mut colors: Vec<&NamedColor> = X11_COLORS.iter().map(|r| r).collect();
+    colors.sort_by_key(|nc| nc.color.distance(&color) as i32);
+    colors.dedup_by(|n1, n2| n1.color == n2.color);
+    colors
+}
+
 fn show_color_tty(color: Color) {
     let rgba = color.to_rgba();
     let hsla = color.to_hsla();
-    let terminal_color = TermColor::RGB(rgba.r, rgba.g, rgba.b);
+    let terminal_color = to_termcolor(&color);
 
     const PADDING: usize = 1;
     const CHECKERBOARD_SIZE: usize = 12;
@@ -51,8 +66,9 @@ fn show_color_tty(color: Color) {
 
     const COLOR_PANEL_POSITION: usize = PADDING + (CHECKERBOARD_SIZE - COLOR_PANEL_SIZE) / 2;
     const TEXT_POSITION_X: usize = CHECKERBOARD_SIZE + 2 * PADDING;
+    const TEXT_POSITION_Y: usize = PADDING + 1;
 
-    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 26);
+    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 40);
     canvas.draw_checkerboard(
         PADDING,
         PADDING,
@@ -70,17 +86,17 @@ fn show_color_tty(color: Color) {
     );
 
     canvas.draw_text(
-        PADDING + 1,
+        TEXT_POSITION_Y + 0,
         TEXT_POSITION_X,
         &format!("Hex: #{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b),
     );
     canvas.draw_text(
-        PADDING + 2,
+        TEXT_POSITION_Y + 1,
         TEXT_POSITION_X,
         &format!("RGB: rgb({},{},{})", rgba.r, rgba.g, rgba.b),
     );
     canvas.draw_text(
-        PADDING + 3,
+        TEXT_POSITION_Y + 2,
         TEXT_POSITION_X,
         &format!(
             "HSL: hsl({:.0},{:.0}%,{:.0}%)",
@@ -89,6 +105,23 @@ fn show_color_tty(color: Color) {
             100.0 * hsla.l
         ),
     );
+    canvas.draw_text(TEXT_POSITION_Y + 4, TEXT_POSITION_X, "Similar:");
+    let similar = similar_colors(&color);
+    for (i, nc) in similar.iter().enumerate().take(3) {
+        canvas.draw_text(
+            TEXT_POSITION_Y + 5 + i,
+            TEXT_POSITION_X,
+            &format!("  *        {}", nc.name),
+        );
+        canvas.draw_rect(
+            TEXT_POSITION_Y + 5 + i,
+            TEXT_POSITION_X + 2,
+            1,
+            3,
+            to_termcolor(&nc.color),
+        );
+    }
+
     canvas.print();
 }
 
@@ -118,6 +151,7 @@ fn run() -> Result<ExitCode> {
         .global_setting(AppSettings::UnifiedHelpMessage)
         .global_setting(AppSettings::InferSubcommands)
         .global_setting(AppSettings::VersionlessSubcommands)
+        .global_setting(AppSettings::AllowNegativeNumbers)
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .max_term_width(100)
         .about(crate_description!())
@@ -159,7 +193,6 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("rotate")
                 .about("Rotate the 'hue' of the given color by the given amount.")
-                .setting(AppSettings::AllowNegativeNumbers)
                 .arg(Arg::with_name("degrees").help("angle by which to rotate (in degrees)").required(true))
                 .arg(color_arg.clone()),
         )

@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 
 use pastel::Color;
 
+#[derive(Debug, Clone)]
 pub struct NamedColor {
     pub name: &'static str,
     pub color: Color,
