@@ -30,7 +30,7 @@ impl PastelError {
             PastelError::ColorParseError => "could not parse color",
             PastelError::CouldNotReadFromStdin => "could not read color from standard input",
             PastelError::ColorArgRequired => {
-                "Please provide a color argument on the command line or via a pipe"
+                "A color argument needs to be provided on the command line or via a pipe"
             }
             PastelError::CouldNotParseNumber => "Could not parse number",
         }
@@ -133,13 +133,13 @@ fn run() -> Result<ExitCode> {
                     "Lighten a color by adding a certain amount (number between -1.0 and 1.0) \
                      to the lightness channel.",
                 )
-                .arg(Arg::with_name("amount").help("amount of lightness to add"))
+                .arg(Arg::with_name("amount").help("amount of lightness to add").required(true))
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("darken")
                 .about("Opposite of 'lighten'.")
-                .arg(Arg::with_name("amount").help("amount of lightness to subtract"))
+                .arg(Arg::with_name("amount").help("amount of lightness to subtract").required(true))
                 .arg(color_arg.clone()),
         )
         .subcommand(
