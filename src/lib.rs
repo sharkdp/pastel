@@ -188,7 +188,7 @@ impl Color {
     }
 
     /// Create a gray tone from a lightness value (0.0 is black, 1.0 is white).
-    pub fn gray(lightness: Scalar) -> Color {
+    pub fn graytone(lightness: Scalar) -> Color {
         Color::from_hsl(0.0, 0.0, lightness)
     }
 
@@ -444,12 +444,12 @@ mod tests {
     fn test_brightness() {
         assert_eq!(0.0, Color::black().brightness());
         assert_eq!(1.0, Color::white().brightness());
-        assert_eq!(0.5, Color::gray(0.5).brightness());
+        assert_eq!(0.5, Color::graytone(0.5).brightness());
     }
 
     #[test]
     fn test_text_color() {
-        assert_eq!(Color::white(), Color::gray(0.4).text_color());
-        assert_eq!(Color::black(), Color::gray(0.6).text_color());
+        assert_eq!(Color::white(), Color::graytone(0.4).text_color());
+        assert_eq!(Color::black(), Color::graytone(0.6).text_color());
     }
 }
