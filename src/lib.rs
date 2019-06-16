@@ -46,9 +46,9 @@ impl Color {
     pub fn from_hsla(hue: Scalar, saturation: Scalar, lightness: Scalar, alpha: Scalar) -> Color {
         Color {
             hue: Hue::from(hue),
-            saturation,
-            lightness,
-            alpha,
+            saturation: clamp(0.0, 1.0, saturation),
+            lightness: clamp(0.0, 1.0, lightness),
+            alpha: clamp(0.0, 1.0, alpha),
         }
     }
 
