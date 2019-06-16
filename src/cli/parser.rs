@@ -1,7 +1,7 @@
 use pastel::Color;
 use regex::Regex;
 
-use crate::x11colors::{NamedColor, X11_COLORS};
+use crate::x11colors::X11_COLORS;
 
 fn hex_to_u8_unsafe(hex: &str) -> u8 {
     u8::from_str_radix(hex, 16).unwrap()
@@ -166,9 +166,9 @@ pub fn parse_color(color: &str) -> Option<Color> {
         };
     }
 
-    for &NamedColor(name, r, g, b) in X11_COLORS.iter() {
-        if color.to_lowercase() == name {
-            return Some(rgb(r, g, b));
+    for nc in X11_COLORS.iter() {
+        if color.to_lowercase() == nc.name {
+            return Some(nc.color.clone());
         }
     }
 
