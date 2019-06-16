@@ -297,4 +297,26 @@ mod tests {
         ); // cyan 2
     }
 
+    #[test]
+    fn test_roundtrip_conversion() {
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let rgb = color1.to_rgba();
+            let color2 = Color::from_rgb(rgb.r, rgb.g, rgb.b);
+            assert_eq!(color1, color2);
+        };
+
+        roundtrip(0.0, 0.0, 1.0);
+        roundtrip(0.0, 0.0, 0.5);
+        roundtrip(0.0, 0.0, 0.0);
+        roundtrip(60.0, 1.0, 0.375);
+        roundtrip(120.0, 1.0, 0.25);
+        roundtrip(240.0, 1.0, 0.75);
+        roundtrip(49.5, 0.893, 0.497);
+        roundtrip(162.4, 0.779, 0.447);
+
+        for degree in 0..360 {
+            roundtrip(Scalar::from(degree), 0.5, 0.8);
+        }
+    }
 }
