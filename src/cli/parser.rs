@@ -1,4 +1,4 @@
-use palette::Srgb;
+use pastel::Color;
 use regex::Regex;
 
 use crate::x11colors::{NamedColor, X11_COLORS};
@@ -11,11 +11,11 @@ fn dec_to_u8(hex: &str) -> Option<u8> {
     u8::from_str_radix(hex, 10).ok()
 }
 
-fn rgb(r: u8, g: u8, b: u8) -> Srgb<u8> {
-    Srgb::from_components((r, g, b))
+fn rgb(r: u8, g: u8, b: u8) -> Color {
+    Color::from_rgb(r, g, b)
 }
 
-pub fn parse_color(color: &str) -> Option<Srgb<u8>> {
+pub fn parse_color(color: &str) -> Option<Color> {
     let color = color.trim();
 
     // #RRGGBB

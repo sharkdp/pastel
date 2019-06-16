@@ -214,19 +214,13 @@ mod tests {
         assert_eq!(
             Color::from_hsl(120.0, 0.3, 0.5),
             Color::from_hsl(360.0 + 120.0, 0.3, 0.5),
-            );
+        );
         assert_eq!(
             Color::from_rgba(1, 2, 3, 0.3),
             Color::from_rgba(1, 2, 3, 0.3),
         );
-        assert_eq!(
-            Color::black(),
-            Color::from_hsl(123.0, 0.3, 0.0)
-        );
-        assert_eq!(
-            Color::white(),
-            Color::from_hsl(123.0, 0.3, 1.0)
-        );
+        assert_eq!(Color::black(), Color::from_hsl(123.0, 0.3, 0.0));
+        assert_eq!(Color::white(), Color::from_hsl(123.0, 0.3, 1.0));
 
         assert_ne!(
             Color::from_hsl(120.0, 0.3, 0.5),
@@ -280,22 +274,22 @@ mod tests {
             Color::from_hsl(60.0, 1.0, 0.375),
             Color::from_rgb_scaled(0.75, 0.75, 0.0)
         ); //yellow-green
-           assert_eq!(
-               Color::from_hsl(120.0, 1.0, 0.25),
-               Color::from_rgb_scaled(0.0, 0.5, 0.0)
-           ); // green
-           assert_eq!(
-               Color::from_hsl(240.0, 1.0, 0.75),
-               Color::from_rgb_scaled(0.5, 0.5, 1.0)
-           ); // blue
-           assert_eq!(
-               Color::from_hsl(49.5, 0.893, 0.497),
-               Color::from_rgb_scaled(0.941, 0.785, 0.053)
-           ); // yellow
-           assert_eq!(
-               Color::from_hsl(162.4, 0.779, 0.447),
-               Color::from_rgb_scaled(0.099, 0.795, 0.591)
-           ); // cyan 2
+        assert_eq!(
+            Color::from_hsl(120.0, 1.0, 0.25),
+            Color::from_rgb_scaled(0.0, 0.5, 0.0)
+        ); // green
+        assert_eq!(
+            Color::from_hsl(240.0, 1.0, 0.75),
+            Color::from_rgb_scaled(0.5, 0.5, 1.0)
+        ); // blue
+        assert_eq!(
+            Color::from_hsl(49.5, 0.893, 0.497),
+            Color::from_rgb_scaled(0.941, 0.785, 0.053)
+        ); // yellow
+        assert_eq!(
+            Color::from_hsl(162.4, 0.779, 0.447),
+            Color::from_rgb_scaled(0.099, 0.795, 0.591)
+        ); // cyan 2
     }
 
 }

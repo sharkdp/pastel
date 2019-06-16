@@ -1,6 +1,5 @@
 use ansi_term::Color as TermColor;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
-use palette::Srgb;
 
 mod canvas;
 mod parser;
@@ -10,6 +9,7 @@ use crate::canvas::Canvas;
 use crate::parser::parse_color;
 
 extern crate pastel;
+use pastel::Color;
 
 #[derive(Debug, PartialEq)]
 enum PastelError {
@@ -28,10 +28,9 @@ type Result<T> = std::result::Result<T, PastelError>;
 
 type ExitCode = i32;
 
-type Color = Srgb<u8>;
-
 fn show_color(color: Color) {
-    let terminal_color = TermColor::RGB(color.red, color.green, color.blue);
+    let rgb = color.to_rgba();
+    let terminal_color = TermColor::RGB(rgb.r, rgb.g, rgb.b);
 
     const PADDING: usize = 1;
     const CHECKERBOARD_SIZE: usize = 12;
@@ -60,15 +59,12 @@ fn show_color(color: Color) {
     canvas.draw_text(
         PADDING + 1,
         TEXT_POSITION_X,
-        &format!(
-            "Hex: #{:02x}{:02x}{:02x}",
-            color.red, color.green, color.blue
-        ),
+        &format!("Hex: #{:02x}{:02x}{:02x}", rgb.r, rgb.g, rgb.b),
     );
     canvas.draw_text(
         PADDING + 2,
         TEXT_POSITION_X,
-        &format!("RGB: rgb({},{},{})", color.red, color.green, color.blue),
+        &format!("RGB: rgb({},{},{})", rgb.r, rgb.g, rgb.b),
     );
     canvas.print();
 }

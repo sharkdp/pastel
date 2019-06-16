@@ -16,7 +16,6 @@ edition = "2018"
 # binary-only dependencies (see https://github.com/rust-lang/cargo/issues/1982)
 regex = "1"
 ansi_term = "0.9"
-palette = "0.4"
 
 [dependencies.clap]
 version = "2"
