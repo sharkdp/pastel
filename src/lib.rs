@@ -1,17 +1,13 @@
-type Scalar = f64;
+mod helper;
+mod types;
 
+use helper::{clamp, mod_positive};
+use types::Scalar;
+
+/// The hue of a color, represented by an angle (degrees).
 #[derive(Debug, Clone, Copy)]
 struct Hue {
     unclipped: Scalar,
-}
-
-/// Like `%`, but always positive.
-fn mod_positive(x: Scalar, y: Scalar) -> Scalar {
-    (x % y + y) % y
-}
-
-fn clamp(lower: Scalar, upper: Scalar, x: Scalar) -> Scalar {
-    Scalar::max(Scalar::min(upper, x), lower)
 }
 
 impl Hue {
@@ -29,6 +25,15 @@ impl Hue {
     }
 }
 
+/// The representation of a color.
+///
+/// Note:
+/// - Colors outside the sRGB gamut (which cannot be displayed on a typical
+///   computer screen) can not be represented by `Color`.
+/// - The `PartialEq` instance compares two `Color`s by comparing their (integer)
+///   RGB values. This is different from comparing the HSL values. For example,
+///   HSL has many different representations of black (arbitrary hue and
+///   saturation values).
 #[derive(Debug, Clone)]
 pub struct Color {
     hue: Hue,
@@ -47,6 +52,7 @@ impl Color {
         }
     }
 
+    ///
     pub fn from_hsl(hue: Scalar, saturation: Scalar, lightness: Scalar) -> Color {
         Self::from_hsla(hue, saturation, lightness, 1.0)
     }
@@ -90,10 +96,13 @@ impl Color {
         Self::from_hsla(hue, saturation, lightness, alpha)
     }
 
+    /// Create a `Color` from integer RGB values between 0 and 255.
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Color {
         Self::from_rgba(r, g, b, 1.0)
     }
 
+    /// Create a `Color` from RGB and alpha values between 0.0 and 1.0. Values outside this range
+    /// will be clamped.
     pub fn from_rgba_scaled(r: Scalar, g: Scalar, b: Scalar, alpha: Scalar) -> Color {
         let r = Scalar::round(clamp(0.0, 255.0, 255.0 * r)) as u8;
         let g = Scalar::round(clamp(0.0, 255.0, 255.0 * g)) as u8;
@@ -102,11 +111,15 @@ impl Color {
         Self::from_rgba(r, g, b, alpha)
     }
 
+    /// Create a `Color` from RGB values between 0.0 and 1.0. Values outside this range will be
+    /// clamped.
     pub fn from_rgb_scaled(r: Scalar, g: Scalar, b: Scalar) -> Color {
         Self::from_rgba_scaled(r, g, b, 1.0)
     }
 
-    /// Convert a `Color` to its hue, saturation, lightness and alpha values.
+    /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
+    /// in degrees, as a number between 0.0 and 360.0. Saturation, lightness and alpha are numbers
+    /// between 0.0 and 1.0.
     pub fn to_hsla(&self) -> HSLA {
         HSLA {
             h: self.hue.value(),
@@ -116,9 +129,8 @@ impl Color {
         }
     }
 
-    /// Convert a `Color` to its red, green, blue and alpha values. The RGB values
-    /// are integers in the range from 0 to 255. The alpha channel is a number
-    /// between 0.0 and 1.0.
+    /// Convert a `Color` to its red, green, blue and alpha values. The RGB values are integers in
+    /// the range from 0 to 255. The alpha channel is a number between 0.0 and 1.0.
     pub fn to_rgba(&self) -> RGBA<u8> {
         let c = self.to_rgba_scaled();
         let r = Scalar::round(255.0 * c.r) as u8;
@@ -133,6 +145,8 @@ impl Color {
         }
     }
 
+    /// Convert a `Color` to its red, green, blue and alpha values. All numbers are from the range
+    /// between 0.0 and 1.0.
     pub fn to_rgba_scaled(&self) -> RGBA<Scalar> {
         let h_s = self.hue.value() / 60.0;
         let chr = (1.0 - Scalar::abs(2.0 * self.lightness - 1.0)) * self.saturation;
@@ -163,12 +177,19 @@ impl Color {
         }
     }
 
+    /// Pure black.
     pub fn black() -> Color {
         Color::from_hsl(0.0, 0.0, 0.0)
     }
 
+    /// Pure white.
     pub fn white() -> Color {
         Color::from_hsl(0.0, 0.0, 1.0)
+    }
+
+    /// Create a gray tone from a lightness value (0.0 is black, 1.0 is white)
+    pub fn gray(lightness: Scalar) -> Color {
+        Color::from_hsl(0.0, 0.0, lightness)
     }
 }
 
