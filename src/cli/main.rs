@@ -1,4 +1,5 @@
 use ansi_term::Color as TermColor;
+use atty::Stream;
 use clap::{
     crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand,
 };
@@ -6,6 +7,8 @@ use clap::{
 mod canvas;
 mod parser;
 mod x11colors;
+
+use std::io::{self, BufRead};
 
 use crate::canvas::Canvas;
 use crate::parser::parse_color;
@@ -16,12 +19,18 @@ use pastel::Color;
 #[derive(Debug, PartialEq)]
 enum PastelError {
     ColorParseError,
+    CouldNotReadFromStdin,
+    ColorArgRequired,
 }
 
 impl PastelError {
     fn message(&self) -> &str {
         match self {
             PastelError::ColorParseError => "could not parse color",
+            PastelError::CouldNotReadFromStdin => "could not read color from standard input",
+            PastelError::ColorArgRequired => {
+                "Please provide a color argument on the command line or via a pipe"
+            }
         }
     }
 }
@@ -30,7 +39,7 @@ type Result<T> = std::result::Result<T, PastelError>;
 
 type ExitCode = i32;
 
-fn show_color(color: Color) {
+fn show_color_tty(color: Color) {
     let rgba = color.to_rgba();
     let hsla = color.to_hsla();
     let terminal_color = TermColor::RGB(rgba.r, rgba.g, rgba.b);
@@ -82,13 +91,24 @@ fn show_color(color: Color) {
     canvas.print();
 }
 
+fn show_color(color: Color) {
+    if atty::is(Stream::Stdout) {
+        show_color_tty(color);
+    } else {
+        let rgba = color.to_rgba();
+        println!("#{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b);
+    }
+}
+
 fn run() -> Result<ExitCode> {
     let color_arg = Arg::with_name("color")
         .help(
             "Color argument. Can be specified in many different formats, \
-             such as RRGGBB, 'rgb(…,…,…)', 'hsl(…,…,…)' or as a color name.",
+             such as RRGGBB, 'rgb(…,…,…)', 'hsl(…,…,…)' or as a color name. \
+             If the color argument is not specified, the color will be read \
+             from standard input.",
         )
-        .required(true);
+        .required(false);
     let app = App::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
@@ -114,9 +134,22 @@ fn run() -> Result<ExitCode> {
     let global_matches = app.get_matches();
 
     let color_arg = |matches: &ArgMatches| -> Result<Color> {
-        let color_arg = matches.value_of("color").unwrap();
-        let color = parse_color(color_arg).ok_or(PastelError::ColorParseError)?;
-        Ok(color)
+        if let Some(color_arg) = matches.value_of("color") {
+            Ok(parse_color(color_arg).ok_or(PastelError::ColorParseError)?)
+        } else {
+            if atty::is(Stream::Stdin) {
+                return Err(PastelError::ColorArgRequired);
+            }
+
+            let stdin = io::stdin();
+            let mut lock = stdin.lock();
+
+            let mut color_str = String::new();
+            lock.read_line(&mut color_str)
+                .map_err(|_| PastelError::CouldNotReadFromStdin)?;
+
+            Ok(parse_color(&color_str).ok_or(PastelError::ColorParseError)?)
+        }
     };
 
     if let Some(matches) = global_matches.subcommand_matches("show") {
@@ -136,7 +169,11 @@ fn main() {
     let result = run();
     match result {
         Err(err) => {
-            eprintln!("Error: {}", err.message());
+            eprintln!(
+                "{}: {}",
+                TermColor::Red.paint("[pastel error]"),
+                err.message()
+            );
             std::process::exit(1);
         }
         Ok(exit_code) => {
