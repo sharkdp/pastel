@@ -377,6 +377,17 @@ impl Color {
             Self::white()
         }
     }
+
+    /// Compute the perceived 'distance' between two colors according to the CIE76 delta-E
+    /// standard. A distance below ~2.3 is not noticable.
+    ///
+    /// See: https://en.wikipedia.org/wiki/Color_difference
+    pub fn distance(&self, other: &Color) -> Scalar {
+        let c1 = self.to_lab();
+        let c2 = other.to_lab();
+
+        ((c1.l - c2.l).powi(2) + (c1.a - c2.a).powi(2) + (c1.b - c2.b).powi(2)).sqrt()
+    }
 }
 
 impl PartialEq for Color {
@@ -636,5 +647,15 @@ mod tests {
     fn test_text_color() {
         assert_eq!(Color::white(), Color::graytone(0.4).text_color());
         assert_eq!(Color::black(), Color::graytone(0.6).text_color());
+    }
+
+    #[test]
+    fn test_distance() {
+        let c = Color::from_rgb(255, 127, 14);
+        assert_eq!(0.0, c.distance(&c));
+
+        let c1 = Color::from_rgb(50, 100, 200);
+        let c2 = Color::from_rgb(200, 10, 0);
+        assert_eq!(123.0, c1.distance(&c2).round());
     }
 }
