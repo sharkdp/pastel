@@ -195,8 +195,7 @@ impl Color {
 
 impl PartialEq for Color {
     fn eq(&self, other: &Color) -> bool {
-        dbg!(other);
-        dbg!(self.to_rgba()) == dbg!(other.to_rgba())
+        self.to_rgba() == other.to_rgba()
     }
 }
 
