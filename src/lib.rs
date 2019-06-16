@@ -240,6 +240,26 @@ impl Color {
     pub fn desaturate(&self, f: Scalar) -> Color {
         self.saturate(-f)
     }
+
+    /// The percieved brightness of the color (A number between 0.0 and 1.0).
+    ///
+    /// See: https://www.w3.org/TR/AERT#color-contrast
+    pub fn brightness(&self) -> Scalar {
+        let c = self.to_rgba_scaled();
+        (299.0 * c.r + 587.0 * c.g + 114.0 * c.b) / 1000.0
+    }
+
+    /// Determine whether a color is perceived as a light color (perceived brightness is larger
+    /// than 0.5).
+    pub fn is_light(&self) -> bool {
+        self.brightness() > 0.5
+    }
+
+    /// Return a readable foreground text color (either `black` or `white`) for a
+    /// given background color.
+    pub fn text_color(&self) -> Color {
+        if self.is_light() { Self::black() } else { Self::white() }
+    }
 }
 
 impl PartialEq for Color {
@@ -418,5 +438,18 @@ mod tests {
             Color::from_hsl(90.0, 0.5, 1.0),
             Color::from_hsl(90.0, 0.5, 0.3).lighten(0.8)
         );
+    }
+
+    #[test]
+    fn test_brightness() {
+        assert_eq!(0.0, Color::black().brightness());
+        assert_eq!(1.0, Color::white().brightness());
+        assert_eq!(0.5, Color::gray(0.5).brightness());
+    }
+
+    #[test]
+    fn test_text_color() {
+        assert_eq!(Color::white(), Color::gray(0.4).text_color());
+        assert_eq!(Color::black(), Color::gray(0.6).text_color());
     }
 }
