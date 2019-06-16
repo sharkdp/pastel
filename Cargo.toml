@@ -25,3 +25,6 @@ features = ["suggestions", "color", "wrap_help"]
 [[bin]]
 name = "pastel"
 path = "src/cli/main.rs"
+
+[dev-dependencies]
+approx = "0.3"
