@@ -247,7 +247,17 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("complement")
                 .about("Get the complementary color (hue rotated by 180°)")
-                .long_about("Compute the complementary color by rotating the hue channel by 180°.")
+                .long_about("Compute the complementary color by rotating the HSL hue channel by 180°.")
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
+            SubCommand::with_name("to-gray")
+                .about("Completely desaturate a color (while preserving luminance)")
+                .long_about(
+                    "Completely desaturate the given color while preserving the luminance.\n\
+                     \n\
+                     For a definition of 'luminance', see:\n\n  \
+                       https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef")
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -310,6 +320,9 @@ fn run() -> Result<ExitCode> {
     } else if let Some(matches) = global_matches.subcommand_matches("complement") {
         let color = color_arg(matches)?;
         show_color(color.complementary());
+    } else if let Some(matches) = global_matches.subcommand_matches("to-gray") {
+        let color = color_arg(matches)?;
+        show_color(color.to_gray());
     } else if let Some(matches) = global_matches.subcommand_matches("list") {
         let sort_order = matches.value_of("sort").unwrap();
         show_color_list(sort_order);
