@@ -192,7 +192,7 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("saturate")
                 .long_about(
-                    "Increase the saturation of a color by adding a certain amount to the \
+                    "Increase the saturation of a color by adding a certain amount to the HSL \
                      saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
                      the color will be desaturated."
                 )
@@ -205,8 +205,10 @@ fn run() -> Result<ExitCode> {
                 .about("Decrease color saturation by a specified amount")
                 .long_about(
                     "Decrease the saturation of a color by subtracting a certain amount from the \
-                     saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
-                     the color will be saturated."
+                     HSL saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
+                     the color will be saturated.
+
+                     See also: to-gray"
                 )
                 .arg(Arg::with_name("amount").help("amount of saturation to subtract").required(true))
                 .arg(color_arg.clone()),
@@ -214,8 +216,9 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("lighten")
                 .long_about(
-                    "Lighten a color by adding a certain amount to the lightness channel (a number \
-                     between 0.0 and 1.0). If the amount is negative, the color will be darkened.",
+                    "Lighten a color by adding a certain amount to the HSL lightness channel (a \
+                     number between 0.0 and 1.0). If the amount is negative, the color will be \
+                     darkened.",
                 )
                 .about("Lighten color by a specified amount")
                 .arg(Arg::with_name("amount").help("amount of lightness to add").required(true))
@@ -235,9 +238,9 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("rotate")
                 .about("Rotate the hue channel by a specified angle")
-                .long_about("Rotate the hue channel of a color by the specified angle (in degrees). \
-                             A rotation by 180° returns the complementary color. A rotation by 360° \
-                             returns to the original color.")
+                .long_about("Rotate the HSL hue channel of a color by the specified angle (in \
+                             degrees). A rotation by 180° returns the complementary color. A \
+                             rotation by 360° returns to the original color.")
                 .arg(Arg::with_name("degrees").help("angle by which to rotate (in degrees)").required(true))
                 .arg(color_arg.clone()),
         )
