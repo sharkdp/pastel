@@ -248,7 +248,7 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("list")
                 .about("Print a list of available color names")
-                .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "hue", "chroma"]).default_value("name"))
+                .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "hue", "chroma"]).default_value("hue"))
         );
 
     let global_matches = app.get_matches();
