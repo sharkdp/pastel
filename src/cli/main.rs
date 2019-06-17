@@ -134,6 +134,8 @@ fn show_color_list(sort_order: &str) {
     let mut colors: Vec<&NamedColor> = X11_COLORS.iter().map(|r| r).collect();
     if sort_order == "brightness" {
         colors.sort_by_key(|nc| (-nc.color.brightness() * 1000.0) as i32);
+    } else if sort_order == "luminance" {
+        colors.sort_by_key(|nc| (-nc.color.luminance() * 1000.0) as i32);
     } else if sort_order == "hue" {
         colors.sort_by_key(|nc| (nc.color.to_lch().h * 1000.0) as i32);
     } else if sort_order == "chroma" {
@@ -248,7 +250,7 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("list")
                 .about("Print a list of available color names")
-                .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "hue", "chroma"]).default_value("hue"))
+                .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "luminance", "hue", "chroma"]).default_value("hue"))
         );
 
     let global_matches = app.get_matches();
