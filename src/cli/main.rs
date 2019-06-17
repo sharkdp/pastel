@@ -1,25 +1,24 @@
 use ansi_term::Color as TermColor;
 use atty::Stream;
 use clap::{
-    crate_description, crate_name, crate_version, App, AppSettings, Arg, ArgMatches, SubCommand,
+    crate_description, crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgMatches,
+    SubCommand,
 };
 
 mod app;
 mod hdcanvas;
 mod parser;
 mod termcolor;
+mod utility;
 mod x11colors;
 
 use std::io::{self, BufRead};
 
-use crate::hdcanvas::Canvas;
 use crate::parser::parse_color;
 
 use pastel::Color;
 
-use app::show_color_tty;
-use termcolor::to_termcolor;
-use x11colors::{NamedColor, X11_COLORS};
+use app::App;
 
 #[derive(Debug, PartialEq)]
 enum PastelError {
@@ -46,77 +45,6 @@ type Result<T> = std::result::Result<T, PastelError>;
 
 type ExitCode = i32;
 
-fn show_color(color: Color) {
-    if atty::is(Stream::Stdout) {
-        show_color_tty(color);
-    } else {
-        let rgba = color.to_rgba();
-        println!("#{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b);
-    }
-}
-
-fn show_spectrum() {
-    const PADDING: usize = 3;
-    const WIDTH: usize = 40;
-
-    let mut canvas = Canvas::new(WIDTH + 2 * PADDING, WIDTH + 2 * PADDING);
-    canvas.draw_rect(
-        PADDING - 1,
-        PADDING - 1,
-        WIDTH + 2,
-        WIDTH + 2,
-        TermColor::RGB(100, 100, 100),
-    );
-
-    for y in 0..WIDTH {
-        for x in 0..WIDTH {
-            let rx = (x as f64) / (WIDTH as f64);
-            let ry = (y as f64) / (WIDTH as f64);
-
-            let h = 360.0 * rx;
-            let s = 0.6;
-            let l = 0.81 * ry + 0.05;
-
-            // Start with HSL
-            let color = Color::from_hsl(h, s, l);
-
-            // But (slightly) normalize the luminance
-            let mut lch = color.to_lch();
-            lch.l = (lch.l + ry * 100.0) / 2.0;
-            let color = Color::from_lch(lch.l, lch.c, lch.h);
-
-            canvas.draw_rect(PADDING + y, PADDING + x, 1, 1, to_termcolor(&color));
-        }
-    }
-
-    canvas.print();
-}
-
-fn show_color_list(sort_order: &str) {
-    let mut colors: Vec<&NamedColor> = X11_COLORS.iter().map(|r| r).collect();
-    if sort_order == "brightness" {
-        colors.sort_by_key(|nc| (-nc.color.brightness() * 1000.0) as i32);
-    } else if sort_order == "luminance" {
-        colors.sort_by_key(|nc| (-nc.color.luminance() * 1000.0) as i32);
-    } else if sort_order == "hue" {
-        colors.sort_by_key(|nc| (nc.color.to_lch().h * 1000.0) as i32);
-    } else if sort_order == "chroma" {
-        colors.sort_by_key(|nc| (nc.color.to_lch().c * 1000.0) as i32);
-    }
-    colors.dedup_by(|n1, n2| n1.color == n2.color);
-
-    for nc in colors {
-        let bg = &nc.color;
-        let fg = bg.text_color();
-        println!(
-            "{}",
-            to_termcolor(&fg)
-                .on(to_termcolor(&bg))
-                .paint(format!(" {:24}", nc.name))
-        );
-    }
-}
-
 fn run() -> Result<ExitCode> {
     let color_arg = Arg::with_name("color")
         .help(
@@ -134,7 +62,7 @@ fn run() -> Result<ExitCode> {
              \n  - 'hsl(128, 100%, 54%)'",
         )
         .required(false);
-    let app = App::new(crate_name!())
+    let app = ClapApp::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
         .global_setting(AppSettings::ColoredHelp)
@@ -261,40 +189,42 @@ fn run() -> Result<ExitCode> {
             .map_err(|_| PastelError::CouldNotParseNumber)
     };
 
+    let app = App::new();
+
     if let Some(matches) = global_matches.subcommand_matches("show") {
         let color = color_arg(matches)?;
-        show_color(color);
+        app.show_color(color);
     } else if let Some(_) = global_matches.subcommand_matches("pick") {
-        show_spectrum();
+        app.show_spectrum();
     } else if let Some(matches) = global_matches.subcommand_matches("saturate") {
         let amount = number_arg(matches, "amount")?;
         let color = color_arg(matches)?;
-        show_color(color.saturate(amount));
+        app.show_color(color.saturate(amount));
     } else if let Some(matches) = global_matches.subcommand_matches("desaturate") {
         let amount = number_arg(matches, "amount")?;
         let color = color_arg(matches)?;
-        show_color(color.desaturate(amount));
+        app.show_color(color.desaturate(amount));
     } else if let Some(matches) = global_matches.subcommand_matches("lighten") {
         let amount = number_arg(matches, "amount")?;
         let color = color_arg(matches)?;
-        show_color(color.lighten(amount));
+        app.show_color(color.lighten(amount));
     } else if let Some(matches) = global_matches.subcommand_matches("darken") {
         let amount = number_arg(matches, "amount")?;
         let color = color_arg(matches)?;
-        show_color(color.darken(amount));
+        app.show_color(color.darken(amount));
     } else if let Some(matches) = global_matches.subcommand_matches("rotate") {
         let degrees = number_arg(matches, "degrees")?;
         let color = color_arg(matches)?;
-        show_color(color.rotate_hue(degrees));
+        app.show_color(color.rotate_hue(degrees));
     } else if let Some(matches) = global_matches.subcommand_matches("complement") {
         let color = color_arg(matches)?;
-        show_color(color.complementary());
+        app.show_color(color.complementary());
     } else if let Some(matches) = global_matches.subcommand_matches("to-gray") {
         let color = color_arg(matches)?;
-        show_color(color.to_gray());
+        app.show_color(color.to_gray());
     } else if let Some(matches) = global_matches.subcommand_matches("list") {
         let sort_order = matches.value_of("sort").unwrap();
-        show_color_list(sort_order);
+        app.show_color_list(sort_order);
     } else {
         unreachable!("Unknown subcommand");
     }
