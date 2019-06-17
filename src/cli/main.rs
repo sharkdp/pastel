@@ -187,7 +187,7 @@ fn show_color_list(sort_order: &str) {
             "{}",
             to_termcolor(&fg)
                 .on(to_termcolor(&bg))
-                .paint(format!("{:25}", nc.name))
+                .paint(format!(" {:24}", nc.name))
         );
     }
 }
