@@ -130,6 +130,43 @@ fn show_color(color: Color) {
     }
 }
 
+fn show_spectrum() {
+    const PADDING: usize = 3;
+    const WIDTH: usize = 40;
+
+    let mut canvas = Canvas::new(WIDTH + 2 * PADDING, WIDTH + 2 * PADDING);
+    canvas.draw_rect(
+        PADDING - 1,
+        PADDING - 1,
+        WIDTH + 2,
+        WIDTH + 2,
+        TermColor::RGB(100, 100, 100),
+    );
+
+    for y in 0..WIDTH {
+        for x in 0..WIDTH {
+            let rx = (x as f64) / (WIDTH as f64);
+            let ry = (y as f64) / (WIDTH as f64);
+
+            let h = 360.0 * rx;
+            let s = 0.6;
+            let l = 0.81 * ry + 0.05;
+
+            // Start with HSL
+            let color = Color::from_hsl(h, s, l);
+
+            // But (slightly) normalize the luminance
+            let mut lch = color.to_lch();
+            lch.l = (lch.l + ry * 100.0) / 2.0;
+            let color = Color::from_lch(lch.l, lch.c, lch.h);
+
+            canvas.draw_rect(PADDING + y, PADDING + x, 1, 1, to_termcolor(&color));
+        }
+    }
+
+    canvas.print();
+}
+
 fn show_color_list(sort_order: &str) {
     let mut colors: Vec<&NamedColor> = X11_COLORS.iter().map(|r| r).collect();
     if sort_order == "brightness" {
@@ -187,6 +224,11 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("show")
                 .about("Display information about the given color on the terminal")
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
+            SubCommand::with_name("pick")
+                .about("Print a spectrum of colors to choose from")
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -297,6 +339,8 @@ fn run() -> Result<ExitCode> {
     if let Some(matches) = global_matches.subcommand_matches("show") {
         let color = color_arg(matches)?;
         show_color(color);
+    } else if let Some(_) = global_matches.subcommand_matches("pick") {
+        show_spectrum();
     } else if let Some(matches) = global_matches.subcommand_matches("saturate") {
         let amount = number_arg(matches, "amount")?;
         let color = color_arg(matches)?;
