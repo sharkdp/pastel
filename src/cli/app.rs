@@ -8,11 +8,17 @@ use crate::termcolor::to_termcolor;
 use crate::utility::similar_colors;
 use crate::x11colors::{NamedColor, X11_COLORS};
 
-pub struct App {}
+pub struct App {
+    padding: usize,
+    colorpicker_width: usize,
+}
 
 impl App {
     pub fn new() -> App {
-        App {}
+        App {
+            padding: 2,
+            colorpicker_width: 40,
+        }
     }
 
     pub fn show_color_tty(&self, color: Color) {
@@ -20,44 +26,43 @@ impl App {
         let hsla = color.to_hsla();
         let terminal_color = to_termcolor(&color);
 
-        const PADDING: usize = 2;
-        const CHECKERBOARD_SIZE: usize = 20;
-        const COLOR_PANEL_SIZE: usize = 14;
+        let checkerboard_size: usize = 20;
+        let color_panel_size: usize = 14;
 
-        const COLOR_PANEL_POSITION: usize = PADDING + (CHECKERBOARD_SIZE - COLOR_PANEL_SIZE) / 2;
-        const TEXT_POSITION_X: usize = CHECKERBOARD_SIZE + 2 * PADDING;
-        const TEXT_POSITION_Y: usize = PADDING + 2;
+        let color_panel_position: usize = self.padding + (checkerboard_size - color_panel_size) / 2;
+        let text_position_x: usize = checkerboard_size + 2 * self.padding;
+        let text_position_y: usize = self.padding + 2;
 
-        let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 55);
+        let mut canvas = Canvas::new(2 * self.padding + checkerboard_size, 55);
         canvas.draw_checkerboard(
-            PADDING,
-            PADDING,
-            CHECKERBOARD_SIZE,
-            CHECKERBOARD_SIZE,
+            self.padding,
+            self.padding,
+            checkerboard_size,
+            checkerboard_size,
             TermColor::RGB(240, 240, 240),
             TermColor::RGB(180, 180, 180),
         );
         canvas.draw_rect(
-            COLOR_PANEL_POSITION,
-            COLOR_PANEL_POSITION,
-            COLOR_PANEL_SIZE,
-            COLOR_PANEL_SIZE,
+            color_panel_position,
+            color_panel_position,
+            color_panel_size,
+            color_panel_size,
             terminal_color,
         );
 
         canvas.draw_text(
-            TEXT_POSITION_Y + 0,
-            TEXT_POSITION_X,
+            text_position_y + 0,
+            text_position_x,
             &format!("Hex: #{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b),
         );
         canvas.draw_text(
-            TEXT_POSITION_Y + 2,
-            TEXT_POSITION_X,
+            text_position_y + 2,
+            text_position_x,
             &format!("RGB: rgb({},{},{})", rgba.r, rgba.g, rgba.b),
         );
         canvas.draw_text(
-            TEXT_POSITION_Y + 4,
-            TEXT_POSITION_X,
+            text_position_y + 4,
+            text_position_x,
             &format!(
                 "HSL: hsl({:.0},{:.0}%,{:.0}%)",
                 hsla.h,
@@ -65,13 +70,13 @@ impl App {
                 100.0 * hsla.l
             ),
         );
-        canvas.draw_text(TEXT_POSITION_Y + 8, TEXT_POSITION_X, "Most similar:");
+        canvas.draw_text(text_position_y + 8, text_position_x, "Most similar:");
         let similar = similar_colors(&color);
         for (i, nc) in similar.iter().enumerate().take(3) {
-            canvas.draw_text(TEXT_POSITION_Y + 10 + 2 * i, TEXT_POSITION_X + 7, nc.name);
+            canvas.draw_text(text_position_y + 10 + 2 * i, text_position_x + 7, nc.name);
             canvas.draw_rect(
-                TEXT_POSITION_Y + 10 + 2 * i,
-                TEXT_POSITION_X + 1,
+                text_position_y + 10 + 2 * i,
+                text_position_x + 1,
                 2,
                 5,
                 to_termcolor(&nc.color),
@@ -91,22 +96,21 @@ impl App {
     }
 
     pub fn show_spectrum(&self) {
-        const PADDING: usize = 3;
-        const WIDTH: usize = 40;
+        let width = self.colorpicker_width;
 
-        let mut canvas = Canvas::new(WIDTH + 2 * PADDING, WIDTH + 2 * PADDING);
+        let mut canvas = Canvas::new(width + 2 * self.padding, width + 2 * self.padding);
         canvas.draw_rect(
-            PADDING - 1,
-            PADDING - 1,
-            WIDTH + 2,
-            WIDTH + 2,
+            self.padding,
+            self.padding,
+            width + 2,
+            width + 2,
             TermColor::RGB(100, 100, 100),
         );
 
-        for y in 0..WIDTH {
-            for x in 0..WIDTH {
-                let rx = (x as f64) / (WIDTH as f64);
-                let ry = (y as f64) / (WIDTH as f64);
+        for y in 0..width {
+            for x in 0..width {
+                let rx = (x as f64) / (width as f64);
+                let ry = (y as f64) / (width as f64);
 
                 let h = 360.0 * rx;
                 let s = 0.6;
@@ -120,7 +124,7 @@ impl App {
                 lch.l = (lch.l + ry * 100.0) / 2.0;
                 let color = Color::from_lch(lch.l, lch.c, lch.h);
 
-                canvas.draw_rect(PADDING + y, PADDING + x, 1, 1, to_termcolor(&color));
+                canvas.draw_rect(self.padding + y + 1, self.padding + x + 1, 1, 1, to_termcolor(&color));
             }
         }
 
