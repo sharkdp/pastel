@@ -68,7 +68,7 @@ fn show_color_tty(color: Color) {
     const TEXT_POSITION_X: usize = CHECKERBOARD_SIZE + 2 * PADDING;
     const TEXT_POSITION_Y: usize = PADDING + 2;
 
-    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 80);
+    let mut canvas = Canvas::new(2 * PADDING + CHECKERBOARD_SIZE, 55);
     canvas.draw_checkerboard(
         PADDING,
         PADDING,
