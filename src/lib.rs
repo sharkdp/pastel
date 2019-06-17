@@ -382,6 +382,14 @@ impl Color {
         self.saturate(-f)
     }
 
+    /// Convert a color to a gray tone with the same perceived luminance (see `luminance`).
+    pub fn to_gray(&self) -> Color {
+        let c = self.to_lch();
+
+        // the desaturation step is only needed to correct minor rounding errors.
+        Color::from_lch(c.l, 0.0, 0.0).desaturate(1.0)
+    }
+
     /// The percieved brightness of the color (A number between 0.0 and 1.0).
     ///
     /// See: https://www.w3.org/TR/AERT#color-contrast
@@ -394,6 +402,26 @@ impl Color {
     /// than 0.5).
     pub fn is_light(&self) -> bool {
         self.brightness() > 0.5
+    }
+
+    /// The relative brightness of a color (normalized to 0.0 for darkest black
+    /// and 1.0 for lightest white), according to the WCAG definition.
+    ///
+    /// See: https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+    pub fn luminance(&self) -> Scalar {
+        fn f(s: Scalar) -> Scalar {
+            if s <= 0.03928 {
+                s / 12.92
+            } else {
+                Scalar::powf((s + 0.055) / 1.055, 2.4)
+            }
+        };
+        let c = self.to_rgba_scaled();
+        let r = f(c.r);
+        let g = f(c.g);
+        let b = f(c.b);
+
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 
     /// Return a readable foreground text color (either `black` or `white`) for a
@@ -692,10 +720,31 @@ mod tests {
     }
 
     #[test]
+    fn test_to_gray() {
+        let salmon = Color::from_rgb(250, 128, 114);
+        assert_eq!(0.0, salmon.to_gray().to_hsla().s);
+        assert_relative_eq!(
+            salmon.luminance(),
+            salmon.to_gray().luminance(),
+            max_relative = 0.01
+        );
+
+        assert_eq!(Color::graytone(0.3), Color::graytone(0.3).to_gray());
+    }
+
+    #[test]
     fn test_brightness() {
         assert_eq!(0.0, Color::black().brightness());
         assert_eq!(1.0, Color::white().brightness());
         assert_eq!(0.5, Color::graytone(0.5).brightness());
+    }
+
+    #[test]
+    fn test_luminance() {
+        assert_eq!(1.0, Color::white().luminance());
+        let hotpink = Color::from_rgb(255, 105, 180);
+        assert_relative_eq!(0.347, hotpink.luminance(), max_relative = 0.01);
+        assert_eq!(0.0, Color::black().luminance());
     }
 
     #[test]
