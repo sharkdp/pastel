@@ -101,21 +101,25 @@ pub fn parse_color(color: &str) -> Option<Color> {
         };
     }
 
-    // 255,0,119
-    let re_rgb2 = Regex::new(
+    // RRRGGGBBB without the `rgb(...)` function: 255,0,119
+    let re_rgb_nofunction = Regex::new(
         r"(?x)
             ^
             ([0-9]{1,3})
+            \s*
             ,
+            \s*
             ([0-9]{1,3})
+            \s*
             ,
+            \s*
             ([0-9]{1,3})
             $
         ",
     )
     .unwrap();
 
-    if let Some(caps) = re_rgb2.captures(color) {
+    if let Some(caps) = re_rgb_nofunction.captures(color) {
         let mr = dec_to_u8(caps.get(1).unwrap().as_str());
         let mg = dec_to_u8(caps.get(2).unwrap().as_str());
         let mb = dec_to_u8(caps.get(3).unwrap().as_str());
@@ -206,6 +210,7 @@ fn parse_rgb() {
         parse_color("  rgb( 255  ,  8  ,  119 )  ")
     );
     assert_eq!(Some(rgb(255, 0, 119)), parse_color("255,0,119"));
+    assert_eq!(Some(rgb(255, 0, 119)), parse_color("  255  ,  0  ,  119  "));
     assert_eq!(Some(rgb(1, 2, 3)), parse_color("1,2,3"));
 
     assert_eq!(None, parse_color("rgb(256,0,0)"));
