@@ -117,7 +117,13 @@ impl App {
                 lch.l = (lch.l + ry * 100.0) / 2.0;
                 let color = Color::from_lch(lch.l, lch.c, lch.h);
 
-                canvas.draw_rect(self.padding + y + 1, self.padding + x + 1, 1, 1, to_termcolor(&color));
+                canvas.draw_rect(
+                    self.padding + y + 1,
+                    self.padding + x + 1,
+                    1,
+                    1,
+                    to_termcolor(&color),
+                );
             }
         }
 
