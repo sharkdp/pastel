@@ -21,6 +21,32 @@ fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
         .map_err(|_| PastelError::CouldNotParseNumber)
 }
 
+fn color_args(matches: &ArgMatches) -> Result<Vec<Color>> {
+    if let Some(color_args) = matches.values_of("color") {
+        color_args
+            .map(|c| parse_color(c).ok_or(PastelError::ColorParseError))
+            .collect()
+    } else {
+        if atty::is(Stream::Stdin) {
+            return Err(PastelError::ColorArgRequired);
+        }
+
+        let stdin = io::stdin();
+        let lock = stdin.lock();
+
+        let colors = lock
+            .lines()
+            .map(|line| parse_color(&line.unwrap()).ok_or(PastelError::ColorParseError))
+            .collect::<Result<Vec<_>>>()?;
+
+        if colors.is_empty() {
+            return Err(PastelError::CouldNotReadFromStdin);
+        }
+
+        Ok(colors)
+    }
+}
+
 use crate::Result;
 
 pub trait GenericCommand {
@@ -286,27 +312,11 @@ impl Command {
         match self {
             Command::Generic(cmd) => cmd.run(matches, config),
             Command::WithColor(cmd) => {
-                let color_arg = |matches: &ArgMatches| -> Result<Color> {
-                    if let Some(color_arg) = matches.value_of("color") {
-                        Ok(parse_color(color_arg).ok_or(PastelError::ColorParseError)?)
-                    } else {
-                        if atty::is(Stream::Stdin) {
-                            return Err(PastelError::ColorArgRequired);
-                        }
+                for color in color_args(matches)? {
+                    cmd.run(matches, config, &color)?;
+                }
 
-                        let stdin = io::stdin();
-                        let mut lock = stdin.lock();
-
-                        let mut color_str = String::new();
-                        lock.read_line(&mut color_str)
-                            .map_err(|_| PastelError::CouldNotReadFromStdin)?;
-
-                        Ok(parse_color(&color_str).ok_or(PastelError::ColorParseError)?)
-                    }
-                };
-
-                let color = color_arg(matches)?;
-                cmd.run(matches, config, &color)
+                Ok(())
             }
         }
     }

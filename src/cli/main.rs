@@ -32,7 +32,8 @@ fn run() -> Result<ExitCode> {
              \n  - 'rgb(216, 180, 140)'\
              \n  - 'hsl(128, 100%, 54%)'",
         )
-        .required(false);
+        .required(false)
+        .multiple(true);
     let app = App::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
