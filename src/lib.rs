@@ -450,7 +450,7 @@ impl Color {
         let g = f(c.g);
         let b = f(c.b);
 
-        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        0.2126 * r + 0.7152 * g + 0.0722 * b
     }
 
     /// Return a readable foreground text color (either `black` or `white`) for a
