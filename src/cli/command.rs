@@ -2,7 +2,7 @@ use ansi_term::Color as TermColor;
 use atty::Stream;
 use clap::ArgMatches;
 
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, Write};
 
 use pastel::Color;
 
@@ -142,7 +142,7 @@ pub fn show_color_tty(config: &Config, color: &Color) {
 }
 
 pub fn show_color(config: &Config, color: &Color) {
-    if atty::is(Stream::Stdout) {
+    if config.interactive_mode {
         show_color_tty(config, color);
     } else {
         println!("{}", color.to_hsl_string());
@@ -255,7 +255,7 @@ color_command!(ToGrayCommand, _matches, color, { color.to_gray() });
 struct ListCommand;
 
 impl GenericCommand for ListCommand {
-    fn run(&self, matches: &ArgMatches, _: &Config) -> Result<()> {
+    fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
         let sort_order = matches.value_of("sort").expect("required argument");
 
         let mut colors: Vec<&NamedColor> = X11_COLORS.iter().map(|r| r).collect();
@@ -270,15 +270,26 @@ impl GenericCommand for ListCommand {
         }
         colors.dedup_by(|n1, n2| n1.color == n2.color);
 
-        for nc in colors {
-            let bg = &nc.color;
-            let fg = bg.text_color();
-            println!(
-                "{}",
-                fg.to_termcolor()
-                    .on(bg.to_termcolor())
-                    .paint(format!(" {:24}", nc.name))
-            );
+        if config.interactive_mode {
+            for nc in colors {
+                let bg = &nc.color;
+                let fg = bg.text_color();
+                println!(
+                    "{}",
+                    fg.to_termcolor()
+                        .on(bg.to_termcolor())
+                        .paint(format!(" {:24}", nc.name))
+                );
+            }
+        } else {
+            let stdout = io::stdout();
+            let mut out = stdout.lock();
+            for nc in colors {
+                let res = writeln!(out, "{}", nc.name);
+                if res.is_err() {
+                    break;
+                }
+            }
         }
 
         Ok(())

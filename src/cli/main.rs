@@ -1,4 +1,5 @@
 use ansi_term::Color as TermColor;
+use atty::Stream;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
 mod command;
@@ -142,7 +143,8 @@ fn run() -> Result<ExitCode> {
     let global_matches = app.get_matches();
 
     if let (subcommand, Some(matches)) = global_matches.subcommand() {
-        let config = Config::new();
+        let interactive_mode = atty::is(Stream::Stdout);
+        let config = Config::new(interactive_mode);
         let command = Command::from_string(subcommand);
         command.execute(matches, &config)?;
     } else {
