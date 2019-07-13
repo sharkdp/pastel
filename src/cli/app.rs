@@ -86,8 +86,7 @@ impl App {
         if atty::is(Stream::Stdout) {
             self.show_color_tty(color);
         } else {
-            let rgba = color.to_rgba();
-            println!("#{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b);
+            println!("{}", color.to_hsl_string());
         }
     }
 
