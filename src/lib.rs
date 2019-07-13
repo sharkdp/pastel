@@ -196,6 +196,16 @@ impl Color {
         }
     }
 
+    /// Format the color as a HSL-representation string (`hsl(123, 50%, 80%)`).
+    pub fn to_hsl_string(&self) -> String {
+        format!(
+            "hsl({:.0}, {:.0}%, {:.0}%)",
+            self.hue.value(),
+            100.0 * self.saturation,
+            100.0 * self.lightness
+        )
+    }
+
     /// Convert a `Color` to its red, green, blue and alpha values. The RGB values are integers in
     /// the range from 0 to 255. The alpha channel is a number between 0.0 and 1.0.
     pub fn to_rgba(&self) -> RGBA<u8> {
@@ -210,6 +220,18 @@ impl Color {
             b,
             alpha: self.alpha,
         }
+    }
+
+    /// Format the color as a RGB-representation string (`rgb(255, 127,  0)`).
+    pub fn to_rgb_string(&self) -> String {
+        let rgba = self.to_rgba();
+        format!("rgb({}, {}, {})", rgba.r, rgba.g, rgba.b)
+    }
+
+    /// Format the color as a RGB-representation string (`#fc0070`).
+    pub fn to_rgb_hex_string(&self) -> String {
+        let rgba = self.to_rgba();
+        format!("#{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b)
     }
 
     /// Convert a `Color` to its red, green, blue and alpha values. All numbers are from the range
@@ -761,5 +783,23 @@ mod tests {
         let c1 = Color::from_rgb(50, 100, 200);
         let c2 = Color::from_rgb(200, 10, 0);
         assert_eq!(123.0, c1.distance(&c2).round());
+    }
+
+    #[test]
+    fn test_to_hsl_string() {
+        let c = Color::from_hsl(91.3, 0.54, 0.98);
+        assert_eq!("hsl(91, 54%, 98%)", c.to_hsl_string());
+    }
+
+    #[test]
+    fn test_to_rgb_string() {
+        let c = Color::from_rgb(255, 127, 4);
+        assert_eq!("rgb(255, 127, 4)", c.to_rgb_string());
+    }
+
+    #[test]
+    fn test_to_rgb_hex_string() {
+        let c = Color::from_rgb(255, 127, 4);
+        assert_eq!("#ff7f04", c.to_rgb_hex_string());
     }
 }
