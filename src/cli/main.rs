@@ -159,6 +159,11 @@ fn run() -> Result<ExitCode> {
             SubCommand::with_name("list")
                 .about("Print a list of available color names")
                 .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "luminance", "hue", "chroma"]).default_value("hue"))
+        )
+        .subcommand(
+            SubCommand::with_name("format")
+                .about("Print a list of available color names")
+                .arg(Arg::with_name("type").help("Format type").possible_values(&["rgb", "hsl", "hex"]).required(true))
         );
 
     let global_matches = app.get_matches();
@@ -225,6 +230,10 @@ fn run() -> Result<ExitCode> {
     } else if let Some(matches) = global_matches.subcommand_matches("list") {
         let sort_order = matches.value_of("sort").unwrap();
         app.show_color_list(sort_order);
+    } else if let Some(matches) = global_matches.subcommand_matches("format") {
+        let color = color_arg(matches)?;
+        let format_type = matches.value_of("type").expect("required argument");
+        app.format(format_type, color);
     } else {
         unreachable!("Unknown subcommand");
     }

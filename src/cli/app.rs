@@ -154,4 +154,21 @@ impl App {
             );
         }
     }
+
+    pub fn format(&self, format_type: &str, color: Color) {
+        match format_type {
+            "rgb" => {
+                println!("{}", color.to_rgb_string());
+            }
+            "hsl" => {
+                println!("{}", color.to_hsl_string());
+            }
+            "hex" => {
+                println!("{}", color.to_rgb_hex_string());
+            }
+            &_ => {
+                unreachable!("Unknown format type");
+            }
+        }
+    }
 }
