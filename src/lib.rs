@@ -406,10 +406,17 @@ impl Color {
 
     /// Convert a color to a gray tone with the same perceived luminance (see `luminance`).
     pub fn to_gray(&self) -> Color {
+        let hue = self.hue;
         let c = self.to_lch();
 
         // the desaturation step is only needed to correct minor rounding errors.
-        Color::from_lch(c.l, 0.0, 0.0).desaturate(1.0)
+        let mut gray = Color::from_lch(c.l, 0.0, 0.0).desaturate(1.0);
+
+        // Restore the hue value (does not alter the color, but makes it able to add saturation
+        // again)
+        gray.hue = hue;
+
+        gray
     }
 
     /// The percieved brightness of the color (A number between 0.0 and 1.0).
