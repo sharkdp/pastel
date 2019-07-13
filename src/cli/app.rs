@@ -22,8 +22,6 @@ impl App {
     }
 
     pub fn show_color_tty(&self, color: Color) {
-        let rgba = color.to_rgba();
-        let hsla = color.to_hsla();
         let terminal_color = to_termcolor(&color);
 
         let checkerboard_size: usize = 20;
