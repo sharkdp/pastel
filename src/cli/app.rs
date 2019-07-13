@@ -53,23 +53,19 @@ impl App {
         canvas.draw_text(
             text_position_y + 0,
             text_position_x,
-            &format!("Hex: #{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b),
+            &format!("Hex: {}", color.to_rgb_hex_string()),
         );
         canvas.draw_text(
             text_position_y + 2,
             text_position_x,
-            &format!("RGB: rgb({},{},{})", rgba.r, rgba.g, rgba.b),
+            &format!("RGB: {}", color.to_rgb_string()),
         );
         canvas.draw_text(
             text_position_y + 4,
             text_position_x,
-            &format!(
-                "HSL: hsl({:.0},{:.0}%,{:.0}%)",
-                hsla.h,
-                100.0 * hsla.s,
-                100.0 * hsla.l
-            ),
+            &format!("HSL: {}", color.to_hsl_string()),
         );
+
         canvas.draw_text(text_position_y + 8, text_position_x, "Most similar:");
         let similar = similar_colors(&color);
         for (i, nc) in similar.iter().enumerate().take(3) {
