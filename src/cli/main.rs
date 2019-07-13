@@ -1,9 +1,8 @@
 use ansi_term::Color as TermColor;
-use clap::{
-    crate_description, crate_name, crate_version, App as ClapApp, AppSettings, Arg, SubCommand,
-};
+use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
-mod app;
+mod command;
+mod config;
 mod error;
 mod hdcanvas;
 mod parser;
@@ -11,7 +10,8 @@ mod termcolor;
 mod utility;
 mod x11colors;
 
-use app::{Command, Config};
+use command::Command;
+use config::Config;
 use error::{PastelError, Result};
 
 type ExitCode = i32;
@@ -33,7 +33,7 @@ fn run() -> Result<ExitCode> {
              \n  - 'hsl(128, 100%, 54%)'",
         )
         .required(false);
-    let app = ClapApp::new(crate_name!())
+    let app = App::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
         .global_setting(AppSettings::ColoredHelp)

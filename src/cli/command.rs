@@ -6,26 +6,13 @@ use std::io::{self, BufRead};
 
 use pastel::Color;
 
+use crate::config::Config;
 use crate::hdcanvas::Canvas;
 use crate::parser::parse_color;
 use crate::termcolor::ToTermColor;
 use crate::utility::similar_colors;
 use crate::x11colors::{NamedColor, X11_COLORS};
 use crate::PastelError;
-
-pub struct Config {
-    padding: usize,
-    colorpicker_width: usize,
-}
-
-impl Config {
-    pub fn new() -> Config {
-        Config {
-            padding: 2,
-            colorpicker_width: 40,
-        }
-    }
-}
 
 fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
     let value_str = matches.value_of(name).unwrap();
