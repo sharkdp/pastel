@@ -4,7 +4,7 @@ use atty::Stream;
 use pastel::Color;
 
 use crate::hdcanvas::Canvas;
-use crate::termcolor::to_termcolor;
+use crate::termcolor::ToTermColor;
 use crate::utility::similar_colors;
 use crate::x11colors::{NamedColor, X11_COLORS};
 
@@ -22,7 +22,7 @@ impl App {
     }
 
     pub fn show_color_tty(&self, color: Color) {
-        let terminal_color = to_termcolor(&color);
+        let terminal_color = color.to_termcolor();
 
         let checkerboard_size: usize = 20;
         let color_panel_size: usize = 14;
@@ -73,7 +73,7 @@ impl App {
                 text_position_x + 1,
                 2,
                 5,
-                to_termcolor(&nc.color),
+                nc.color.to_termcolor(),
             );
         }
 
@@ -122,7 +122,7 @@ impl App {
                     self.padding + x + 1,
                     1,
                     1,
-                    to_termcolor(&color),
+                    color.to_termcolor(),
                 );
             }
         }
@@ -148,8 +148,8 @@ impl App {
             let fg = bg.text_color();
             println!(
                 "{}",
-                to_termcolor(&fg)
-                    .on(to_termcolor(&bg))
+                fg.to_termcolor()
+                    .on(bg.to_termcolor())
                     .paint(format!(" {:24}", nc.name))
             );
         }
