@@ -1,47 +1,18 @@
 use ansi_term::Color as TermColor;
-use atty::Stream;
 use clap::{
-    crate_description, crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgMatches,
-    SubCommand,
+    crate_description, crate_name, crate_version, App as ClapApp, AppSettings, Arg, SubCommand,
 };
 
 mod app;
+mod error;
 mod hdcanvas;
 mod parser;
 mod termcolor;
 mod utility;
 mod x11colors;
 
-use std::io::{self, BufRead};
-
-use crate::parser::parse_color;
-
-use pastel::Color;
-
-use app::App;
-
-#[derive(Debug, PartialEq)]
-enum PastelError {
-    ColorParseError,
-    CouldNotReadFromStdin,
-    ColorArgRequired,
-    CouldNotParseNumber,
-}
-
-impl PastelError {
-    fn message(&self) -> &str {
-        match self {
-            PastelError::ColorParseError => "could not parse color",
-            PastelError::CouldNotReadFromStdin => "could not read color from standard input",
-            PastelError::ColorArgRequired => {
-                "A color argument needs to be provided on the command line or via a pipe"
-            }
-            PastelError::CouldNotParseNumber => "Could not parse number",
-        }
-    }
-}
-
-type Result<T> = std::result::Result<T, PastelError>;
+use app::{Command, Config};
+use error::{PastelError, Result};
 
 type ExitCode = i32;
 
@@ -164,78 +135,17 @@ fn run() -> Result<ExitCode> {
             SubCommand::with_name("format")
                 .about("Print a list of available color names")
                 .arg(Arg::with_name("type").help("Format type").possible_values(&["rgb", "hsl", "hex"]).required(true))
+                .arg(color_arg.clone())
         );
 
     let global_matches = app.get_matches();
 
-    let color_arg = |matches: &ArgMatches| -> Result<Color> {
-        if let Some(color_arg) = matches.value_of("color") {
-            Ok(parse_color(color_arg).ok_or(PastelError::ColorParseError)?)
-        } else {
-            if atty::is(Stream::Stdin) {
-                return Err(PastelError::ColorArgRequired);
-            }
-
-            let stdin = io::stdin();
-            let mut lock = stdin.lock();
-
-            let mut color_str = String::new();
-            lock.read_line(&mut color_str)
-                .map_err(|_| PastelError::CouldNotReadFromStdin)?;
-
-            Ok(parse_color(&color_str).ok_or(PastelError::ColorParseError)?)
-        }
-    };
-
-    let number_arg = |matches: &ArgMatches, name: &str| -> Result<f64> {
-        let value_str = matches.value_of(name).unwrap();
-        value_str
-            .parse::<f64>()
-            .map_err(|_| PastelError::CouldNotParseNumber)
-    };
-
-    let app = App::new();
-
-    if let Some(matches) = global_matches.subcommand_matches("show") {
-        let color = color_arg(matches)?;
-        app.show_color(color);
-    } else if let Some(_) = global_matches.subcommand_matches("pick") {
-        app.show_spectrum();
-    } else if let Some(matches) = global_matches.subcommand_matches("saturate") {
-        let amount = number_arg(matches, "amount")?;
-        let color = color_arg(matches)?;
-        app.show_color(color.saturate(amount));
-    } else if let Some(matches) = global_matches.subcommand_matches("desaturate") {
-        let amount = number_arg(matches, "amount")?;
-        let color = color_arg(matches)?;
-        app.show_color(color.desaturate(amount));
-    } else if let Some(matches) = global_matches.subcommand_matches("lighten") {
-        let amount = number_arg(matches, "amount")?;
-        let color = color_arg(matches)?;
-        app.show_color(color.lighten(amount));
-    } else if let Some(matches) = global_matches.subcommand_matches("darken") {
-        let amount = number_arg(matches, "amount")?;
-        let color = color_arg(matches)?;
-        app.show_color(color.darken(amount));
-    } else if let Some(matches) = global_matches.subcommand_matches("rotate") {
-        let degrees = number_arg(matches, "degrees")?;
-        let color = color_arg(matches)?;
-        app.show_color(color.rotate_hue(degrees));
-    } else if let Some(matches) = global_matches.subcommand_matches("complement") {
-        let color = color_arg(matches)?;
-        app.show_color(color.complementary());
-    } else if let Some(matches) = global_matches.subcommand_matches("to-gray") {
-        let color = color_arg(matches)?;
-        app.show_color(color.to_gray());
-    } else if let Some(matches) = global_matches.subcommand_matches("list") {
-        let sort_order = matches.value_of("sort").unwrap();
-        app.show_color_list(sort_order);
-    } else if let Some(matches) = global_matches.subcommand_matches("format") {
-        let color = color_arg(matches)?;
-        let format_type = matches.value_of("type").expect("required argument");
-        app.format(format_type, color);
+    if let (subcommand, Some(matches)) = global_matches.subcommand() {
+        let config = Config::new();
+        let command = Command::from_string(subcommand);
+        command.execute(matches, &config)?;
     } else {
-        unreachable!("Unknown subcommand");
+        unreachable!("Subcommand is required");
     }
 
     Ok(0)
