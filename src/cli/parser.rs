@@ -238,9 +238,10 @@ fn parse_hsl() {
 
 #[test]
 fn parse_predefined_name() {
-    assert_eq!(Some(rgb(0, 0, 255)), parse_color("blue"));
-    assert_eq!(Some(rgb(0, 0, 255)), parse_color("Blue"));
-    assert_eq!(Some(rgb(0, 0, 255)), parse_color("BLUE"));
+    assert_eq!(Some(Color::black()), parse_color("black"));
+    assert_eq!(Some(Color::blue()), parse_color("blue"));
+    assert_eq!(Some(Color::blue()), parse_color("Blue"));
+    assert_eq!(Some(Color::blue()), parse_color("BLUE"));
     assert_eq!(Some(rgb(255, 20, 147)), parse_color("deeppink"));
     assert_eq!(None, parse_color("whatever"));
     assert_eq!(None, parse_color("red blue"));

@@ -18,13 +18,13 @@ fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
     let value_str = matches.value_of(name).unwrap();
     value_str
         .parse::<f64>()
-        .map_err(|_| PastelError::CouldNotParseNumber)
+        .map_err(|_| PastelError::CouldNotParseNumber(value_str.into()))
 }
 
 fn color_args(matches: &ArgMatches) -> Result<Vec<Color>> {
     if let Some(color_args) = matches.values_of("color") {
         color_args
-            .map(|c| parse_color(c).ok_or(PastelError::ColorParseError))
+            .map(|c| parse_color(c).ok_or(PastelError::ColorParseError(c.into())))
             .collect()
     } else {
         if atty::is(Stream::Stdin) {
@@ -36,7 +36,10 @@ fn color_args(matches: &ArgMatches) -> Result<Vec<Color>> {
 
         let colors = lock
             .lines()
-            .map(|line| parse_color(&line.unwrap()).ok_or(PastelError::ColorParseError))
+            .map(|line| {
+                let line = line.map_err(|_| PastelError::ColorInvalidUTF8)?;
+                parse_color(&line).ok_or(PastelError::ColorParseError(line.clone()))
+            })
             .collect::<Result<Vec<_>>>()?;
 
         if colors.is_empty() {
