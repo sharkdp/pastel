@@ -187,6 +187,12 @@ fn run() -> Result<ExitCode> {
                         .value_name("bg-color"),
                 )
                 .arg(
+                    Arg::with_name("bold")
+                        .short("b")
+                        .long("bold")
+                        .help("Print the text in bold face")
+                )
+                .arg(
                     Arg::with_name("no-newline")
                         .short("n")
                         .long("no-newline")

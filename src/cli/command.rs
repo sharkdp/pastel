@@ -333,6 +333,10 @@ impl GenericCommand for PaintCommand {
             );
         }
 
+        if matches.is_present("bold") {
+            print!("\x1b[1m")
+        }
+
         print!("{}", text);
         print!("\x1b[0m");
 
