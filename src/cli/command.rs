@@ -22,6 +22,23 @@ fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
         .map_err(|_| PastelError::CouldNotParseNumber(value_str.into()))
 }
 
+fn color_from_stdin() -> Result<Color> {
+    // TODO: remove duplication between color_from_stdin and colors_from_stdin
+    let stdin = io::stdin();
+    let mut lock = stdin.lock();
+
+    let mut line = String::new();
+    let size = lock
+        .read_line(&mut line)
+        .map_err(|_| PastelError::ColorInvalidUTF8)?;
+
+    if size == 0 {
+        return Err(PastelError::CouldNotReadFromStdin);
+    }
+
+    parse_color(&line).ok_or(PastelError::ColorParseError(line.clone()))
+}
+
 fn colors_from_stdin() -> Result<Vec<Color>> {
     let stdin = io::stdin();
     let lock = stdin.lock();
@@ -44,7 +61,13 @@ fn colors_from_stdin() -> Result<Vec<Color>> {
 fn color_args(matches: &ArgMatches) -> Result<Vec<Color>> {
     if let Some(color_args) = matches.values_of("color") {
         color_args
-            .map(|c| parse_color(c).ok_or(PastelError::ColorParseError(c.into())))
+            .map(|c| {
+                if c == "-" {
+                    color_from_stdin()
+                } else {
+                    parse_color(c).ok_or(PastelError::ColorParseError(c.into()))
+                }
+            })
             .collect()
     } else {
         if atty::is(Stream::Stdin) {
@@ -319,9 +342,10 @@ impl GenericCommand for PaintCommand {
         let fg = matches.value_of("color").expect("required argument");
 
         if fg.trim() != "default" {
+            // TODO: remove duplication - move this into a function and use it in
+            // color_args(). Write integration tests
             let fg = if fg == "-" {
-                let colors = colors_from_stdin()?;
-                colors[0].clone()
+                color_from_stdin()?
             } else {
                 parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?
             };

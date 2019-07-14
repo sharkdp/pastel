@@ -51,6 +51,8 @@ fn run() -> Result<ExitCode> {
         .about(crate_description!())
         .subcommand(
             SubCommand::with_name("show")
+                .alias("take")
+                .alias("color")
                 .about("Display information about the given color on the terminal")
                 .arg(color_arg.clone()),
         )
