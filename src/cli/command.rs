@@ -296,6 +296,22 @@ impl ColorCommand for FormatCommand {
     }
 }
 
+struct AnsiCommand;
+
+impl GenericCommand for AnsiCommand {
+    fn run(&self, matches: &ArgMatches, _: &Config) -> Result<()> {
+        if matches.value_of("color") == Some("reset") {
+            println!("\x1b[0m");
+        } else {
+            let color = &color_args(&matches)?[0];
+            let rgba = color.to_rgba();
+            println!("\x1b[38;2;{r};{g};{b}m", r = rgba.r, g = rgba.g, b = rgba.b);
+        }
+
+        Ok(())
+    }
+}
+
 pub enum Command {
     WithColor(Box<dyn ColorCommand>),
     Generic(Box<dyn GenericCommand>),
@@ -314,6 +330,7 @@ impl Command {
             "complement" => Command::WithColor(Box::new(ComplementCommand)),
             "to-gray" => Command::WithColor(Box::new(ToGrayCommand)),
             "list" => Command::Generic(Box::new(ListCommand)),
+            "ansi" => Command::Generic(Box::new(AnsiCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),
             _ => unreachable!("Unknown subcommand"),
         }

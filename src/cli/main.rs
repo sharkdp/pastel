@@ -134,6 +134,11 @@ fn run() -> Result<ExitCode> {
                 .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "luminance", "hue", "chroma"]).default_value("hue"))
         )
         .subcommand(
+            SubCommand::with_name("ansi")
+                .about("Print a color as an ANSI escape sequence")
+                .arg(color_arg.clone().multiple(false))
+        )
+        .subcommand(
             SubCommand::with_name("format")
                 .about("Print a list of available color names")
                 .arg(Arg::with_name("type").help("Format type").possible_values(&["rgb", "hsl", "hex"]).required(true))
