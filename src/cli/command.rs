@@ -57,31 +57,6 @@ pub trait ColorCommand {
     fn run(&self, matches: &ArgMatches, config: &Config, color: &Color) -> Result<()>;
 }
 
-struct FormatCommand;
-
-impl ColorCommand for FormatCommand {
-    fn run(&self, matches: &ArgMatches, _: &Config, color: &Color) -> Result<()> {
-        let format_type = matches.value_of("type").expect("required argument");
-
-        match format_type {
-            "rgb" => {
-                println!("{}", color.to_rgb_string());
-            }
-            "hsl" => {
-                println!("{}", color.to_hsl_string());
-            }
-            "hex" => {
-                println!("{}", color.to_rgb_hex_string());
-            }
-            &_ => {
-                unreachable!("Unknown format type");
-            }
-        }
-
-        Ok(())
-    }
-}
-
 pub fn show_color_tty(config: &Config, color: &Color) {
     let terminal_color = color.to_termcolor();
 
@@ -289,6 +264,31 @@ impl GenericCommand for ListCommand {
                 if res.is_err() {
                     break;
                 }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+struct FormatCommand;
+
+impl ColorCommand for FormatCommand {
+    fn run(&self, matches: &ArgMatches, _: &Config, color: &Color) -> Result<()> {
+        let format_type = matches.value_of("type").expect("required argument");
+
+        match format_type {
+            "rgb" => {
+                println!("{}", color.to_rgb_string());
+            }
+            "hsl" => {
+                println!("{}", color.to_hsl_string());
+            }
+            "hex" => {
+                println!("{}", color.to_rgb_hex_string());
+            }
+            &_ => {
+                unreachable!("Unknown format type");
             }
         }
 
