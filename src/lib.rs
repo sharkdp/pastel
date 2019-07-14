@@ -177,12 +177,13 @@ impl Color {
     }
 
     /// Format the color as a HSL-representation string (`hsl(123, 50%, 80%)`).
-    pub fn to_hsl_string(&self) -> String {
+    pub fn to_hsl_string(&self, format: Format) -> String {
         format!(
-            "hsl({:.0}, {:.0}%, {:.0}%)",
+            "hsl({:.0},{space}{:.0}%,{space}{:.0}%)",
             self.hue.value(),
             100.0 * self.saturation,
-            100.0 * self.lightness
+            100.0 * self.lightness,
+            space = if format == Format::Spaces { " " } else { "" }
         )
     }
 
@@ -203,9 +204,15 @@ impl Color {
     }
 
     /// Format the color as a RGB-representation string (`rgb(255, 127,  0)`).
-    pub fn to_rgb_string(&self) -> String {
+    pub fn to_rgb_string(&self, format: Format) -> String {
         let rgba = self.to_rgba();
-        format!("rgb({}, {}, {})", rgba.r, rgba.g, rgba.b)
+        format!(
+            "rgb({r},{space}{g},{space}{b})",
+            r = rgba.r,
+            g = rgba.g,
+            b = rgba.b,
+            space = if format == Format::Spaces { " " } else { "" }
+        )
     }
 
     /// Format the color as a RGB-representation string (`#fc0070`).
@@ -571,6 +578,12 @@ pub struct LCh {
     pub alpha: Scalar,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Format {
+    Spaces,
+    NoSpaces,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -802,13 +815,13 @@ mod tests {
     #[test]
     fn test_to_hsl_string() {
         let c = Color::from_hsl(91.3, 0.54, 0.98);
-        assert_eq!("hsl(91, 54%, 98%)", c.to_hsl_string());
+        assert_eq!("hsl(91, 54%, 98%)", c.to_hsl_string(Format::Spaces));
     }
 
     #[test]
     fn test_to_rgb_string() {
         let c = Color::from_rgb(255, 127, 4);
-        assert_eq!("rgb(255, 127, 4)", c.to_rgb_string());
+        assert_eq!("rgb(255, 127, 4)", c.to_rgb_string(Format::Spaces));
     }
 
     #[test]

@@ -4,7 +4,7 @@ use clap::ArgMatches;
 
 use std::io::{self, BufRead, Write};
 
-use pastel::Color;
+use pastel::{Color, Format};
 
 use crate::config::Config;
 use crate::hdcanvas::Canvas;
@@ -92,12 +92,12 @@ pub fn show_color_tty(config: &Config, color: &Color) {
     canvas.draw_text(
         text_position_y + 2,
         text_position_x,
-        &format!("RGB: {}", color.to_rgb_string()),
+        &format!("RGB: {}", color.to_rgb_string(Format::Spaces)),
     );
     canvas.draw_text(
         text_position_y + 4,
         text_position_x,
-        &format!("HSL: {}", color.to_hsl_string()),
+        &format!("HSL: {}", color.to_hsl_string(Format::Spaces)),
     );
 
     canvas.draw_text(text_position_y + 8, text_position_x, "Most similar:");
@@ -120,7 +120,7 @@ pub fn show_color(config: &Config, color: &Color) {
     if config.interactive_mode {
         show_color_tty(config, color);
     } else {
-        println!("{}", color.to_hsl_string());
+        println!("{}", color.to_hsl_string(Format::NoSpaces));
     }
 }
 
@@ -279,10 +279,10 @@ impl ColorCommand for FormatCommand {
 
         match format_type {
             "rgb" => {
-                println!("{}", color.to_rgb_string());
+                println!("{}", color.to_rgb_string(Format::Spaces));
             }
             "hsl" => {
-                println!("{}", color.to_hsl_string());
+                println!("{}", color.to_hsl_string(Format::Spaces));
             }
             "hex" => {
                 println!("{}", color.to_rgb_hex_string());
