@@ -11,6 +11,9 @@ fn cube_to_8bit(code: u8) -> u8 {
 pub trait AnsiColor {
     fn from_ansi_8bit(code: u8) -> Self;
     fn to_ansi_8bit(&self) -> u8;
+
+    fn to_ansi_sequence_8bit(&self) -> String;
+    fn to_ansi_sequence_24bit(&self) -> String;
 }
 
 impl AnsiColor for Color {
@@ -68,6 +71,19 @@ impl AnsiColor for Color {
         codes.sort_by_key(|code| self.distance(&Color::from_ansi_8bit(*code)) as i32);
 
         codes[0]
+    }
+
+    /// Return an ANSI escape sequence in 8-bit representation:
+    /// `ESC[38;5;CODEm`, where CODE represents the color.
+    fn to_ansi_sequence_8bit(&self) -> String {
+        format!("\x1b[38;5;{}m", self.to_ansi_8bit())
+    }
+
+    /// Return an ANSI escape sequence in 24-bit representation:
+    /// `ESC[38;2;R;G;Bm`, where CODE represents the color.
+    fn to_ansi_sequence_24bit(&self) -> String {
+        let rgba = self.to_rgba();
+        format!("\x1b[38;2;{r};{g};{b}m", r = rgba.r, g = rgba.g, b = rgba.b)
     }
 }
 
