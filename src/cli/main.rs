@@ -44,6 +44,7 @@ fn run() -> Result<ExitCode> {
         .global_setting(AppSettings::InferSubcommands)
         .global_setting(AppSettings::VersionlessSubcommands)
         .global_setting(AppSettings::AllowNegativeNumbers)
+        .global_setting(AppSettings::DontCollapseArgsInUsage)
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .max_term_width(100)
         .about(crate_description!())
@@ -134,9 +135,12 @@ fn run() -> Result<ExitCode> {
                 .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "luminance", "hue", "chroma"]).default_value("hue"))
         )
         .subcommand(
-            SubCommand::with_name("ansi")
-                .about("Print a color as an ANSI escape sequence")
-                .arg(color_arg.clone().multiple(false))
+            SubCommand::with_name("paint")
+                .about("Print colorized text using ANSI escape sequences")
+                .arg(Arg::with_name("color").help("The foreground color").required(true))
+                .arg(Arg::with_name("text").help("The text to be printed in color").required(true))
+                .arg(Arg::with_name("on").short("o").long("on").help("Use the specified background color").takes_value(true).value_name("bg-color"))
+                .arg(Arg::with_name("no-newline").short("n").long("no-newline").help("Do not print a trailing newline character"))
         )
         .subcommand(
             SubCommand::with_name("format")

@@ -299,16 +299,38 @@ impl ColorCommand for FormatCommand {
     }
 }
 
-struct AnsiCommand;
+struct PointCommand;
 
-impl GenericCommand for AnsiCommand {
+impl GenericCommand for PointCommand {
     fn run(&self, matches: &ArgMatches, _: &Config) -> Result<()> {
-        if matches.value_of("color") == Some("reset") {
-            println!("\x1b[0m");
-        } else {
-            let color = &color_args(&matches)?[0];
-            let rgba = color.to_rgba();
-            println!("\x1b[38;2;{r};{g};{b}m", r = rgba.r, g = rgba.g, b = rgba.b);
+        let text = matches.value_of("text").expect("required argument");
+
+        let fg = matches.value_of("color").expect("required argument");
+        let fg = parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?;
+        let fg_rgba = fg.to_rgba();
+        print!(
+            "\x1b[38;2;{r};{g};{b}m",
+            r = fg_rgba.r,
+            g = fg_rgba.g,
+            b = fg_rgba.b
+        );
+
+        if let Some(bg) = matches.value_of("on") {
+            let bg = parse_color(bg).ok_or(PastelError::ColorParseError(bg.into()))?;
+            let bg_rgba = bg.to_rgba();
+            print!(
+                "\x1b[48;2;{r};{g};{b}m",
+                r = bg_rgba.r,
+                g = bg_rgba.g,
+                b = bg_rgba.b
+            );
+        }
+
+        print!("{}", text);
+        print!("\x1b[0m");
+
+        if !matches.is_present("no-newline") {
+            println!();
         }
 
         Ok(())
@@ -333,7 +355,7 @@ impl Command {
             "complement" => Command::WithColor(Box::new(ComplementCommand)),
             "to-gray" => Command::WithColor(Box::new(ToGrayCommand)),
             "list" => Command::Generic(Box::new(ListCommand)),
-            "ansi" => Command::Generic(Box::new(AnsiCommand)),
+            "paint" => Command::Generic(Box::new(PointCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),
             _ => unreachable!("Unknown subcommand"),
         }
