@@ -55,6 +55,75 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("list")
+                .about("Show a list of available color names")
+                .arg(
+                    Arg::with_name("sort")
+                        .short("s")
+                        .long("sort")
+                        .help("Sort order")
+                        .possible_values(&["name", "brightness", "luminance", "hue", "chroma"])
+                        .default_value("hue"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("paint")
+                .about("Print colorized text using ANSI escape sequences")
+                .arg(
+                    Arg::with_name("color")
+                        .help("The foreground color")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("text")
+                        .help("The text to be printed in color")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("on")
+                        .short("o")
+                        .long("on")
+                        .help("Use the specified background color")
+                        .takes_value(true)
+                        .value_name("bg-color"),
+                )
+                .arg(
+                    Arg::with_name("bold")
+                        .short("b")
+                        .long("bold")
+                        .help("Print the text in bold face"),
+                )
+                .arg(
+                    Arg::with_name("italic")
+                        .short("i")
+                        .long("italic")
+                        .help("Print the text in italic font"),
+                )
+                .arg(
+                    Arg::with_name("underline")
+                        .short("u")
+                        .long("underline")
+                        .help("Draw a line below the text"),
+                )
+                .arg(
+                    Arg::with_name("no-newline")
+                        .short("n")
+                        .long("no-newline")
+                        .help("Do not print a trailing newline character"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("format")
+                .about("Convert a color to a specific format")
+                .arg(
+                    Arg::with_name("type")
+                        .help("Format type")
+                        .possible_values(&["rgb", "hsl", "hex", "ansi-8-bit", "ansi-24-bit"])
+                        .required(true),
+                )
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("pick")
                 .about("Print a spectrum of colors to choose from")
                 .arg(color_arg.clone()),
@@ -150,75 +219,6 @@ fn run() -> Result<ExitCode> {
                      \n\
                      For a definition of 'luminance', see:\n\n  \
                      https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef",
-                )
-                .arg(color_arg.clone()),
-        )
-        .subcommand(
-            SubCommand::with_name("list")
-                .about("Show a list of available color names")
-                .arg(
-                    Arg::with_name("sort")
-                        .short("s")
-                        .long("sort")
-                        .help("Sort order")
-                        .possible_values(&["name", "brightness", "luminance", "hue", "chroma"])
-                        .default_value("hue"),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("paint")
-                .about("Print colorized text using ANSI escape sequences")
-                .arg(
-                    Arg::with_name("color")
-                        .help("The foreground color")
-                        .required(true),
-                )
-                .arg(
-                    Arg::with_name("text")
-                        .help("The text to be printed in color")
-                        .required(true),
-                )
-                .arg(
-                    Arg::with_name("on")
-                        .short("o")
-                        .long("on")
-                        .help("Use the specified background color")
-                        .takes_value(true)
-                        .value_name("bg-color"),
-                )
-                .arg(
-                    Arg::with_name("bold")
-                        .short("b")
-                        .long("bold")
-                        .help("Print the text in bold face"),
-                )
-                .arg(
-                    Arg::with_name("italic")
-                        .short("i")
-                        .long("italic")
-                        .help("Print the text in italic font"),
-                )
-                .arg(
-                    Arg::with_name("underline")
-                        .short("u")
-                        .long("underline")
-                        .help("Draw a line below the text"),
-                )
-                .arg(
-                    Arg::with_name("no-newline")
-                        .short("n")
-                        .long("no-newline")
-                        .help("Do not print a trailing newline character"),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("format")
-                .about("Display a given color in a specific format")
-                .arg(
-                    Arg::with_name("type")
-                        .help("Format type")
-                        .possible_values(&["rgb", "hsl", "hex", "ansi-8-bit", "ansi-24-bit"])
-                        .required(true),
                 )
                 .arg(color_arg.clone()),
         );

@@ -313,14 +313,17 @@ impl GenericCommand for PaintCommand {
         let text = matches.value_of("text").expect("required argument");
 
         let fg = matches.value_of("color").expect("required argument");
-        let fg = parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?;
-        let fg_rgba = fg.to_rgba();
-        print!(
-            "\x1b[38;2;{r};{g};{b}m",
-            r = fg_rgba.r,
-            g = fg_rgba.g,
-            b = fg_rgba.b
-        );
+
+        if fg.trim() != "default" {
+            let fg = parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?;
+            let fg_rgba = fg.to_rgba();
+            print!(
+                "\x1b[38;2;{r};{g};{b}m",
+                r = fg_rgba.r,
+                g = fg_rgba.g,
+                b = fg_rgba.b
+            );
+        }
 
         if let Some(bg) = matches.value_of("on") {
             let bg = parse_color(bg).ok_or(PastelError::ColorParseError(bg.into()))?;
