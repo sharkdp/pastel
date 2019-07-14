@@ -4,6 +4,7 @@ use clap::ArgMatches;
 
 use std::io::{self, BufRead, Write};
 
+use pastel::ansi::AnsiColor;
 use pastel::{Color, Format};
 
 use crate::config::Config;
@@ -281,6 +282,9 @@ impl ColorCommand for FormatCommand {
         let format_type = matches.value_of("type").expect("required argument");
 
         match format_type {
+            "ansi-8bit" => {
+                println!("{}", color.to_ansi_8bit());
+            }
             "rgb" => {
                 println!("{}", color.to_rgb_string(Format::Spaces));
             }

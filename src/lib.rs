@@ -1,4 +1,4 @@
-mod ansi;
+pub mod ansi;
 mod helper;
 mod types;
 

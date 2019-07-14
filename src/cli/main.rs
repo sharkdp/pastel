@@ -35,6 +35,7 @@ fn run() -> Result<ExitCode> {
         )
         .required(false)
         .multiple(true);
+
     let app = App::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
@@ -63,23 +64,29 @@ fn run() -> Result<ExitCode> {
                 .long_about(
                     "Increase the saturation of a color by adding a certain amount to the HSL \
                      saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
-                     the color will be desaturated."
+                     the color will be desaturated instead.",
                 )
                 .about("Increase color saturation by a specified amount")
-                .arg(Arg::with_name("amount").help("amount of saturation to add").required(true))
+                .arg(
+                    Arg::with_name("amount")
+                        .help("amount of saturation to add")
+                        .required(true),
+                )
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("desaturate")
-                .about("Decrease color saturation by a specified amount")
                 .long_about(
                     "Decrease the saturation of a color by subtracting a certain amount from the \
-                     HSL saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
-                     the color will be saturated.
-
-                     See also: to-gray"
+                     HSL saturation channel (a number between 0.0 and 1.0). If the amount is \
+                     negative, the color will be saturated instead.",
                 )
-                .arg(Arg::with_name("amount").help("amount of saturation to subtract").required(true))
+                .about("Decrease color saturation by a specified amount")
+                .arg(
+                    Arg::with_name("amount")
+                        .help("amount of saturation to subtract")
+                        .required(true),
+                )
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -90,7 +97,11 @@ fn run() -> Result<ExitCode> {
                      darkened.",
                 )
                 .about("Lighten color by a specified amount")
-                .arg(Arg::with_name("amount").help("amount of lightness to add").required(true))
+                .arg(
+                    Arg::with_name("amount")
+                        .help("amount of lightness to add")
+                        .required(true),
+                )
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -98,25 +109,37 @@ fn run() -> Result<ExitCode> {
                 .long_about(
                     "Darken a color by subtracting a certain amount from the lightness channel (a \
                      number between 0.0 and 1.0). If the amount is negative, the color will be \
-                     lightened."
+                     lightened.",
                 )
                 .about("Darken color by a specified amount")
-                .arg(Arg::with_name("amount").help("amount of lightness to subtract").required(true))
+                .arg(
+                    Arg::with_name("amount")
+                        .help("amount of lightness to subtract")
+                        .required(true),
+                )
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("rotate")
                 .about("Rotate the hue channel by a specified angle")
-                .long_about("Rotate the HSL hue channel of a color by the specified angle (in \
-                             degrees). A rotation by 180° returns the complementary color. A \
-                             rotation by 360° returns to the original color.")
-                .arg(Arg::with_name("degrees").help("angle by which to rotate (in degrees)").required(true))
+                .long_about(
+                    "Rotate the HSL hue channel of a color by the specified angle (in \
+                     degrees). A rotation by 180° returns the complementary color. A \
+                     rotation by 360° returns to the original color.",
+                )
+                .arg(
+                    Arg::with_name("degrees")
+                        .help("angle by which to rotate (in degrees)")
+                        .required(true),
+                )
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("complement")
                 .about("Get the complementary color (hue rotated by 180°)")
-                .long_about("Compute the complementary color by rotating the HSL hue channel by 180°.")
+                .long_about(
+                    "Compute the complementary color by rotating the HSL hue channel by 180°.",
+                )
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -126,27 +149,60 @@ fn run() -> Result<ExitCode> {
                     "Completely desaturate the given color while preserving the luminance.\n\
                      \n\
                      For a definition of 'luminance', see:\n\n  \
-                       https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef")
+                     https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef",
+                )
                 .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("list")
                 .about("Print a list of available color names")
-                .arg(Arg::with_name("sort").short("s").long("sort").help("Sort order").possible_values(&["name", "brightness", "luminance", "hue", "chroma"]).default_value("hue"))
+                .arg(
+                    Arg::with_name("sort")
+                        .short("s")
+                        .long("sort")
+                        .help("Sort order")
+                        .possible_values(&["name", "brightness", "luminance", "hue", "chroma"])
+                        .default_value("hue"),
+                ),
         )
         .subcommand(
             SubCommand::with_name("paint")
                 .about("Print colorized text using ANSI escape sequences")
-                .arg(Arg::with_name("color").help("The foreground color").required(true))
-                .arg(Arg::with_name("text").help("The text to be printed in color").required(true))
-                .arg(Arg::with_name("on").short("o").long("on").help("Use the specified background color").takes_value(true).value_name("bg-color"))
-                .arg(Arg::with_name("no-newline").short("n").long("no-newline").help("Do not print a trailing newline character"))
+                .arg(
+                    Arg::with_name("color")
+                        .help("The foreground color")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("text")
+                        .help("The text to be printed in color")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("on")
+                        .short("o")
+                        .long("on")
+                        .help("Use the specified background color")
+                        .takes_value(true)
+                        .value_name("bg-color"),
+                )
+                .arg(
+                    Arg::with_name("no-newline")
+                        .short("n")
+                        .long("no-newline")
+                        .help("Do not print a trailing newline character"),
+                ),
         )
         .subcommand(
             SubCommand::with_name("format")
                 .about("Print a list of available color names")
-                .arg(Arg::with_name("type").help("Format type").possible_values(&["rgb", "hsl", "hex"]).required(true))
-                .arg(color_arg.clone())
+                .arg(
+                    Arg::with_name("type")
+                        .help("Format type")
+                        .possible_values(&["rgb", "hsl", "hex", "ansi-8-bit", "ansi-24-bit"])
+                        .required(true),
+                )
+                .arg(color_arg.clone()),
         );
 
     let global_matches = app.get_matches();
