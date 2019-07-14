@@ -303,9 +303,9 @@ impl ColorCommand for FormatCommand {
     }
 }
 
-struct PointCommand;
+struct PaintCommand;
 
-impl GenericCommand for PointCommand {
+impl GenericCommand for PaintCommand {
     fn run(&self, matches: &ArgMatches, _: &Config) -> Result<()> {
         let text = matches.value_of("text").expect("required argument");
 
@@ -359,7 +359,7 @@ impl Command {
             "complement" => Command::WithColor(Box::new(ComplementCommand)),
             "to-gray" => Command::WithColor(Box::new(ToGrayCommand)),
             "list" => Command::Generic(Box::new(ListCommand)),
-            "paint" => Command::Generic(Box::new(PointCommand)),
+            "paint" => Command::Generic(Box::new(PaintCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),
             _ => unreachable!("Unknown subcommand"),
         }
