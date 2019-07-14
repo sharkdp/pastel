@@ -22,6 +22,25 @@ fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
         .map_err(|_| PastelError::CouldNotParseNumber(value_str.into()))
 }
 
+fn colors_from_stdin() -> Result<Vec<Color>> {
+    let stdin = io::stdin();
+    let lock = stdin.lock();
+
+    let colors = lock
+        .lines()
+        .map(|line| {
+            let line = line.map_err(|_| PastelError::ColorInvalidUTF8)?;
+            parse_color(&line).ok_or(PastelError::ColorParseError(line.clone()))
+        })
+        .collect::<Result<Vec<_>>>()?;
+
+    if colors.is_empty() {
+        return Err(PastelError::CouldNotReadFromStdin);
+    }
+
+    Ok(colors)
+}
+
 fn color_args(matches: &ArgMatches) -> Result<Vec<Color>> {
     if let Some(color_args) = matches.values_of("color") {
         color_args
@@ -32,22 +51,7 @@ fn color_args(matches: &ArgMatches) -> Result<Vec<Color>> {
             return Err(PastelError::ColorArgRequired);
         }
 
-        let stdin = io::stdin();
-        let lock = stdin.lock();
-
-        let colors = lock
-            .lines()
-            .map(|line| {
-                let line = line.map_err(|_| PastelError::ColorInvalidUTF8)?;
-                parse_color(&line).ok_or(PastelError::ColorParseError(line.clone()))
-            })
-            .collect::<Result<Vec<_>>>()?;
-
-        if colors.is_empty() {
-            return Err(PastelError::CouldNotReadFromStdin);
-        }
-
-        Ok(colors)
+        colors_from_stdin()
     }
 }
 
@@ -315,7 +319,13 @@ impl GenericCommand for PaintCommand {
         let fg = matches.value_of("color").expect("required argument");
 
         if fg.trim() != "default" {
-            let fg = parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?;
+            let fg = if fg == "-" {
+                let colors = colors_from_stdin()?;
+                colors[0].clone()
+            } else {
+                parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?
+            };
+
             let fg_rgba = fg.to_rgba();
             print!(
                 "\x1b[38;2;{r};{g};{b}m",

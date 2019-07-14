@@ -71,7 +71,7 @@ fn run() -> Result<ExitCode> {
                 .about("Print colorized text using ANSI escape sequences")
                 .arg(
                     Arg::with_name("color")
-                        .help("The foreground color")
+                        .help("The foreground color. Use '-' to read the color from STDIN")
                         .required(true),
                 )
                 .arg(
