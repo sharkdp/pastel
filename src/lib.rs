@@ -1,3 +1,4 @@
+mod ansi;
 mod helper;
 mod types;
 
@@ -329,6 +330,76 @@ impl Color {
         Color::from_hsl(0.0, 0.0, 1.0)
     }
 
+    /// Red (`#ff0000`)
+    pub fn red() -> Color {
+        Color::from_rgb(255, 0, 0)
+    }
+
+    /// Green (`#008000`)
+    pub fn green() -> Color {
+        Color::from_rgb(0, 128, 0)
+    }
+
+    /// Blue (`#0000ff`)
+    pub fn blue() -> Color {
+        Color::from_rgb(0, 0, 255)
+    }
+
+    /// Yellow (`#ffff00`)
+    pub fn yellow() -> Color {
+        Color::from_rgb(255, 255, 0)
+    }
+
+    /// Fuchsia (`#ff00ff`)
+    pub fn fuchsia() -> Color {
+        Color::from_rgb(255, 0, 255)
+    }
+
+    /// Aqua (`#00ffff`)
+    pub fn aqua() -> Color {
+        Color::from_rgb(0, 255, 255)
+    }
+
+    /// Lime (`#00ff00`)
+    pub fn lime() -> Color {
+        Color::from_rgb(0, 255, 0)
+    }
+
+    /// Maroon (`#800000`)
+    pub fn maroon() -> Color {
+        Color::from_rgb(128, 0, 0)
+    }
+
+    /// Olive (`#808000`)
+    pub fn olive() -> Color {
+        Color::from_rgb(128, 128, 0)
+    }
+
+    /// Navy (`#000080`)
+    pub fn navy() -> Color {
+        Color::from_rgb(0, 0, 128)
+    }
+
+    /// Purple (`#800080`)
+    pub fn purple() -> Color {
+        Color::from_rgb(128, 0, 128)
+    }
+
+    /// Teal (`#008080`)
+    pub fn teal() -> Color {
+        Color::from_rgb(0, 128, 128)
+    }
+
+    /// Silver (`#c0c0c0`)
+    pub fn silver() -> Color {
+        Color::from_rgb(192, 192, 192)
+    }
+
+    /// Gray (`#808080`)
+    pub fn gray() -> Color {
+        Color::from_rgb(128, 128, 128)
+    }
+
     /// Create a gray tone from a lightness value (0.0 is black, 1.0 is white).
     pub fn graytone(lightness: Scalar) -> Color {
         Color::from_hsl(0.0, 0.0, lightness)
@@ -559,34 +630,19 @@ mod tests {
 
     #[test]
     fn test_rgb_to_hsl_conversion() {
-        assert_eq!(
-            Color::from_hsl(0.0, 0.0, 1.0),
-            Color::from_rgb_scaled(1.0, 1.0, 1.0)
-        ); // white
-        assert_eq!(
-            Color::from_hsl(0.0, 0.0, 0.5),
-            Color::from_rgb_scaled(0.5, 0.5, 0.5)
-        ); // gray
-        assert_eq!(
-            Color::from_hsl(0.0, 0.0, 0.0),
-            Color::from_rgb_scaled(0.0, 0.0, 0.0)
-        ); // black
-        assert_eq!(
-            Color::from_hsl(0.0, 1.0, 0.5),
-            Color::from_rgb_scaled(1.0, 0.0, 0.0)
-        ); // red
+        assert_eq!(Color::white(), Color::from_rgb_scaled(1.0, 1.0, 1.0));
+        assert_eq!(Color::gray(), Color::from_rgb_scaled(0.5, 0.5, 0.5));
+        assert_eq!(Color::black(), Color::from_rgb_scaled(0.0, 0.0, 0.0));
+        assert_eq!(Color::red(), Color::from_rgb_scaled(1.0, 0.0, 0.0));
         assert_eq!(
             Color::from_hsl(60.0, 1.0, 0.375),
             Color::from_rgb_scaled(0.75, 0.75, 0.0)
         ); //yellow-green
-        assert_eq!(
-            Color::from_hsl(120.0, 1.0, 0.25),
-            Color::from_rgb_scaled(0.0, 0.5, 0.0)
-        ); // green
+        assert_eq!(Color::green(), Color::from_rgb_scaled(0.0, 0.5, 0.0));
         assert_eq!(
             Color::from_hsl(240.0, 1.0, 0.75),
             Color::from_rgb_scaled(0.5, 0.5, 1.0)
-        ); // blue
+        ); // blue-ish
         assert_eq!(
             Color::from_hsl(49.5, 0.893, 0.497),
             Color::from_rgb_scaled(0.941, 0.785, 0.053)
@@ -623,10 +679,7 @@ mod tests {
     #[test]
     fn test_xyz_conversion() {
         assert_eq!(Color::white(), Color::from_xyz(0.9505, 1.0, 1.0890));
-        assert_eq!(
-            Color::from_rgb(255, 0, 0),
-            Color::from_xyz(0.4123, 0.2126, 0.01933)
-        );
+        assert_eq!(Color::red(), Color::from_xyz(0.4123, 0.2126, 0.01933));
         assert_eq!(
             Color::from_hsl(109.999, 0.08654, 0.407843),
             Color::from_xyz(0.13123, 0.15372, 0.13174)
@@ -646,10 +699,7 @@ mod tests {
 
     #[test]
     fn test_lab_conversion() {
-        assert_eq!(
-            Color::from_rgb(255, 0, 0),
-            Color::from_lab(53.233, 80.109, 67.22)
-        );
+        assert_eq!(Color::red(), Color::from_lab(53.233, 80.109, 67.22));
 
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
@@ -684,21 +734,13 @@ mod tests {
 
     #[test]
     fn test_rotate_hue() {
-        assert_eq!(
-            Color::from_rgb(0, 255, 0),
-            Color::from_rgb(255, 0, 0).rotate_hue(120.0)
-        );
+        assert_eq!(Color::lime(), Color::red().rotate_hue(120.0));
     }
 
     #[test]
     fn test_complementary() {
-        let magenta = Color::from_rgb(255, 0, 255);
-        let lime = Color::from_rgb(0, 255, 0);
-        assert_eq!(magenta, lime.complementary());
-
-        let magenta = Color::from_rgb(255, 0, 255);
-        let lime = Color::from_rgb(0, 255, 0);
-        assert_eq!(magenta, lime.complementary());
+        assert_eq!(Color::fuchsia(), Color::lime().complementary());
+        assert_eq!(Color::lime(), Color::fuchsia().complementary());
     }
 
     #[test]
