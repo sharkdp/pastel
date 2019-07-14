@@ -155,7 +155,7 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("list")
-                .about("Print a list of available color names")
+                .about("Show a list of available color names")
                 .arg(
                     Arg::with_name("sort")
                         .short("s")
@@ -190,7 +190,19 @@ fn run() -> Result<ExitCode> {
                     Arg::with_name("bold")
                         .short("b")
                         .long("bold")
-                        .help("Print the text in bold face")
+                        .help("Print the text in bold face"),
+                )
+                .arg(
+                    Arg::with_name("italic")
+                        .short("i")
+                        .long("italic")
+                        .help("Print the text in italic font"),
+                )
+                .arg(
+                    Arg::with_name("underline")
+                        .short("u")
+                        .long("underline")
+                        .help("Draw a line below the text"),
                 )
                 .arg(
                     Arg::with_name("no-newline")
@@ -201,7 +213,7 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("format")
-                .about("Print a list of available color names")
+                .about("Display a given color in a specific format")
                 .arg(
                     Arg::with_name("type")
                         .help("Format type")

@@ -337,6 +337,14 @@ impl GenericCommand for PaintCommand {
             print!("\x1b[1m")
         }
 
+        if matches.is_present("italic") {
+            print!("\x1b[3m")
+        }
+
+        if matches.is_present("underline") {
+            print!("\x1b[4m")
+        }
+
         print!("{}", text);
         print!("\x1b[0m");
 
