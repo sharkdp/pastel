@@ -1,5 +1,6 @@
 pub mod ansi;
 mod helper;
+pub mod random;
 mod types;
 
 use helper::{clamp, mod_positive};

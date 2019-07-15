@@ -13,6 +13,7 @@ edition = "2018"
 [dependencies]
 # library dependencies
 lazy_static = "1.3.0"
+rand = "0.7"
 
 # binary-only dependencies (see https://github.com/rust-lang/cargo/issues/1982)
 regex = "1"
