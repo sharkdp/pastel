@@ -120,7 +120,15 @@ fn run() -> Result<ExitCode> {
                 .arg(
                     Arg::with_name("type")
                         .help("Format type")
-                        .possible_values(&["rgb", "hsl", "hex", "ansi-8-bit", "ansi-24-bit"])
+                        .possible_values(&[
+                            "rgb",
+                            "hex",
+                            "hsl",
+                            "Lab",
+                            "LCh",
+                            "ansi-8-bit",
+                            "ansi-24-bit",
+                        ])
                         .required(true),
                 )
                 .arg(color_arg.clone()),

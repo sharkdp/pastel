@@ -313,6 +313,18 @@ impl Color {
         }
     }
 
+    /// Format the color as a Lab-representation string (`Lab(41, 83, -93)`).
+    pub fn to_lab_string(&self, format: Format) -> String {
+        let lab = self.to_lab();
+        format!(
+            "Lab({l:.0},{space}{a:.0},{space}{b:.0})",
+            l = lab.l,
+            a = lab.a,
+            b = lab.b,
+            space = if format == Format::Spaces { " " } else { "" }
+        )
+    }
+
     /// Get L, C and h coordinates according to the CIE LCh color space.
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
@@ -325,6 +337,18 @@ impl Color {
         let h = mod_positive(Scalar::atan2(b, a) * RAD2DEG, 360.0);
 
         LCh { l, c, h, alpha }
+    }
+
+    /// Format the color as a LCh-representation string (`LCh(0.3, 0.2, 0.1)`).
+    pub fn to_lch_string(&self, format: Format) -> String {
+        let lch = self.to_lch();
+        format!(
+            "LCh({l:.0},{space}{c:.0},{space}{h:.0})",
+            l = lch.l,
+            c = lch.c,
+            h = lch.h,
+            space = if format == Format::Spaces { " " } else { "" }
+        )
     }
 
     /// Pure black.
@@ -866,5 +890,17 @@ mod tests {
     fn test_to_rgb_hex_string() {
         let c = Color::from_rgb(255, 127, 4);
         assert_eq!("#ff7f04", c.to_rgb_hex_string());
+    }
+
+    #[test]
+    fn test_to_lab_string() {
+        let c = Color::from_lab(41.0, 83.0, -93.0);
+        assert_eq!("Lab(41, 83, -93)", c.to_lab_string(Format::Spaces));
+    }
+
+    #[test]
+    fn test_to_lch_string() {
+        let c = Color::from_lch(52.0, 44.0, 271.0);
+        assert_eq!("LCh(52, 44, 271)", c.to_lch_string(Format::Spaces));
     }
 }
