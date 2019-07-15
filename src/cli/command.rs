@@ -5,6 +5,7 @@ use clap::ArgMatches;
 use std::io::{self, BufRead, Write};
 
 use pastel::ansi::AnsiColor;
+use pastel::random::{RandomizationStrategy, VividStrategy};
 use pastel::{Color, Format};
 
 use crate::config::Config;
@@ -311,6 +312,28 @@ impl GenericCommand for ListCommand {
     }
 }
 
+struct RandomCommand;
+impl GenericCommand for RandomCommand {
+    fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
+        let strategy_arg = matches.value_of("strategy").expect("required argument");
+        let count = matches.value_of("number").expect("required argument");
+        let count = count
+            .parse::<usize>()
+            .map_err(|_| PastelError::CouldNotParseNumber(count.into()))?;
+
+        let mut strategy = match strategy_arg {
+            "vivid" => VividStrategy,
+            _ => unreachable!("Unknown randomization strategy"),
+        };
+
+        for _ in 0..count {
+            show_color(&config, &strategy.generate())?;
+        }
+
+        Ok(())
+    }
+}
+
 struct FormatCommand;
 
 impl ColorCommand for FormatCommand {
@@ -427,6 +450,7 @@ impl Command {
             "gray" => Command::Generic(Box::new(GrayCommand)),
             "to-gray" => Command::WithColor(Box::new(ToGrayCommand)),
             "list" => Command::Generic(Box::new(ListCommand)),
+            "random" => Command::Generic(Box::new(RandomCommand)),
             "paint" => Command::Generic(Box::new(PaintCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),
             _ => unreachable!("Unknown subcommand"),

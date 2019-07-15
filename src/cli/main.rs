@@ -69,6 +69,27 @@ fn run() -> Result<ExitCode> {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("random")
+                .about("Generate random colors")
+                .arg(
+                    Arg::with_name("strategy")
+                        .long("strategy")
+                        .short("s")
+                        .help("Randomization strategy")
+                        .possible_values(&["vivid"])
+                        .default_value("vivid"),
+                )
+                .arg(
+                    Arg::with_name("number")
+                        .long("number")
+                        .short("n")
+                        .help("Number of colors to generate")
+                        .takes_value(true)
+                        .default_value("10")
+                        .value_name("count"),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("paint")
                 .about("Print colorized text using ANSI escape sequences")
                 .arg(
