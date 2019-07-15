@@ -3,16 +3,20 @@ use regex::Regex;
 
 use crate::x11colors::X11_COLORS;
 
-fn hex_to_u8_unsafe(hex: &str) -> u8 {
-    u8::from_str_radix(hex, 16).unwrap()
+fn hex_to_u8_unsafe(num: &str) -> u8 {
+    u8::from_str_radix(num, 16).unwrap()
 }
 
-fn dec_to_u8(hex: &str) -> Option<u8> {
-    u8::from_str_radix(hex, 10).ok()
+fn dec_to_u8(num: &str) -> Option<u8> {
+    u8::from_str_radix(num, 10).ok()
 }
 
-fn dec_to_i32(hex: &str) -> Option<i32> {
-    i32::from_str_radix(hex, 10).ok()
+fn dec_to_i32(num: &str) -> Option<i32> {
+    i32::from_str_radix(num, 10).ok()
+}
+
+fn float_to_f64(num: &str) -> Option<f64> {
+    num.parse::<f64>().ok()
 }
 
 fn rgb(r: u8, g: u8, b: u8) -> Color {
@@ -170,6 +174,29 @@ pub fn parse_color(color: &str) -> Option<Color> {
         };
     }
 
+    // gray(0.2)
+    let re_gray = Regex::new(
+        r"(?x)
+            ^
+            gray\(
+            \s*
+            (
+                    [0-9]+(\.[0-9]+)?   # 1 or 0.321
+                |
+                    \.[0-9]+            # .23
+            )
+            \s*
+            \)
+        ",
+    )
+    .unwrap();
+
+    if let Some(caps) = re_gray.captures(color) {
+        if let Some(lightness) = float_to_f64(caps.get(1).unwrap().as_str()) {
+            return Some(Color::graytone(lightness));
+        }
+    }
+
     for nc in X11_COLORS.iter() {
         if color.to_lowercase() == nc.name {
             return Some(nc.color.clone());
@@ -234,6 +261,26 @@ fn parse_hsl() {
     assert_eq!(None, parse_color("hsl(280,20,50%)"));
     assert_eq!(None, parse_color("hsl(280%,20%,50%)"));
     assert_eq!(None, parse_color("hsl(280,20%)"));
+}
+
+#[test]
+fn parse_gray() {
+    assert_eq!(Some(Color::graytone(0.2)), parse_color("gray(0.2)"));
+    assert_eq!(Some(Color::black()), parse_color("gray(0.0)"));
+    assert_eq!(Some(Color::black()), parse_color("gray(0)"));
+    assert_eq!(Some(Color::white()), parse_color("gray(1.0)"));
+    assert_eq!(Some(Color::white()), parse_color("gray(1)"));
+    assert_eq!(Some(Color::white()), parse_color("gray(7.3)"));
+
+    assert_eq!(Some(Color::graytone(0.32)), parse_color("gray(.32)"));
+
+    assert_eq!(
+        Some(Color::graytone(0.41)),
+        parse_color("  gray(  0.41   ) ")
+    );
+
+    assert_eq!(None, parse_color("gray(1.)"));
+    assert_eq!(None, parse_color("gray(-1)"));
 }
 
 #[test]
