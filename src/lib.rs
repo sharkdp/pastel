@@ -529,10 +529,17 @@ impl Color {
     /// Return a readable foreground text color (either `black` or `white`) for a
     /// given background color.
     pub fn text_color(&self) -> Color {
-        if self.is_light() {
-            Self::black()
+        // This threshold can be easily computed by solving
+        //
+        //   contrast(L_threshold, L_black) == contrast(L_threshold, L_white)
+        //
+        // where contrast(.., ..) is the color contrast as defined by the WCAG (see above)
+        const THRESHOLD: Scalar = 0.179;
+
+        if self.luminance() > THRESHOLD {
+            Color::black()
         } else {
-            Self::white()
+            Color::white()
         }
     }
 
