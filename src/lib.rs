@@ -510,6 +510,22 @@ impl Color {
         0.2126 * r + 0.7152 * g + 0.0722 * b
     }
 
+    /// Contrast ratio between two colors as defined by the WCAG. The ratio can range from 1.0
+    /// to 21.0. Two colors with a contrast ratio of 4.5 or higher can be used as text color and
+    /// background color and should be well readable.
+    ///
+    /// https://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
+    pub fn contrast_ratio(&self, other: &Color) -> Scalar {
+        let l_self = self.luminance();
+        let l_other = other.luminance();
+
+        if l_self > l_other {
+            (l_self + 0.05) / (l_other + 0.05)
+        } else {
+            (l_other + 0.05) / (l_self + 0.05)
+        }
+    }
+
     /// Return a readable foreground text color (either `black` or `white`) for a
     /// given background color.
     pub fn text_color(&self) -> Color {
@@ -794,6 +810,21 @@ mod tests {
         let hotpink = Color::from_rgb(255, 105, 180);
         assert_relative_eq!(0.347, hotpink.luminance(), max_relative = 0.01);
         assert_eq!(0.0, Color::black().luminance());
+    }
+
+    #[test]
+    fn test_contrast_ratio() {
+        assert_relative_eq!(21.0, Color::black().contrast_ratio(&Color::white()));
+        assert_relative_eq!(21.0, Color::white().contrast_ratio(&Color::black()));
+
+        assert_relative_eq!(1.0, Color::white().contrast_ratio(&Color::white()));
+        assert_relative_eq!(1.0, Color::red().contrast_ratio(&Color::red()));
+
+        assert_relative_eq!(
+            4.26,
+            Color::from_rgb(255, 119, 153).contrast_ratio(&Color::from_rgb(0, 68, 85)),
+            max_relative = 0.01
+        );
     }
 
     #[test]
