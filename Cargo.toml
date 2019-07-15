@@ -1,7 +1,7 @@
 [package]
 authors = ["David Peter <mail@david-peter.de>"]
 categories = ["command-line-utilities"]
-description = "A command-line tool for working with colors"
+description = "A command-line tool to analyze, convert and manipulate colors"
 homepage = "https://github.com/sharkdp/pastel"
 license = "MIT/Apache-2.0"
 name = "pastel"
