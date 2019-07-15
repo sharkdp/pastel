@@ -147,20 +147,21 @@ pub fn show_color_tty(config: &Config, color: &Color) {
     canvas.print();
 }
 
-pub fn show_color(config: &Config, color: &Color) {
+pub fn show_color(config: &Config, color: &Color) -> Result<()> {
     if config.interactive_mode {
         show_color_tty(config, color);
     } else {
         println!("{}", color.to_hsl_string(Format::NoSpaces));
     }
+
+    Ok(())
 }
 
 struct ShowCommand;
 
 impl ColorCommand for ShowCommand {
     fn run(&self, _: &ArgMatches, config: &Config, color: &Color) -> Result<()> {
-        show_color(config, color);
-        Ok(())
+        show_color(config, color)
     }
 }
 
@@ -219,9 +220,7 @@ macro_rules! color_command {
         impl ColorCommand for $cmd_name {
             fn run(&self, $matches: &ArgMatches, config: &Config, $color: &Color) -> Result<()> {
                 let output = $body;
-                show_color(&config, &output);
-
-                Ok(())
+                show_color(&config, &output)
             }
         }
     };
@@ -257,6 +256,16 @@ color_command!(ComplementCommand, _matches, color, {
 });
 
 color_command!(ToGrayCommand, _matches, color, { color.to_gray() });
+
+struct GrayCommand;
+
+impl GenericCommand for GrayCommand {
+    fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
+        let lightness = number_arg(matches, "lightness")?;
+        let gray = Color::graytone(lightness);
+        show_color(&config, &gray)
+    }
+}
 
 struct ListCommand;
 
@@ -409,6 +418,7 @@ impl Command {
             "darken" => Command::WithColor(Box::new(DarkenCommand)),
             "rotate" => Command::WithColor(Box::new(RotateCommand)),
             "complement" => Command::WithColor(Box::new(ComplementCommand)),
+            "gray" => Command::Generic(Box::new(GrayCommand)),
             "to-gray" => Command::WithColor(Box::new(ToGrayCommand)),
             "list" => Command::Generic(Box::new(ListCommand)),
             "paint" => Command::Generic(Box::new(PaintCommand)),

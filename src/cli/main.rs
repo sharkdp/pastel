@@ -214,6 +214,16 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("gray")
+                .about("Create a gray tone from a given lightness")
+                .long_about("Create a gray tone from a given lightness value between 0.0 and 1.0.")
+                .arg(
+                    Arg::with_name("lightness")
+                        .help("Lightness of the created gray tone")
+                        .required(true),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("to-gray")
                 .about("Completely desaturate a color (while preserving luminance)")
                 .long_about(
