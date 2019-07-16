@@ -76,7 +76,7 @@ fn run() -> Result<ExitCode> {
                         .long("strategy")
                         .short("s")
                         .help("Randomization strategy")
-                        .possible_values(&["vivid"])
+                        .possible_values(&["vivid", "uniform_rgb", "uniform_gray"])
                         .default_value("vivid"),
                 )
                 .arg(

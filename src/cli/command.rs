@@ -5,7 +5,8 @@ use clap::ArgMatches;
 use std::io::{self, BufRead, Write};
 
 use pastel::ansi::AnsiColor;
-use pastel::random::{RandomizationStrategy, VividStrategy};
+use pastel::random::strategies;
+use pastel::random::RandomizationStrategy;
 use pastel::{Color, Format};
 
 use crate::config::Config;
@@ -321,8 +322,10 @@ impl GenericCommand for RandomCommand {
             .parse::<usize>()
             .map_err(|_| PastelError::CouldNotParseNumber(count.into()))?;
 
-        let mut strategy = match strategy_arg {
-            "vivid" => VividStrategy,
+        let mut strategy: Box<dyn RandomizationStrategy> = match strategy_arg {
+            "vivid" => Box::new(strategies::Vivid),
+            "uniform_rgb" => Box::new(strategies::UniformRGB),
+            "uniform_gray" => Box::new(strategies::UniformGray),
             _ => unreachable!("Unknown randomization strategy"),
         };
 
