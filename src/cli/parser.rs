@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 use pastel::Color;
 use regex::Regex;
 
-use crate::x11colors::X11_COLORS;
+use crate::named::NAMED_COLORS;
 
 fn hex_to_u8_unsafe(num: &str) -> u8 {
     u8::from_str_radix(num, 16).unwrap()
@@ -200,7 +200,7 @@ pub fn parse_color(color: &str) -> Option<Color> {
         }
     }
 
-    for nc in X11_COLORS.iter() {
+    for nc in NAMED_COLORS.iter() {
         if color.to_lowercase() == nc.name {
             return Some(nc.color.clone());
         }

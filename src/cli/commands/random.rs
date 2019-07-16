@@ -9,6 +9,7 @@ pub struct RandomCommand;
 impl GenericCommand for RandomCommand {
     fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
         let strategy_arg = matches.value_of("strategy").expect("required argument");
+
         let count = matches.value_of("number").expect("required argument");
         let count = count
             .parse::<usize>()

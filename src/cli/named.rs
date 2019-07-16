@@ -16,7 +16,7 @@ fn named_color(name: &'static str, r: u8, g: u8, b: u8) -> NamedColor {
 }
 
 lazy_static! {
-    pub static ref X11_COLORS: [NamedColor; 147] = [
+    pub static ref NAMED_COLORS: [NamedColor; 148] = [
         named_color("aliceblue", 240, 248, 255),
         named_color("antiquewhite", 250, 235, 215),
         named_color("aqua", 0, 255, 255),
@@ -136,6 +136,7 @@ lazy_static! {
         named_color("plum", 221, 160, 221),
         named_color("powderblue", 176, 224, 230),
         named_color("purple", 128, 0, 128),
+        named_color("rebeccapurple", 102, 51, 153),
         named_color("red", 255, 0, 0),
         named_color("rosybrown", 188, 143, 143),
         named_color("royalblue", 65, 105, 225),

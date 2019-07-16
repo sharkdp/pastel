@@ -6,10 +6,10 @@ mod commands;
 mod config;
 mod error;
 mod hdcanvas;
+mod named;
 mod parser;
 mod termcolor;
 mod utility;
-mod x11colors;
 
 use commands::Command;
 use config::Config;

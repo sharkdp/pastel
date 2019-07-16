@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 
 use crate::commands::prelude::*;
-use crate::x11colors::{NamedColor, X11_COLORS};
+use crate::named::{NamedColor, NAMED_COLORS};
 
 pub struct ListCommand;
 
@@ -9,7 +9,7 @@ impl GenericCommand for ListCommand {
     fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
         let sort_order = matches.value_of("sort").expect("required argument");
 
-        let mut colors: Vec<&NamedColor> = X11_COLORS.iter().map(|r| r).collect();
+        let mut colors: Vec<&NamedColor> = NAMED_COLORS.iter().map(|r| r).collect();
         if sort_order == "brightness" {
             colors.sort_by_key(|nc| (-nc.color.brightness() * 1000.0) as i32);
         } else if sort_order == "luminance" {
