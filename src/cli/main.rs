@@ -2,7 +2,7 @@ use ansi_term::Color as TermColor;
 use atty::Stream;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
-mod command;
+mod commands;
 mod config;
 mod error;
 mod hdcanvas;
@@ -11,7 +11,7 @@ mod termcolor;
 mod utility;
 mod x11colors;
 
-use command::Command;
+use commands::Command;
 use config::Config;
 use error::{PastelError, Result};
 
