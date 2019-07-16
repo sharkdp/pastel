@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use pastel::Color;
 use regex::Regex;
 
@@ -23,11 +24,9 @@ fn rgb(r: u8, g: u8, b: u8) -> Color {
     Color::from_rgb(r, g, b)
 }
 
-pub fn parse_color(color: &str) -> Option<Color> {
-    let color = color.trim();
-
+lazy_static! {
     // #RRGGBB
-    let re_hex_rrggbb = Regex::new(
+    pub static ref RE_HEX_RRGGBB: Regex = Regex::new(
         r"(?x)
             ^
             \#?                # optional '#' character
@@ -39,16 +38,8 @@ pub fn parse_color(color: &str) -> Option<Color> {
     )
     .unwrap();
 
-    if let Some(caps) = re_hex_rrggbb.captures(color) {
-        let r = hex_to_u8_unsafe(caps.get(1).unwrap().as_str());
-        let g = hex_to_u8_unsafe(caps.get(2).unwrap().as_str());
-        let b = hex_to_u8_unsafe(caps.get(3).unwrap().as_str());
-
-        return Some(rgb(r, g, b));
-    }
-
     // #RGB
-    let re_hex_rgb = Regex::new(
+    pub static ref RE_HEX_RGB: Regex = Regex::new(
         r"(?x)
             ^
             \#?             # optional '#' character
@@ -60,20 +51,8 @@ pub fn parse_color(color: &str) -> Option<Color> {
     )
     .unwrap();
 
-    if let Some(caps) = re_hex_rgb.captures(color) {
-        let r = hex_to_u8_unsafe(caps.get(1).unwrap().as_str());
-        let g = hex_to_u8_unsafe(caps.get(2).unwrap().as_str());
-        let b = hex_to_u8_unsafe(caps.get(3).unwrap().as_str());
-
-        let r = 16 * r + r;
-        let g = 16 * g + g;
-        let b = 16 * b + b;
-
-        return Some(rgb(r, g, b));
-    }
-
     // rgb(255,0,119)
-    let re_rgb = Regex::new(
+    pub static ref RE_RGB: Regex = Regex::new(
         r"(?x)
             ^
             rgb\(
@@ -94,19 +73,8 @@ pub fn parse_color(color: &str) -> Option<Color> {
     )
     .unwrap();
 
-    if let Some(caps) = re_rgb.captures(color) {
-        let mr = dec_to_u8(caps.get(1).unwrap().as_str());
-        let mg = dec_to_u8(caps.get(2).unwrap().as_str());
-        let mb = dec_to_u8(caps.get(3).unwrap().as_str());
-
-        match (mr, mg, mb) {
-            (Some(r), Some(g), Some(b)) => return Some(rgb(r, g, b)),
-            _ => {}
-        };
-    }
-
     // RRRGGGBBB without the `rgb(...)` function: 255,0,119
-    let re_rgb_nofunction = Regex::new(
+    pub static ref RE_RGB_NOFUNCTION: Regex = Regex::new(
         r"(?x)
             ^
             ([0-9]{1,3})
@@ -123,19 +91,8 @@ pub fn parse_color(color: &str) -> Option<Color> {
     )
     .unwrap();
 
-    if let Some(caps) = re_rgb_nofunction.captures(color) {
-        let mr = dec_to_u8(caps.get(1).unwrap().as_str());
-        let mg = dec_to_u8(caps.get(2).unwrap().as_str());
-        let mb = dec_to_u8(caps.get(3).unwrap().as_str());
-
-        match (mr, mg, mb) {
-            (Some(r), Some(g), Some(b)) => return Some(rgb(r, g, b)),
-            _ => {}
-        };
-    }
-
     // hsl(280,35%,40$)
-    let re_hsl = Regex::new(
+    pub static ref RE_HSL: Regex = Regex::new(
         r"(?x)
             ^
             hsl\(
@@ -158,7 +115,70 @@ pub fn parse_color(color: &str) -> Option<Color> {
     )
     .unwrap();
 
-    if let Some(caps) = re_hsl.captures(color) {
+    // gray(0.2)
+    pub static ref RE_GRAY: Regex = Regex::new(
+        r"(?x)
+            ^
+            gray\(
+            \s*
+            (
+                    [0-9]+(\.[0-9]+)?   # 1 or 0.321
+                |
+                    \.[0-9]+            # .23
+            )
+            \s*
+            \)
+        ",
+    )
+    .unwrap();
+}
+
+pub fn parse_color(color: &str) -> Option<Color> {
+    let color = color.trim();
+
+    if let Some(caps) = RE_HEX_RRGGBB.captures(color) {
+        let r = hex_to_u8_unsafe(caps.get(1).unwrap().as_str());
+        let g = hex_to_u8_unsafe(caps.get(2).unwrap().as_str());
+        let b = hex_to_u8_unsafe(caps.get(3).unwrap().as_str());
+
+        return Some(rgb(r, g, b));
+    }
+
+    if let Some(caps) = RE_HEX_RGB.captures(color) {
+        let r = hex_to_u8_unsafe(caps.get(1).unwrap().as_str());
+        let g = hex_to_u8_unsafe(caps.get(2).unwrap().as_str());
+        let b = hex_to_u8_unsafe(caps.get(3).unwrap().as_str());
+
+        let r = 16 * r + r;
+        let g = 16 * g + g;
+        let b = 16 * b + b;
+
+        return Some(rgb(r, g, b));
+    }
+
+    if let Some(caps) = RE_RGB.captures(color) {
+        let mr = dec_to_u8(caps.get(1).unwrap().as_str());
+        let mg = dec_to_u8(caps.get(2).unwrap().as_str());
+        let mb = dec_to_u8(caps.get(3).unwrap().as_str());
+
+        match (mr, mg, mb) {
+            (Some(r), Some(g), Some(b)) => return Some(rgb(r, g, b)),
+            _ => {}
+        };
+    }
+
+    if let Some(caps) = RE_RGB_NOFUNCTION.captures(color) {
+        let mr = dec_to_u8(caps.get(1).unwrap().as_str());
+        let mg = dec_to_u8(caps.get(2).unwrap().as_str());
+        let mb = dec_to_u8(caps.get(3).unwrap().as_str());
+
+        match (mr, mg, mb) {
+            (Some(r), Some(g), Some(b)) => return Some(rgb(r, g, b)),
+            _ => {}
+        };
+    }
+
+    if let Some(caps) = RE_HSL.captures(color) {
         let mh = dec_to_i32(caps.get(1).unwrap().as_str());
         let ms = dec_to_i32(caps.get(2).unwrap().as_str());
         let ml = dec_to_i32(caps.get(3).unwrap().as_str());
@@ -174,24 +194,7 @@ pub fn parse_color(color: &str) -> Option<Color> {
         };
     }
 
-    // gray(0.2)
-    let re_gray = Regex::new(
-        r"(?x)
-            ^
-            gray\(
-            \s*
-            (
-                    [0-9]+(\.[0-9]+)?   # 1 or 0.321
-                |
-                    \.[0-9]+            # .23
-            )
-            \s*
-            \)
-        ",
-    )
-    .unwrap();
-
-    if let Some(caps) = re_gray.captures(color) {
+    if let Some(caps) = RE_GRAY.captures(color) {
         if let Some(lightness) = float_to_f64(caps.get(1).unwrap().as_str()) {
             return Some(Color::graytone(lightness));
         }
