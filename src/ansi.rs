@@ -3,7 +3,7 @@ use crate::Color;
 use atty::{self, Stream};
 
 #[derive(Debug, Clone, Copy)]
-pub enum AnsiMode {
+pub enum Mode {
     Ansi8Bit,
     TrueColor,
 }
@@ -20,7 +20,7 @@ pub trait AnsiColor {
     fn from_ansi_8bit(code: u8) -> Self;
     fn to_ansi_8bit(&self) -> u8;
 
-    fn to_ansi_sequence(&self, mode: AnsiMode) -> String;
+    fn to_ansi_sequence(&self, mode: Mode) -> String;
 }
 
 impl AnsiColor for Color {
@@ -83,10 +83,10 @@ impl AnsiColor for Color {
     /// Return an ANSI escape sequence in 8-bit or 24-bit representation:
     /// * 8-bit: `ESC[38;5;CODEm`, where CODE represents the color.
     /// * 24-bit: `ESC[38;2;R;G;Bm`, where R, G, B represent 8-bit RGB values
-    fn to_ansi_sequence(&self, mode: AnsiMode) -> String {
+    fn to_ansi_sequence(&self, mode: Mode) -> String {
         match mode {
-            AnsiMode::Ansi8Bit => format!("\x1b[38;5;{}m", self.to_ansi_8bit()),
-            AnsiMode::TrueColor => {
+            Mode::Ansi8Bit => format!("\x1b[38;5;{}m", self.to_ansi_8bit()),
+            Mode::TrueColor => {
                 let rgba = self.to_rgba();
                 format!("\x1b[38;2;{r};{g};{b}m", r = rgba.r, g = rgba.g, b = rgba.b)
             }
@@ -95,7 +95,7 @@ impl AnsiColor for Color {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct AnsiStyle {
+pub struct Style {
     foreground: Option<Color>,
     background: Option<Color>,
     bold: bool,
@@ -103,15 +103,20 @@ pub struct AnsiStyle {
     underline: bool,
 }
 
-impl AnsiStyle {
-    pub fn from_color(color: Color) -> AnsiStyle {
-        AnsiStyle {
+impl Style {
+    pub fn from_color(color: Color) -> Style {
+        Style {
             foreground: Some(color),
             background: None,
             bold: false,
             italic: false,
             underline: false,
         }
+    }
+
+    pub fn foreground(&mut self, color: Color) -> &mut Self {
+        self.foreground = Some(color);
+        self
     }
 
     pub fn on(&mut self, color: Color) -> &mut Self {
@@ -134,13 +139,13 @@ impl AnsiStyle {
         self
     }
 
-    pub fn escape_sequence(&self, mode: AnsiMode) -> String {
+    pub fn escape_sequence(&self, mode: Mode) -> String {
         let mut codes: Vec<u8> = vec![];
 
         if let Some(ref fg) = self.foreground {
             match mode {
-                AnsiMode::Ansi8Bit => codes.push(fg.to_ansi_8bit()),
-                AnsiMode::TrueColor => {
+                Mode::Ansi8Bit => codes.push(fg.to_ansi_8bit()),
+                Mode::TrueColor => {
                     let rgb = fg.to_rgba();
                     codes.extend_from_slice(&[38, 2, rgb.r, rgb.g, rgb.b]);
                 }
@@ -178,9 +183,9 @@ impl AnsiStyle {
     }
 }
 
-impl Default for AnsiStyle {
-    fn default() -> AnsiStyle {
-        AnsiStyle {
+impl Default for Style {
+    fn default() -> Style {
+        Style {
             foreground: None,
             background: None,
             bold: false,
@@ -191,39 +196,39 @@ impl Default for AnsiStyle {
 }
 
 pub trait ToAnsiStyle {
-    fn ansi_style(self) -> AnsiStyle;
+    fn ansi_style(self) -> Style;
 }
 
 impl ToAnsiStyle for Color {
-    fn ansi_style(self) -> AnsiStyle {
-        AnsiStyle::from_color(self)
+    fn ansi_style(self) -> Style {
+        Style::from_color(self)
     }
 }
 
-pub struct AnsiPainter {
-    mode: Option<AnsiMode>,
+pub struct Painter {
+    mode: Option<Mode>,
 }
 
-impl AnsiPainter {
-    pub fn from_mode(mode: AnsiMode) -> Self {
-        AnsiPainter { mode: Some(mode) }
+impl Painter {
+    pub fn from_mode(mode: Mode) -> Self {
+        Painter { mode: Some(mode) }
     }
 
     pub fn from_environment() -> Self {
         let mode = if atty::is(Stream::Stdout) {
             if std::env::var("COLORTERM") == Ok("truecolor".into()) {
-                Some(AnsiMode::TrueColor)
+                Some(Mode::TrueColor)
             } else {
-                Some(AnsiMode::Ansi8Bit)
+                Some(Mode::Ansi8Bit)
             }
         } else {
             None
         };
 
-        AnsiPainter { mode }
+        Painter { mode }
     }
 
-    pub fn paint(&self, text: &str, style: &AnsiStyle) -> String {
+    pub fn paint(&self, text: &str, style: &Style) -> String {
         if let Some(ansi_mode) = self.mode {
             format!(
                 "{begin}{text}{end}",
@@ -300,23 +305,16 @@ mod tests {
 
     #[test]
     fn ansi_style() {
-        assert_eq!(
-            "\x1b[0m",
-            AnsiStyle::default().escape_sequence(AnsiMode::TrueColor)
-        );
+        assert_eq!("\x1b[0m", Style::default().escape_sequence(Mode::TrueColor));
 
         assert_eq!(
             "\x1b[38;2;255;0;0m",
-            Color::red()
-                .ansi_style()
-                .escape_sequence(AnsiMode::TrueColor)
+            Color::red().ansi_style().escape_sequence(Mode::TrueColor)
         );
 
         assert_eq!(
             "\x1b[9m",
-            Color::red()
-                .ansi_style()
-                .escape_sequence(AnsiMode::Ansi8Bit)
+            Color::red().ansi_style().escape_sequence(Mode::Ansi8Bit)
         );
 
         assert_eq!(
@@ -327,13 +325,13 @@ mod tests {
                 .bold(true)
                 .italic(true)
                 .underline(true)
-                .escape_sequence(AnsiMode::TrueColor)
+                .escape_sequence(Mode::TrueColor)
         );
     }
 
     #[test]
     fn ansi_painter() {
-        let ansi = AnsiPainter::from_mode(AnsiMode::TrueColor);
+        let ansi = Painter::from_mode(Mode::TrueColor);
 
         assert_eq!(
             "\x1b[38;2;255;0;0;1mhello\x1b[0m",

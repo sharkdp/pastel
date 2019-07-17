@@ -5,6 +5,7 @@ pub enum PastelError {
     CouldNotReadFromStdin,
     ColorArgRequired,
     CouldNotParseNumber(String),
+    StdoutClosed,
 }
 
 impl PastelError {
@@ -21,6 +22,7 @@ impl PastelError {
             PastelError::CouldNotParseNumber(number) => {
                 format!("Could not parse number '{}'", number)
             }
+            PastelError::StdoutClosed => "Output pipe has been closed".into(),
         }
     }
 }

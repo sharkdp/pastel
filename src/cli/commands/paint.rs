@@ -1,5 +1,9 @@
+use std::io::{self, Write};
+
 use crate::commands::prelude::*;
 use crate::parser::parse_color;
+
+use pastel::ansi::{Mode, Painter, Style};
 
 pub struct PaintCommand;
 
@@ -8,54 +12,51 @@ impl GenericCommand for PaintCommand {
         let text = matches.value_of("text").expect("required argument");
 
         let fg = matches.value_of("color").expect("required argument");
-
-        if fg.trim() != "default" {
+        let fg = if fg.trim() == "default" {
+            None
+        } else {
             // TODO: remove duplication - move this into a function and use it in
             // color_args(). Write integration tests
-            let fg = if fg == "-" {
-                color_from_stdin()?
+            if fg == "-" {
+                Some(color_from_stdin()?)
             } else {
-                parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?
-            };
+                Some(parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?)
+            }
+        };
 
-            let fg_rgba = fg.to_rgba();
-            print!(
-                "\x1b[38;2;{r};{g};{b}m",
-                r = fg_rgba.r,
-                g = fg_rgba.g,
-                b = fg_rgba.b
-            );
+        let bg = if let Some(bg) = matches.value_of("on") {
+            Some(parse_color(bg).ok_or(PastelError::ColorParseError(bg.into()))?)
+        } else {
+            None
+        };
+
+        let mut style = Style::default();
+
+        if let Some(fg) = fg {
+            style.foreground(fg);
         }
 
-        if let Some(bg) = matches.value_of("on") {
-            let bg = parse_color(bg).ok_or(PastelError::ColorParseError(bg.into()))?;
-            let bg_rgba = bg.to_rgba();
-            print!(
-                "\x1b[48;2;{r};{g};{b}m",
-                r = bg_rgba.r,
-                g = bg_rgba.g,
-                b = bg_rgba.b
-            );
+        if let Some(bg) = bg {
+            style.on(bg);
         }
 
-        if matches.is_present("bold") {
-            print!("\x1b[1m")
-        }
+        style.bold(matches.is_present("bold"));
+        style.italic(matches.is_present("italic"));
+        style.underline(matches.is_present("underline"));
 
-        if matches.is_present("italic") {
-            print!("\x1b[3m")
-        }
+        let stdout = io::stdout();
 
-        if matches.is_present("underline") {
-            print!("\x1b[4m")
-        }
-
-        print!("{}", text);
-        print!("\x1b[0m");
-
-        if !matches.is_present("no-newline") {
-            println!();
-        }
+        writeln!(
+            stdout.lock(),
+            "{}{}",
+            Painter::from_mode(Mode::TrueColor).paint(text, &style),
+            if matches.is_present("no-newline") {
+                ""
+            } else {
+                "\n"
+            }
+        )
+        .map_err(|_| PastelError::StdoutClosed)?;
 
         Ok(())
     }
