@@ -1,6 +1,6 @@
 use crate::commands::prelude::*;
 
-use pastel::ansi::AnsiColor;
+use pastel::ansi::{AnsiColor, AnsiMode};
 use pastel::Format;
 
 pub struct FormatCommand;
@@ -26,10 +26,10 @@ impl ColorCommand for FormatCommand {
                 println!("{}", color.to_lch_string(Format::Spaces));
             }
             "ansi-8-bit" => {
-                print!("{}", color.to_ansi_sequence_8bit());
+                print!("{}", color.to_ansi_sequence(AnsiMode::Ansi8Bit));
             }
             "ansi-24-bit" => {
-                print!("{}", color.to_ansi_sequence_24bit());
+                print!("{}", color.to_ansi_sequence(AnsiMode::TrueColor));
             }
             &_ => {
                 unreachable!("Unknown format type");
