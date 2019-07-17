@@ -92,14 +92,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_from_ansi_8bit_lower_16() {
+    fn from_ansi_8bit_lower_16() {
         assert_eq!(Color::black(), Color::from_ansi_8bit(0));
         assert_eq!(Color::red(), Color::from_ansi_8bit(9));
         assert_eq!(Color::white(), Color::from_ansi_8bit(15));
     }
 
     #[test]
-    fn test_from_ansi_8bit_cube() {
+    fn from_ansi_8bit_cube() {
         assert_eq!(Color::black(), Color::from_ansi_8bit(16));
         assert_eq!(Color::from_rgb(0, 0, 95), Color::from_ansi_8bit(17));
         assert_eq!(Color::from_rgb(95, 175, 135), Color::from_ansi_8bit(72));
@@ -108,14 +108,14 @@ mod tests {
     }
 
     #[test]
-    fn test_from_ansi_8bit_grays() {
+    fn from_ansi_8bit_grays() {
         assert_eq!(Color::from_rgb(8, 8, 8), Color::from_ansi_8bit(232));
         assert_eq!(Color::from_rgb(108, 108, 108), Color::from_ansi_8bit(242));
         assert_eq!(Color::from_rgb(238, 238, 238), Color::from_ansi_8bit(255));
     }
 
     #[test]
-    fn test_to_ansi_8bit_lower_16() {
+    fn to_ansi_8bit_lower_16() {
         assert_eq!(0, Color::black().to_ansi_8bit());
         assert_eq!(1, Color::maroon().to_ansi_8bit());
         assert_eq!(2, Color::green().to_ansi_8bit());
@@ -137,13 +137,13 @@ mod tests {
     }
 
     #[test]
-    fn test_to_ansi_8bit_cube() {
+    fn to_ansi_8bit_cube() {
         assert_eq!(72, Color::from_rgb(95, 175, 135).to_ansi_8bit());
         assert_eq!(221, Color::from_rgb(255, 215, 95).to_ansi_8bit());
     }
 
     #[test]
-    fn test_to_ansi_8bit_grays() {
+    fn to_ansi_8bit_grays() {
         assert_eq!(232, Color::from_rgb(8, 8, 8).to_ansi_8bit());
         assert_eq!(242, Color::from_rgb(108, 108, 108).to_ansi_8bit());
     }
