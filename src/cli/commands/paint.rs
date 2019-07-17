@@ -3,7 +3,7 @@ use std::io::{self, Write};
 use crate::commands::prelude::*;
 use crate::parser::parse_color;
 
-use pastel::ansi::{Mode, Painter, Style};
+use pastel::ansi::{Brush, Mode, Style};
 
 pub struct PaintCommand;
 
@@ -33,11 +33,11 @@ impl GenericCommand for PaintCommand {
         let mut style = Style::default();
 
         if let Some(fg) = fg {
-            style.foreground(fg);
+            style.foreground(&fg);
         }
 
         if let Some(bg) = bg {
-            style.on(bg);
+            style.on(&bg);
         }
 
         style.bold(matches.is_present("bold"));
@@ -49,7 +49,7 @@ impl GenericCommand for PaintCommand {
         writeln!(
             stdout.lock(),
             "{}{}",
-            Painter::from_mode(Mode::TrueColor).paint(text, &style),
+            Brush::from_mode(Mode::TrueColor).paint(text, &style),
             if matches.is_present("no-newline") {
                 ""
             } else {

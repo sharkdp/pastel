@@ -114,13 +114,13 @@ impl Style {
         }
     }
 
-    pub fn foreground(&mut self, color: Color) -> &mut Self {
-        self.foreground = Some(color);
+    pub fn foreground(&mut self, color: &Color) -> &mut Self {
+        self.foreground = Some(color.clone());
         self
     }
 
-    pub fn on(&mut self, color: Color) -> &mut Self {
-        self.background = Some(color);
+    pub fn on(&mut self, color: &Color) -> &mut Self {
+        self.background = Some(color.clone());
         self
     }
 
@@ -196,22 +196,23 @@ impl Default for Style {
 }
 
 pub trait ToAnsiStyle {
-    fn ansi_style(self) -> Style;
+    fn ansi_style(&self) -> Style;
 }
 
 impl ToAnsiStyle for Color {
-    fn ansi_style(self) -> Style {
-        Style::from_color(self)
+    fn ansi_style(&self) -> Style {
+        Style::from_color(self.clone())
     }
 }
 
-pub struct Painter {
+#[derive(Debug, Clone, Copy)]
+pub struct Brush {
     mode: Option<Mode>,
 }
 
-impl Painter {
+impl Brush {
     pub fn from_mode(mode: Mode) -> Self {
-        Painter { mode: Some(mode) }
+        Brush { mode: Some(mode) }
     }
 
     pub fn from_environment() -> Self {
@@ -225,19 +226,19 @@ impl Painter {
             None
         };
 
-        Painter { mode }
+        Brush { mode }
     }
 
-    pub fn paint(&self, text: &str, style: &Style) -> String {
+    pub fn paint<S: AsRef<str>>(&self, text: S, style: &Style) -> String {
         if let Some(ansi_mode) = self.mode {
             format!(
                 "{begin}{text}{end}",
                 begin = style.escape_sequence(ansi_mode),
-                text = text,
+                text = text.as_ref(),
                 end = "\x1b[0m"
             )
         } else {
-            text.into()
+            format!("{}", text.as_ref())
         }
     }
 }
@@ -321,7 +322,7 @@ mod tests {
             "\x1b[38;2;255;0;0;48;2;0;0;255;1;3;4m",
             Color::red()
                 .ansi_style()
-                .on(Color::blue())
+                .on(&Color::blue())
                 .bold(true)
                 .italic(true)
                 .underline(true)
@@ -330,8 +331,8 @@ mod tests {
     }
 
     #[test]
-    fn ansi_painter() {
-        let ansi = Painter::from_mode(Mode::TrueColor);
+    fn brush() {
+        let ansi = Brush::from_mode(Mode::TrueColor);
 
         assert_eq!(
             "\x1b[38;2;255;0;0;1mhello\x1b[0m",

@@ -1,4 +1,3 @@
-use ansi_term::Color as TermColor;
 use atty::Stream;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
@@ -8,7 +7,6 @@ mod error;
 mod hdcanvas;
 mod named;
 mod parser;
-mod termcolor;
 mod utility;
 
 use commands::Command;
@@ -284,7 +282,7 @@ fn main() {
         Err(err) => {
             eprintln!(
                 "{}: {}",
-                TermColor::Red.paint("[pastel error]"),
+                "[pastel error]", // TODO: red
                 err.message()
             );
             std::process::exit(1);

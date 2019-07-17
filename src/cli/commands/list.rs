@@ -3,6 +3,8 @@ use std::io::{self, Write};
 use crate::commands::prelude::*;
 use crate::named::{NamedColor, NAMED_COLORS};
 
+use pastel::ansi::ToAnsiStyle;
+
 pub struct ListCommand;
 
 impl GenericCommand for ListCommand {
@@ -27,9 +29,9 @@ impl GenericCommand for ListCommand {
                 let fg = bg.text_color();
                 println!(
                     "{}",
-                    fg.to_termcolor()
-                        .on(bg.to_termcolor())
-                        .paint(format!(" {:24}", nc.name))
+                    config
+                        .brush
+                        .paint(format!(" {:24}", nc.name), fg.ansi_style().on(bg))
                 );
             }
         } else {

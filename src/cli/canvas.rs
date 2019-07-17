@@ -1,10 +1,11 @@
-use ansi_term::{Color as TermColor, Style};
+use pastel::ansi::AnsiColor;
+use pastel::Color,
 
 #[derive(Debug, Clone)]
 pub enum Pixel {
     Empty,
     Chars(char, char),
-    Color(TermColor),
+    Colored(Color),
 }
 
 pub struct Canvas {
@@ -34,7 +35,7 @@ impl Canvas {
     ) {
         for i in 0..height {
             for j in 0..width {
-                *self.pixel_mut(row + i, col + j) = Pixel::Color(color);
+                *self.pixel_mut(row + i, col + j) = Pixel::Colored(color);
             }
         }
     }
@@ -51,7 +52,7 @@ impl Canvas {
         for i in 0..height {
             for j in 0..width {
                 let color = if (i + j) % 2 == 0 { dark } else { light };
-                *self.pixel_mut(row + i, col + j) = Pixel::Color(color);
+                *self.pixel_mut(row + i, col + j) = Pixel::Colored(color);
             }
         }
     }
@@ -74,7 +75,7 @@ impl Canvas {
             for j in 0..self.width {
                 match self.pixel(i, j) {
                     Pixel::Empty => print!("  "),
-                    Pixel::Color(color) => print!("{}", Style::new().on(*color).paint("  ")),
+                    Pixel::Colored(color) => print!("{}", Style::new().on(*color).paint("  ")),
                     Pixel::Chars(c1, c2) => print!("{}{}", c1, c2),
                 }
             }

@@ -6,8 +6,6 @@ use crate::utility::similar_colors;
 use pastel::Format;
 
 pub fn show_color_tty(config: &Config, color: &Color) {
-    let terminal_color = color.to_termcolor();
-
     let checkerboard_size: usize = 20;
     let color_panel_size: usize = 14;
 
@@ -15,21 +13,21 @@ pub fn show_color_tty(config: &Config, color: &Color) {
     let text_position_x: usize = checkerboard_size + 2 * config.padding;
     let text_position_y: usize = config.padding + 2;
 
-    let mut canvas = Canvas::new(2 * config.padding + checkerboard_size, 55);
+    let mut canvas = Canvas::new(2 * config.padding + checkerboard_size, 55, config.brush);
     canvas.draw_checkerboard(
         config.padding,
         config.padding,
         checkerboard_size,
         checkerboard_size,
-        TermColor::RGB(240, 240, 240),
-        TermColor::RGB(180, 180, 180),
+        &Color::graytone(0.94),
+        &Color::graytone(0.71),
     );
     canvas.draw_rect(
         color_panel_position,
         color_panel_position,
         color_panel_size,
         color_panel_size,
-        terminal_color,
+        color,
     );
 
     canvas.draw_text(
@@ -57,7 +55,7 @@ pub fn show_color_tty(config: &Config, color: &Color) {
             text_position_x + 1,
             2,
             5,
-            nc.color.to_termcolor(),
+            &nc.color,
         );
     }
 

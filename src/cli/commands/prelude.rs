@@ -6,7 +6,5 @@ pub use clap::ArgMatches;
 pub use super::io::*;
 pub use super::traits::*;
 
+pub use pastel::ansi::{AnsiColor, ToAnsiStyle};
 pub use pastel::Color;
-
-pub use crate::termcolor::ToTermColor;
-pub use ansi_term::Color as TermColor;

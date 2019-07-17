@@ -1,14 +1,16 @@
-use ansi_term::Color as TermColor;
+use pastel::ansi::{Brush, ToAnsiStyle};
+use pastel::Color;
 
 pub struct Canvas {
     height: usize,
     width: usize,
-    pixels: Vec<Option<TermColor>>,
+    pixels: Vec<Option<Color>>,
     chars: Vec<Option<char>>,
+    brush: Brush,
 }
 
 impl Canvas {
-    pub fn new(height: usize, width: usize) -> Self {
+    pub fn new(height: usize, width: usize, brush: Brush) -> Self {
         assert!(height % 2 == 0);
 
         let mut pixels = vec![];
@@ -21,6 +23,7 @@ impl Canvas {
             width,
             pixels,
             chars,
+            brush,
         }
     }
 
@@ -30,11 +33,11 @@ impl Canvas {
         col: usize,
         height: usize,
         width: usize,
-        color: TermColor,
+        color: &Color,
     ) {
         for i in 0..height {
             for j in 0..width {
-                *self.pixel_mut(row + i, col + j) = Some(color);
+                *self.pixel_mut(row + i, col + j) = Some(color.clone());
             }
         }
     }
@@ -45,13 +48,13 @@ impl Canvas {
         col: usize,
         height: usize,
         width: usize,
-        dark: TermColor,
-        light: TermColor,
+        dark: &Color,
+        light: &Color,
     ) {
         for i in 0..height {
             for j in 0..width {
                 let color = if (i + j) % 2 == 0 { dark } else { light };
-                *self.pixel_mut(row + i, col + j) = Some(color);
+                *self.pixel_mut(row + i, col + j) = Some(color.clone());
             }
         }
     }
@@ -74,9 +77,15 @@ impl Canvas {
                     let p_bottom = self.pixel(2 * i_div_2 + 1, j);
 
                     match (p_top, p_bottom) {
-                        (Some(top), Some(bottom)) => print!("{}", top.on(*bottom).paint("▀")),
-                        (Some(top), None) => print!("{}", top.paint("▀")),
-                        (None, Some(bottom)) => print!("{}", bottom.paint("▄")),
+                        (Some(top), Some(bottom)) => {
+                            print!("{}", self.brush.paint("▀", top.ansi_style().on(bottom)))
+                        }
+                        (Some(top), None) => {
+                            print!("{}", self.brush.paint("▀", &top.ansi_style()))
+                        }
+                        (None, Some(bottom)) => {
+                            print!("{}", self.brush.paint("▄", &bottom.ansi_style()))
+                        }
                         (None, None) => print!(" "),
                     }
                 }
@@ -85,13 +94,13 @@ impl Canvas {
         }
     }
 
-    fn pixel(&self, i: usize, j: usize) -> &Option<TermColor> {
+    fn pixel(&self, i: usize, j: usize) -> &Option<Color> {
         assert!(i < self.height);
         assert!(j < self.width);
         &self.pixels[i * self.width + j]
     }
 
-    fn pixel_mut(&mut self, i: usize, j: usize) -> &mut Option<TermColor> {
+    fn pixel_mut(&mut self, i: usize, j: usize) -> &mut Option<Color> {
         assert!(i < self.height);
         assert!(j < self.width);
         &mut self.pixels[i * self.width + j]
