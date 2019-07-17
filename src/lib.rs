@@ -647,7 +647,7 @@ mod tests {
     }
 
     #[test]
-    fn test_color_partial_eq() {
+    fn color_partial_eq() {
         assert_eq!(
             Color::from_hsl(120.0, 0.3, 0.5),
             Color::from_hsl(360.0 + 120.0, 0.3, 0.5),
@@ -690,7 +690,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rgb_to_hsl_conversion() {
+    fn rgb_to_hsl_conversion() {
         assert_eq!(Color::white(), Color::from_rgb_scaled(1.0, 1.0, 1.0));
         assert_eq!(Color::gray(), Color::from_rgb_scaled(0.5, 0.5, 0.5));
         assert_eq!(Color::black(), Color::from_rgb_scaled(0.0, 0.0, 0.0));
@@ -715,7 +715,7 @@ mod tests {
     }
 
     #[test]
-    fn test_rgb_roundtrip_conversion() {
+    fn rgb_roundtrip_conversion() {
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
             let rgb = color1.to_rgba();
@@ -738,7 +738,7 @@ mod tests {
     }
 
     #[test]
-    fn test_xyz_conversion() {
+    fn xyz_conversion() {
         assert_eq!(Color::white(), Color::from_xyz(0.9505, 1.0, 1.0890));
         assert_eq!(Color::red(), Color::from_xyz(0.4123, 0.2126, 0.01933));
         assert_eq!(
@@ -759,7 +759,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lab_conversion() {
+    fn lab_conversion() {
         assert_eq!(Color::red(), Color::from_lab(53.233, 80.109, 67.22));
 
         let roundtrip = |h, s, l| {
@@ -775,7 +775,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lch_conversion() {
+    fn lch_conversion() {
         assert_eq!(
             Color::from_hsl(0.0, 1.0, 0.245),
             Color::from_lch(24.829, 60.093, 38.18)
@@ -794,18 +794,18 @@ mod tests {
     }
 
     #[test]
-    fn test_rotate_hue() {
+    fn rotate_hue() {
         assert_eq!(Color::lime(), Color::red().rotate_hue(120.0));
     }
 
     #[test]
-    fn test_complementary() {
+    fn complementary() {
         assert_eq!(Color::fuchsia(), Color::lime().complementary());
         assert_eq!(Color::lime(), Color::fuchsia().complementary());
     }
 
     #[test]
-    fn test_lighten() {
+    fn lighten() {
         assert_eq!(
             Color::from_hsl(90.0, 0.5, 0.7),
             Color::from_hsl(90.0, 0.5, 0.3).lighten(0.4)
@@ -817,7 +817,7 @@ mod tests {
     }
 
     #[test]
-    fn test_to_gray() {
+    fn to_gray() {
         let salmon = Color::from_rgb(250, 128, 114);
         assert_eq!(0.0, salmon.to_gray().to_hsla().s);
         assert_relative_eq!(
@@ -830,14 +830,14 @@ mod tests {
     }
 
     #[test]
-    fn test_brightness() {
+    fn brightness() {
         assert_eq!(0.0, Color::black().brightness());
         assert_eq!(1.0, Color::white().brightness());
         assert_eq!(0.5, Color::graytone(0.5).brightness());
     }
 
     #[test]
-    fn test_luminance() {
+    fn luminance() {
         assert_eq!(1.0, Color::white().luminance());
         let hotpink = Color::from_rgb(255, 105, 180);
         assert_relative_eq!(0.347, hotpink.luminance(), max_relative = 0.01);
@@ -845,7 +845,7 @@ mod tests {
     }
 
     #[test]
-    fn test_contrast_ratio() {
+    fn contrast_ratio() {
         assert_relative_eq!(21.0, Color::black().contrast_ratio(&Color::white()));
         assert_relative_eq!(21.0, Color::white().contrast_ratio(&Color::black()));
 
@@ -860,13 +860,13 @@ mod tests {
     }
 
     #[test]
-    fn test_text_color() {
+    fn text_color() {
         assert_eq!(Color::white(), Color::graytone(0.4).text_color());
         assert_eq!(Color::black(), Color::graytone(0.6).text_color());
     }
 
     #[test]
-    fn test_distance() {
+    fn distance() {
         let c = Color::from_rgb(255, 127, 14);
         assert_eq!(0.0, c.distance(&c));
 
@@ -876,31 +876,31 @@ mod tests {
     }
 
     #[test]
-    fn test_to_hsl_string() {
+    fn to_hsl_string() {
         let c = Color::from_hsl(91.3, 0.54, 0.98);
         assert_eq!("hsl(91, 54%, 98%)", c.to_hsl_string(Format::Spaces));
     }
 
     #[test]
-    fn test_to_rgb_string() {
+    fn to_rgb_string() {
         let c = Color::from_rgb(255, 127, 4);
         assert_eq!("rgb(255, 127, 4)", c.to_rgb_string(Format::Spaces));
     }
 
     #[test]
-    fn test_to_rgb_hex_string() {
+    fn to_rgb_hex_string() {
         let c = Color::from_rgb(255, 127, 4);
         assert_eq!("#ff7f04", c.to_rgb_hex_string());
     }
 
     #[test]
-    fn test_to_lab_string() {
+    fn to_lab_string() {
         let c = Color::from_lab(41.0, 83.0, -93.0);
         assert_eq!("Lab(41, 83, -93)", c.to_lab_string(Format::Spaces));
     }
 
     #[test]
-    fn test_to_lch_string() {
+    fn to_lch_string() {
         let c = Color::from_lch(52.0, 44.0, 271.0);
         assert_eq!("LCh(52, 44, 271)", c.to_lch_string(Format::Spaces));
     }
