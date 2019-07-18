@@ -147,8 +147,6 @@ fn run() -> Result<ExitCode> {
                             "hsl",
                             "Lab",
                             "LCh",
-                            "ansi-8-bit",
-                            "ansi-24-bit",
                         ])
                         .required(true),
                 )
