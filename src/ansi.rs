@@ -144,7 +144,7 @@ impl Style {
 
         if let Some(ref fg) = self.foreground {
             match mode {
-                Mode::Ansi8Bit => codes.push(fg.to_ansi_8bit()),
+                Mode::Ansi8Bit => codes.extend_from_slice(&[38, 5, fg.to_ansi_8bit()]),
                 Mode::TrueColor => {
                     let rgb = fg.to_rgba();
                     codes.extend_from_slice(&[38, 2, rgb.r, rgb.g, rgb.b]);
