@@ -4,7 +4,7 @@ use crate::hdcanvas::Canvas;
 pub struct PickCommand;
 
 impl GenericCommand for PickCommand {
-    fn run(&self, _: &ArgMatches, config: &Config) -> Result<()> {
+    fn run(&self, out: &mut dyn Write, _: &ArgMatches, config: &Config) -> Result<()> {
         let width = config.colorpicker_width;
 
         let mut canvas = Canvas::new(
@@ -41,7 +41,7 @@ impl GenericCommand for PickCommand {
             }
         }
 
-        canvas.print();
+        canvas.print(out)?;
 
         Ok(())
     }

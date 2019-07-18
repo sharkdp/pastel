@@ -7,7 +7,7 @@ use pastel::random::RandomizationStrategy;
 pub struct RandomCommand;
 
 impl GenericCommand for RandomCommand {
-    fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
+    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
         let strategy_arg = matches.value_of("strategy").expect("required argument");
 
         let count = matches.value_of("number").expect("required argument");
@@ -23,7 +23,7 @@ impl GenericCommand for RandomCommand {
         };
 
         for _ in 0..count {
-            show_color(&config, &strategy.generate())?;
+            show_color(out, &config, &strategy.generate())?;
         }
 
         Ok(())

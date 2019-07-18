@@ -7,9 +7,15 @@ macro_rules! color_command {
         pub struct $cmd_name;
 
         impl ColorCommand for $cmd_name {
-            fn run(&self, $matches: &ArgMatches, config: &Config, $color: &Color) -> Result<()> {
+            fn run(
+                &self,
+                out: &mut dyn Write,
+                $matches: &ArgMatches,
+                config: &Config,
+                $color: &Color,
+            ) -> Result<()> {
                 let output = $body;
-                show_color(&config, &output)
+                show_color(out, &config, &output)
             }
         }
     };

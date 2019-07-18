@@ -5,7 +5,7 @@ use crate::utility::similar_colors;
 
 use pastel::Format;
 
-pub fn show_color_tty(config: &Config, color: &Color) {
+pub fn show_color_tty(out: &mut dyn Write, config: &Config, color: &Color) -> Result<()> {
     let checkerboard_size: usize = 20;
     let color_panel_size: usize = 14;
 
@@ -59,14 +59,14 @@ pub fn show_color_tty(config: &Config, color: &Color) {
         );
     }
 
-    canvas.print();
+    canvas.print(out)
 }
 
-pub fn show_color(config: &Config, color: &Color) -> Result<()> {
+pub fn show_color(out: &mut dyn Write, config: &Config, color: &Color) -> Result<()> {
     if config.interactive_mode {
-        show_color_tty(config, color);
+        show_color_tty(out, config, color)?;
     } else {
-        println!("{}", color.to_hsl_string(Format::NoSpaces));
+        writeln!(out, "{}", color.to_hsl_string(Format::NoSpaces))?;
     }
 
     Ok(())
@@ -75,7 +75,13 @@ pub fn show_color(config: &Config, color: &Color) -> Result<()> {
 pub struct ShowCommand;
 
 impl ColorCommand for ShowCommand {
-    fn run(&self, _: &ArgMatches, config: &Config, color: &Color) -> Result<()> {
-        show_color(config, color)
+    fn run(
+        &self,
+        out: &mut dyn Write,
+        _: &ArgMatches,
+        config: &Config,
+        color: &Color,
+    ) -> Result<()> {
+        show_color(out, config, color)
     }
 }

@@ -1,15 +1,14 @@
-use std::io::{self, Write};
-
-use super::io::ColorArgIterator;
 use crate::commands::prelude::*;
 use crate::parser::parse_color;
+
+use super::io::ColorArgIterator;
 
 use pastel::ansi::{Brush, Mode, Style};
 
 pub struct PaintCommand;
 
 impl GenericCommand for PaintCommand {
-    fn run(&self, matches: &ArgMatches, _: &Config) -> Result<()> {
+    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, _: &Config) -> Result<()> {
         let text = matches.value_of("text").expect("required argument");
 
         let fg = matches.value_of("color").expect("required argument");
@@ -39,10 +38,8 @@ impl GenericCommand for PaintCommand {
         style.italic(matches.is_present("italic"));
         style.underline(matches.is_present("underline"));
 
-        let stdout = io::stdout();
-
         writeln!(
-            stdout.lock(),
+            out,
             "{}{}",
             Brush::from_mode(Mode::TrueColor).paint(text, &style),
             if matches.is_present("no-newline") {
@@ -50,8 +47,7 @@ impl GenericCommand for PaintCommand {
             } else {
                 "\n"
             }
-        )
-        .map_err(|_| PastelError::StdoutClosed)?;
+        )?;
 
         Ok(())
     }

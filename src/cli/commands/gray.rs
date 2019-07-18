@@ -6,9 +6,9 @@ use pastel::Color;
 pub struct GrayCommand;
 
 impl GenericCommand for GrayCommand {
-    fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
+    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
         let lightness = number_arg(matches, "lightness")?;
         let gray = Color::graytone(lightness);
-        show_color(&config, &gray)
+        show_color(out, &config, &gray)
     }
 }

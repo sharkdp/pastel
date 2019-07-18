@@ -52,11 +52,14 @@ impl Command {
     }
 
     pub fn execute(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
+        let stdout = std::io::stdout();
+        let mut out = stdout.lock();
+
         match self {
-            Command::Generic(cmd) => cmd.run(matches, config),
+            Command::Generic(cmd) => cmd.run(&mut out, matches, config),
             Command::WithColor(cmd) => {
                 for color in ColorArgIterator::from_args(matches.values_of("color"))? {
-                    cmd.run(matches, config, &color?)?;
+                    cmd.run(&mut out, matches, config, &color?)?;
                 }
 
                 Ok(())

@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+
 use atty::Stream;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
@@ -279,12 +281,15 @@ fn run() -> Result<ExitCode> {
 fn main() {
     let result = run();
     match result {
+        Err(PastelError::StdoutClosed) => {}
         Err(err) => {
-            eprintln!(
+            writeln!(
+                io::stderr(),
                 "{}: {}",
                 "[pastel error]", // TODO: red
                 err.message()
-            );
+            )
+            .ok();
             std::process::exit(1);
         }
         Ok(exit_code) => {

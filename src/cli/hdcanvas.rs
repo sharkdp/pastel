@@ -1,5 +1,9 @@
+use std::io::Write;
+
 use pastel::ansi::{Brush, ToAnsiStyle};
 use pastel::Color;
+
+use crate::Result;
 
 pub struct Canvas {
     height: usize,
@@ -67,31 +71,35 @@ impl Canvas {
         }
     }
 
-    pub fn print(&self) {
+    pub fn print(&self, out: &mut dyn Write) -> Result<()> {
         for i_div_2 in 0..self.height / 2 {
             for j in 0..self.width {
                 if let Some(c) = self.char(i_div_2, j) {
-                    print!("{}", c);
+                    write!(out, "{}", c)?;
                 } else {
                     let p_top = self.pixel(2 * i_div_2, j);
                     let p_bottom = self.pixel(2 * i_div_2 + 1, j);
 
                     match (p_top, p_bottom) {
-                        (Some(top), Some(bottom)) => {
-                            print!("{}", self.brush.paint("▀", top.ansi_style().on(bottom)))
-                        }
+                        (Some(top), Some(bottom)) => write!(
+                            out,
+                            "{}",
+                            self.brush.paint("▀", top.ansi_style().on(bottom))
+                        )?,
                         (Some(top), None) => {
-                            print!("{}", self.brush.paint("▀", &top.ansi_style()))
+                            write!(out, "{}", self.brush.paint("▀", &top.ansi_style()))?
                         }
                         (None, Some(bottom)) => {
-                            print!("{}", self.brush.paint("▄", &bottom.ansi_style()))
+                            write!(out, "{}", self.brush.paint("▄", &bottom.ansi_style()))?
                         }
-                        (None, None) => print!(" "),
-                    }
+                        (None, None) => write!(out, " ")?,
+                    };
                 }
             }
-            println!();
+            writeln!(out)?;
         }
+
+        Ok(())
     }
 
     fn pixel(&self, i: usize, j: usize) -> &Option<Color> {

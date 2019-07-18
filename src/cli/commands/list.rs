@@ -8,7 +8,7 @@ use pastel::ansi::ToAnsiStyle;
 pub struct ListCommand;
 
 impl GenericCommand for ListCommand {
-    fn run(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
+    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
         let sort_order = matches.value_of("sort").expect("required argument");
 
         let mut colors: Vec<&NamedColor> = NAMED_COLORS.iter().map(|r| r).collect();
@@ -27,12 +27,13 @@ impl GenericCommand for ListCommand {
             for nc in colors {
                 let bg = &nc.color;
                 let fg = bg.text_color();
-                println!(
+                writeln!(
+                    out,
                     "{}",
                     config
                         .brush
                         .paint(format!(" {:24}", nc.name), fg.ansi_style().on(bg))
-                );
+                )?;
             }
         } else {
             let stdout = io::stdout();

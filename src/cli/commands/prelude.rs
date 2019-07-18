@@ -1,3 +1,5 @@
+pub use std::io::Write;
+
 pub use crate::config::Config;
 pub use crate::error::{PastelError, Result};
 

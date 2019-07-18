@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum PastelError {
     ColorParseError(String),
     ColorInvalidUTF8,
@@ -6,6 +6,7 @@ pub enum PastelError {
     ColorArgRequired,
     CouldNotParseNumber(String),
     StdoutClosed,
+    IoError(std::io::Error),
 }
 
 impl PastelError {
@@ -23,6 +24,16 @@ impl PastelError {
                 format!("Could not parse number '{}'", number)
             }
             PastelError::StdoutClosed => "Output pipe has been closed".into(),
+            PastelError::IoError(err) => format!("I/O error: {}", err),
+        }
+    }
+}
+
+impl From<std::io::Error> for PastelError {
+    fn from(err: std::io::Error) -> PastelError {
+        match err.kind() {
+            std::io::ErrorKind::BrokenPipe => PastelError::StdoutClosed,
+            _ => PastelError::IoError(err),
         }
     }
 }
