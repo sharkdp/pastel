@@ -9,31 +9,29 @@ impl ColorCommand for FormatCommand {
         &self,
         out: &mut dyn Write,
         matches: &ArgMatches,
-        _: &Config,
+        config: &Config,
         color: &Color,
     ) -> Result<()> {
         let format_type = matches.value_of("type").expect("required argument");
 
-        match format_type {
-            "rgb" => {
-                writeln!(out, "{}", color.to_rgb_string(Format::Spaces))?;
-            }
-            "hex" => {
-                writeln!(out, "{}", color.to_rgb_hex_string())?;
-            }
-            "hsl" => {
-                writeln!(out, "{}", color.to_hsl_string(Format::Spaces))?;
-            }
-            "Lab" => {
-                writeln!(out, "{}", color.to_lab_string(Format::Spaces))?;
-            }
-            "LCh" => {
-                writeln!(out, "{}", color.to_lch_string(Format::Spaces))?;
-            }
+        let output = match format_type {
+            "rgb" => color.to_rgb_string(Format::Spaces),
+            "hex" => color.to_rgb_hex_string(),
+            "hsl" => color.to_hsl_string(Format::Spaces),
+            "Lab" => color.to_lab_string(Format::Spaces),
+            "LCh" => color.to_lch_string(Format::Spaces),
             &_ => {
                 unreachable!("Unknown format type");
             }
-        }
+        };
+
+        writeln!(
+            out,
+            "{}",
+            config
+                .brush
+                .paint(output, &color.text_color().ansi_style().on(&color))
+        )?;
 
         Ok(())
     }
