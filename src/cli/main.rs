@@ -15,9 +15,12 @@ use commands::Command;
 use config::Config;
 use error::{PastelError, Result};
 
+use pastel::ansi::ToAnsiStyle;
+use pastel::Color;
+
 type ExitCode = i32;
 
-fn run() -> Result<ExitCode> {
+fn run(config: &Config) -> Result<ExitCode> {
     let color_arg = Arg::with_name("color")
         .help(
             "Colors can be specified in many different formats, such as #RRGGBB, RRGGBB, \
@@ -141,13 +144,7 @@ fn run() -> Result<ExitCode> {
                 .arg(
                     Arg::with_name("type")
                         .help("Format type")
-                        .possible_values(&[
-                            "rgb",
-                            "hex",
-                            "hsl",
-                            "Lab",
-                            "LCh",
-                        ])
+                        .possible_values(&["rgb", "hex", "hsl", "Lab", "LCh"])
                         .required(true),
                 )
                 .arg(color_arg.clone()),
@@ -265,8 +262,6 @@ fn run() -> Result<ExitCode> {
     let global_matches = app.get_matches();
 
     if let (subcommand, Some(matches)) = global_matches.subcommand() {
-        let interactive_mode = atty::is(Stream::Stdout);
-        let config = Config::new(interactive_mode);
         let command = Command::from_string(subcommand);
         command.execute(matches, &config)?;
     } else {
@@ -277,14 +272,19 @@ fn run() -> Result<ExitCode> {
 }
 
 fn main() {
-    let result = run();
+    let interactive_mode = atty::is(Stream::Stdout);
+    let config = Config::new(interactive_mode);
+
+    let result = run(&config);
     match result {
         Err(PastelError::StdoutClosed) => {}
         Err(err) => {
             writeln!(
                 io::stderr(),
                 "{}: {}",
-                "[pastel error]", // TODO: red
+                config
+                    .brush
+                    .paint("[pastel error]", &Color::red().ansi_style()),
                 err.message()
             )
             .ok();
