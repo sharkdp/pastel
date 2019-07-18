@@ -23,7 +23,7 @@ use paint::PaintCommand;
 use pick::PickCommand;
 use random::RandomCommand;
 
-use io::color_args;
+use io::ColorArgIterator;
 
 pub enum Command {
     WithColor(Box<dyn ColorCommand>),
@@ -55,8 +55,8 @@ impl Command {
         match self {
             Command::Generic(cmd) => cmd.run(matches, config),
             Command::WithColor(cmd) => {
-                for color in color_args(matches)? {
-                    cmd.run(matches, config, &color)?;
+                for color in ColorArgIterator::from_args(matches.values_of("color"))? {
+                    cmd.run(matches, config, &color?)?;
                 }
 
                 Ok(())

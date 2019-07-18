@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 
+use super::io::ColorArgIterator;
 use crate::commands::prelude::*;
 use crate::parser::parse_color;
 
@@ -15,13 +16,7 @@ impl GenericCommand for PaintCommand {
         let fg = if fg.trim() == "default" {
             None
         } else {
-            // TODO: remove duplication - move this into a function and use it in
-            // color_args(). Write integration tests
-            if fg == "-" {
-                Some(color_from_stdin()?)
-            } else {
-                Some(parse_color(fg).ok_or(PastelError::ColorParseError(fg.into()))?)
-            }
+            Some(ColorArgIterator::from_color_arg(fg)?)
         };
 
         let bg = if let Some(bg) = matches.value_of("on") {
