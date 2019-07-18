@@ -38,7 +38,7 @@ impl GenericCommand for PaintCommand {
         style.italic(matches.is_present("italic"));
         style.underline(matches.is_present("underline"));
 
-        writeln!(
+        write!(
             out,
             "{}{}",
             Brush::from_mode(Mode::TrueColor).paint(text, &style),
