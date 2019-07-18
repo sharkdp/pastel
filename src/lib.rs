@@ -177,10 +177,10 @@ impl Color {
         }
     }
 
-    /// Format the color as a HSL-representation string (`hsl(123, 50%, 80%)`).
+    /// Format the color as a HSL-representation string (`hsl(123, 50.3%, 80.1%)`).
     pub fn to_hsl_string(&self, format: Format) -> String {
         format!(
-            "hsl({:.0},{space}{:.0}%,{space}{:.0}%)",
+            "hsl({:.0},{space}{:.1}%,{space}{:.1}%)",
             self.hue.value(),
             100.0 * self.saturation,
             100.0 * self.lightness,
@@ -877,8 +877,8 @@ mod tests {
 
     #[test]
     fn to_hsl_string() {
-        let c = Color::from_hsl(91.3, 0.54, 0.98);
-        assert_eq!("hsl(91, 54%, 98%)", c.to_hsl_string(Format::Spaces));
+        let c = Color::from_hsl(91.3, 0.541, 0.983);
+        assert_eq!("hsl(91, 54.1%, 98.3%)", c.to_hsl_string(Format::Spaces));
     }
 
     #[test]

@@ -12,10 +12,6 @@ fn dec_to_u8(num: &str) -> Option<u8> {
     u8::from_str_radix(num, 10).ok()
 }
 
-fn dec_to_i32(num: &str) -> Option<i32> {
-    i32::from_str_radix(num, 10).ok()
-}
-
 fn float_to_f64(num: &str) -> Option<f64> {
     num.parse::<f64>().ok()
 }
@@ -97,16 +93,16 @@ lazy_static! {
             ^
             hsl\(
                 \s*
-                (\d{1,3})
+                (\d+(?:\.\d+)?)
                 \s*
                 ,
                 \s*
-                (\d{1,3})
+                (\d+(?:\.\d+)?)
                 %
                 \s*
                 ,
                 \s*
-                (\d{1,3})
+                (\d+(?:\.\d+)?)
                 %
                 \s*
             \)
@@ -179,9 +175,9 @@ pub fn parse_color(color: &str) -> Option<Color> {
     }
 
     if let Some(caps) = RE_HSL.captures(color) {
-        let mh = dec_to_i32(caps.get(1).unwrap().as_str());
-        let ms = dec_to_i32(caps.get(2).unwrap().as_str());
-        let ml = dec_to_i32(caps.get(3).unwrap().as_str());
+        let mh = float_to_f64(caps.get(1).unwrap().as_str());
+        let ms = float_to_f64(caps.get(2).unwrap().as_str());
+        let ml = float_to_f64(caps.get(3).unwrap().as_str());
 
         match (mh, ms, ml) {
             (Some(h), Some(s), Some(l)) => {
@@ -254,6 +250,10 @@ fn parse_hsl() {
     assert_eq!(
         Some(Color::from_hsl(280.0, 0.2, 0.5)),
         parse_color("hsl(280,20%,50%)")
+    );
+    assert_eq!(
+        Some(Color::from_hsl(280.33, 0.123, 0.456)),
+        parse_color("hsl(280.33001,12.3%,45.6%)")
     );
     assert_eq!(
         Some(Color::from_hsl(280.0, 0.2, 0.5)),
