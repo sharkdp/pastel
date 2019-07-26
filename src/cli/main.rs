@@ -77,8 +77,18 @@ fn run(config: &Config) -> Result<ExitCode> {
                     Arg::with_name("strategy")
                         .long("strategy")
                         .short("s")
-                        .help("Randomization strategy")
-                        .possible_values(&["vivid", "uniform_rgb", "uniform_gray"])
+                        .help(
+                            "Randomization strategy:\n   \
+                             vivid:    random hue, limited saturation and lightness values\n   \
+                             rgb:      samples uniformly in RGB space\n   \
+                             gray:     random gray tone (uniform)\n   \
+                             lch_hue:  random hue, fixed lightness and chroma\n\
+                             \n\
+                             Default strategy: 'vivid'\n ",
+                        )
+                        .possible_values(&["vivid", "rgb", "gray", "lch_hue"])
+                        .hide_default_value(true)
+                        .hide_possible_values(true)
                         .default_value("vivid"),
                 )
                 .arg(
