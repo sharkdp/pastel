@@ -12,6 +12,7 @@ mod pick;
 mod prelude;
 mod random;
 mod show;
+mod sort;
 mod traits;
 
 use traits::{ColorCommand, GenericCommand};
@@ -22,6 +23,7 @@ use list::ListCommand;
 use paint::PaintCommand;
 use pick::PickCommand;
 use random::RandomCommand;
+use sort::SortCommand;
 
 use io::ColorArgIterator;
 
@@ -44,6 +46,7 @@ impl Command {
             "pick" => Command::Generic(Box::new(PickCommand)),
             "gray" => Command::Generic(Box::new(GrayCommand)),
             "list" => Command::Generic(Box::new(ListCommand)),
+            "sort" => Command::Generic(Box::new(SortCommand)),
             "random" => Command::Generic(Box::new(RandomCommand)),
             "paint" => Command::Generic(Box::new(PaintCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),

@@ -19,6 +19,9 @@ use pastel::Color;
 
 type ExitCode = i32;
 
+const SORT_OPTIONS: &[&'static str] = &["brightness", "luminance", "hue", "chroma", "random"];
+const DEFAULT_SORT_ORDER: &'static str = "hue";
+
 fn run(config: &Config) -> Result<ExitCode> {
     let color_arg = Arg::with_name("color")
         .help(
@@ -62,13 +65,38 @@ fn run(config: &Config) -> Result<ExitCode> {
             SubCommand::with_name("list")
                 .about("Show a list of available color names")
                 .arg(
-                    Arg::with_name("sort")
+                    Arg::with_name("sort-order")
                         .short("s")
                         .long("sort")
                         .help("Sort order")
-                        .possible_values(&["name", "brightness", "luminance", "hue", "chroma"])
-                        .default_value("hue"),
+                        .possible_values(SORT_OPTIONS)
+                        .default_value(DEFAULT_SORT_ORDER),
                 ),
+        )
+        .subcommand(
+            SubCommand::with_name("sort")
+                .about("Sort colors by the given property")
+                .arg(
+                    Arg::with_name("sort-order")
+                        .long("by")
+                        .short("b")
+                        .help("Sort order")
+                        .possible_values(SORT_OPTIONS)
+                        .default_value(DEFAULT_SORT_ORDER),
+                )
+                .arg(
+                    Arg::with_name("reverse")
+                        .long("reverse")
+                        .short("r")
+                        .help("Reverse the sort order"),
+                )
+                .arg(
+                    Arg::with_name("unique")
+                        .long("unique")
+                        .short("u")
+                        .help("Remove duplicate colors (equality is determined via RGB values)"),
+                )
+                .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("random")
