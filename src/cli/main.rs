@@ -284,7 +284,7 @@ fn main() {
                 "{}: {}",
                 config
                     .brush
-                    .paint("[pastel error]", &Color::red().ansi_style()),
+                    .paint("[pastel error]", Color::red().ansi_style()),
                 err.message()
             )
             .ok();

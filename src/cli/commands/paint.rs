@@ -31,7 +31,7 @@ impl GenericCommand for PaintCommand {
         }
 
         if let Some(bg) = bg {
-            style.on(&bg);
+            style.on(bg);
         }
 
         style.bold(matches.is_present("bold"));
@@ -41,7 +41,7 @@ impl GenericCommand for PaintCommand {
         write!(
             out,
             "{}{}",
-            Brush::from_mode(Mode::TrueColor).paint(text, &style),
+            Brush::from_mode(Mode::TrueColor).paint(text, style),
             if matches.is_present("no-newline") {
                 ""
             } else {

@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use crate::Color;
 
 use atty::{self, Stream};
@@ -119,8 +121,8 @@ impl Style {
         self
     }
 
-    pub fn on(&mut self, color: &Color) -> &mut Self {
-        self.background = Some(color.clone());
+    pub fn on<C: Borrow<Color>>(&mut self, color: C) -> &mut Self {
+        self.background = Some(color.borrow().clone());
         self
     }
 
@@ -229,11 +231,11 @@ impl Brush {
         Brush { mode }
     }
 
-    pub fn paint<S: AsRef<str>>(&self, text: S, style: &Style) -> String {
+    pub fn paint<S: AsRef<str>, T: Borrow<Style>>(&self, text: S, style: T) -> String {
         if let Some(ansi_mode) = self.mode {
             format!(
                 "{begin}{text}{end}",
-                begin = style.escape_sequence(ansi_mode),
+                begin = style.borrow().escape_sequence(ansi_mode),
                 text = text.as_ref(),
                 end = "\x1b[0m"
             )
@@ -322,7 +324,7 @@ mod tests {
             "\x1b[38;2;255;0;0;48;2;0;0;255;1;3;4m",
             Color::red()
                 .ansi_style()
-                .on(&Color::blue())
+                .on(Color::blue())
                 .bold(true)
                 .italic(true)
                 .underline(true)

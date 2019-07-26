@@ -30,7 +30,7 @@ impl ColorCommand for FormatCommand {
             "{}",
             config
                 .brush
-                .paint(output, &color.text_color().ansi_style().on(&color))
+                .paint(output, color.text_color().ansi_style().on(color))
         )?;
 
         Ok(())
