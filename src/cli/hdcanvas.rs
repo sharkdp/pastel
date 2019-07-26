@@ -86,12 +86,8 @@ impl Canvas {
                             "{}",
                             self.brush.paint("▀", top.ansi_style().on(bottom))
                         )?,
-                        (Some(top), None) => {
-                            write!(out, "{}", self.brush.paint("▀", top.ansi_style()))?
-                        }
-                        (None, Some(bottom)) => {
-                            write!(out, "{}", self.brush.paint("▄", bottom.ansi_style()))?
-                        }
+                        (Some(top), None) => write!(out, "{}", self.brush.paint("▀", top))?,
+                        (None, Some(bottom)) => write!(out, "{}", self.brush.paint("▄", bottom))?,
                         (None, None) => write!(out, " ")?,
                     };
                 }

@@ -15,7 +15,6 @@ use commands::Command;
 use config::Config;
 use error::{PastelError, Result};
 
-use pastel::ansi::ToAnsiStyle;
 use pastel::Color;
 
 type ExitCode = i32;
@@ -282,9 +281,7 @@ fn main() {
             writeln!(
                 io::stderr(),
                 "{}: {}",
-                config
-                    .brush
-                    .paint("[pastel error]", Color::red().ansi_style()),
+                config.brush.paint("[pastel error]", Color::red()),
                 err.message()
             )
             .ok();

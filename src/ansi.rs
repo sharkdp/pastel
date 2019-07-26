@@ -106,16 +106,6 @@ pub struct Style {
 }
 
 impl Style {
-    pub fn from_color(color: Color) -> Style {
-        Style {
-            foreground: Some(color),
-            background: None,
-            bold: false,
-            italic: false,
-            underline: false,
-        }
-    }
-
     pub fn foreground(&mut self, color: &Color) -> &mut Self {
         self.foreground = Some(color.clone());
         self
@@ -197,13 +187,43 @@ impl Default for Style {
     }
 }
 
+impl From<Color> for Style {
+    fn from(color: Color) -> Style {
+        Style {
+            foreground: Some(color),
+            background: None,
+            bold: false,
+            italic: false,
+            underline: false,
+        }
+    }
+}
+
+impl From<&Color> for Style {
+    fn from(color: &Color) -> Style {
+        color.clone().into()
+    }
+}
+
+impl From<&Style> for Style {
+    fn from(style: &Style) -> Style {
+        style.clone()
+    }
+}
+
+impl From<&mut Style> for Style {
+    fn from(style: &mut Style) -> Style {
+        style.clone()
+    }
+}
+
 pub trait ToAnsiStyle {
     fn ansi_style(&self) -> Style;
 }
 
 impl ToAnsiStyle for Color {
     fn ansi_style(&self) -> Style {
-        Style::from_color(self.clone())
+        self.clone().into()
     }
 }
 
@@ -231,16 +251,19 @@ impl Brush {
         Brush { mode }
     }
 
-    pub fn paint<S: AsRef<str>, T: Borrow<Style>>(&self, text: S, style: T) -> String {
+    pub fn paint<S>(&self, text: S, style: impl Into<Style>) -> String
+    where
+        S: AsRef<str>,
+    {
         if let Some(ansi_mode) = self.mode {
             format!(
                 "{begin}{text}{end}",
-                begin = style.borrow().escape_sequence(ansi_mode),
+                begin = style.into().escape_sequence(ansi_mode),
                 text = text.as_ref(),
                 end = "\x1b[0m"
             )
         } else {
-            format!("{}", text.as_ref())
+            text.as_ref().into()
         }
     }
 }
