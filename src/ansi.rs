@@ -314,7 +314,7 @@ mod tests {
         );
 
         assert_eq!(
-            "\x1b[9m",
+            "\x1b[38;5;9m",
             Color::red().ansi_style().escape_sequence(Mode::Ansi8Bit)
         );
 
