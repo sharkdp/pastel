@@ -200,7 +200,7 @@ fn run(config: &Config) -> Result<ExitCode> {
                         .short("s")
                         .help("The colorspace in which to interpolate")
                         .possible_values(&["rgb", "hsl", "lab", "lch"])
-                        .default_value("lch")
+                        .default_value("rgb")
                         .required(true),
                 )
                 .arg(
@@ -216,7 +216,7 @@ fn run(config: &Config) -> Result<ExitCode> {
                 .arg(
                     Arg::with_name("base")
                         .value_name("color")
-                        .help("The base color which will be mixed with")
+                        .help("The base color which will be mixed with the other colors")
                         .required(true),
                 )
                 .arg(color_arg.clone()),
