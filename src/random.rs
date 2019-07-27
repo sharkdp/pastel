@@ -42,7 +42,7 @@ pub mod strategies {
 
     impl RandomizationStrategy for UniformHueLCh {
         fn generate(&mut self) -> Color {
-            Color::from_lch(70.0, 35.0, 360.0 * random::<f64>())
+            Color::from_lch(70.0, 35.0, 360.0 * random::<f64>(), 1.0)
         }
     }
 }

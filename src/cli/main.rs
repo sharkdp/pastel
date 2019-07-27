@@ -74,31 +74,6 @@ fn run(config: &Config) -> Result<ExitCode> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name("sort")
-                .about("Sort colors by the given property")
-                .arg(
-                    Arg::with_name("sort-order")
-                        .long("by")
-                        .short("b")
-                        .help("Sort order")
-                        .possible_values(SORT_OPTIONS)
-                        .default_value(DEFAULT_SORT_ORDER),
-                )
-                .arg(
-                    Arg::with_name("reverse")
-                        .long("reverse")
-                        .short("r")
-                        .help("Reverse the sort order"),
-                )
-                .arg(
-                    Arg::with_name("unique")
-                        .long("unique")
-                        .short("u")
-                        .help("Remove duplicate colors (equality is determined via RGB values)"),
-                )
-                .arg(color_arg.clone()),
-        )
-        .subcommand(
             SubCommand::with_name("random")
                 .about("Generate random colors")
                 .arg(
@@ -128,6 +103,31 @@ fn run(config: &Config) -> Result<ExitCode> {
                         .default_value("10")
                         .value_name("count"),
                 ),
+        )
+        .subcommand(
+            SubCommand::with_name("sort")
+                .about("Sort colors by the given property")
+                .arg(
+                    Arg::with_name("sort-order")
+                        .long("by")
+                        .short("b")
+                        .help("Sort order")
+                        .possible_values(SORT_OPTIONS)
+                        .default_value(DEFAULT_SORT_ORDER),
+                )
+                .arg(
+                    Arg::with_name("reverse")
+                        .long("reverse")
+                        .short("r")
+                        .help("Reverse the sort order"),
+                )
+                .arg(
+                    Arg::with_name("unique")
+                        .long("unique")
+                        .short("u")
+                        .help("Remove duplicate colors (equality is determined via RGB values)"),
+                )
+                .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("paint")

@@ -35,7 +35,7 @@ impl GenericCommand for PickCommand {
                 // But (slightly) normalize the luminance
                 let mut lch = color.to_lch();
                 lch.l = (lch.l + ry * 100.0) / 2.0;
-                let color = Color::from_lch(lch.l, lch.c, lch.h);
+                let color = Color::from_lch(lch.l, lch.c, lch.h, 1.0);
 
                 canvas.draw_rect(config.padding + y + 1, config.padding + x + 1, 1, 1, &color);
             }

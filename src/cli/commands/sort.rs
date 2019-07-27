@@ -9,8 +9,8 @@ pub struct SortCommand;
 
 pub fn key_function(sort_order: &str, color: &Color) -> i32 {
     match sort_order {
-        "brightness" => (-color.brightness() * 1000.0) as i32,
-        "luminance" => (-color.luminance() * 1000.0) as i32,
+        "brightness" => (color.brightness() * 1000.0) as i32,
+        "luminance" => (color.luminance() * 1000.0) as i32,
         "hue" => (color.to_lch().h * 1000.0) as i32,
         "chroma" => (color.to_lch().c * 1000.0) as i32,
         "random" => random(),

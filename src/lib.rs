@@ -1,9 +1,11 @@
 pub mod ansi;
+pub mod colorspace;
 mod helper;
 pub mod random;
 mod types;
 
-use helper::{clamp, mod_positive};
+use colorspace::ColorSpace;
+use helper::{clamp, interpolate, interpolate_angle, mod_positive, Fraction};
 use types::{Hue, Scalar};
 
 /// The representation of a color.
@@ -112,7 +114,7 @@ impl Color {
     /// See:
     /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
     /// - https://en.wikipedia.org/wiki/SRGB
-    pub fn from_xyz(x: Scalar, y: Scalar, z: Scalar) -> Color {
+    pub fn from_xyz(x: Scalar, y: Scalar, z: Scalar, alpha: Scalar) -> Color {
         let f = |c| {
             if c <= 0.0031308 {
                 12.92 * c
@@ -125,14 +127,14 @@ impl Color {
         let g = f(-0.9689 * x + 1.8758 * y + 0.0415 * z);
         let b = f(0.0557 * x - 0.2040 * y + 1.0570 * z);
 
-        Self::from_rgb_scaled(r, g, b)
+        Self::from_rgba_scaled(r, g, b, alpha)
     }
 
     /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
     /// space. Note: See documentation for `from_xyz`. The same restrictions apply here.
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
-    pub fn from_lab(l: Scalar, a: Scalar, b: Scalar) -> Color {
+    pub fn from_lab(l: Scalar, a: Scalar, b: Scalar, alpha: Scalar) -> Color {
         const DELTA: Scalar = 6.0 / 29.0;
 
         let finv = |t| {
@@ -148,7 +150,7 @@ impl Color {
         let y = D65_YN * finv(l_);
         let z = D65_ZN * finv(l_ - b / 200.0);
 
-        Self::from_xyz(x, y, z)
+        Self::from_xyz(x, y, z, alpha)
     }
 
     /// Create a `Color` from lightness, chroma and hue coordinates in the CIE LCh color space.
@@ -156,13 +158,13 @@ impl Color {
     /// `from_xyz`. The same restrictions apply here.
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
-    pub fn from_lch(l: Scalar, c: Scalar, h: Scalar) -> Color {
+    pub fn from_lch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
         const DEG2RAD: Scalar = std::f64::consts::PI / 180.0;
 
         let a = c * Scalar::cos(h * DEG2RAD);
         let b = c * Scalar::sin(h * DEG2RAD);
 
-        Self::from_lab(l, a, b)
+        Self::from_lab(l, a, b, alpha)
     }
 
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
@@ -498,7 +500,7 @@ impl Color {
         let c = self.to_lch();
 
         // the desaturation step is only needed to correct minor rounding errors.
-        let mut gray = Color::from_lch(c.l, 0.0, 0.0).desaturate(1.0);
+        let mut gray = Color::from_lch(c.l, 0.0, 0.0, 1.0).desaturate(1.0);
 
         // Restore the hue value (does not alter the color, but makes it able to add saturation
         // again)
@@ -584,6 +586,14 @@ impl Color {
 
         ((c1.l - c2.l).powi(2) + (c1.a - c2.a).powi(2) + (c1.b - c2.b).powi(2)).sqrt()
     }
+
+    /// Mix two colors by linearly interpolating between them in the specified color space.
+    /// For the angle-like components (hue), the shortest path along the unit circle is chosen.
+    pub fn mix<C: ColorSpace>(self: &Color, other: &Color, fraction: Fraction) -> Color {
+        C::from_color(self)
+            .mix(&C::from_color(other), fraction)
+            .into_color()
+    }
 }
 
 impl PartialEq for Color {
@@ -600,12 +610,50 @@ pub struct RGBA<T> {
     pub alpha: Scalar,
 }
 
+impl ColorSpace for RGBA<f64> {
+    fn from_color(c: &Color) -> Self {
+        c.to_rgba_scaled()
+    }
+
+    fn into_color(&self) -> Color {
+        Color::from_rgba_scaled(self.r, self.g, self.b, self.alpha)
+    }
+
+    fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        Self {
+            r: interpolate(self.r, other.r, fraction),
+            g: interpolate(self.g, other.g, fraction),
+            b: interpolate(self.b, other.b, fraction),
+            alpha: interpolate(self.alpha, other.alpha, fraction),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct HSLA {
     pub h: Scalar,
     pub s: Scalar,
     pub l: Scalar,
     pub alpha: Scalar,
+}
+
+impl ColorSpace for HSLA {
+    fn from_color(c: &Color) -> Self {
+        c.to_hsla()
+    }
+
+    fn into_color(&self) -> Color {
+        Color::from_hsla(self.h, self.s, self.l, self.alpha)
+    }
+
+    fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        Self {
+            h: interpolate_angle(self.h, other.h, fraction),
+            s: interpolate(self.s, other.s, fraction),
+            l: interpolate(self.l, other.l, fraction),
+            alpha: interpolate(self.alpha, other.alpha, fraction),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -624,12 +672,50 @@ pub struct Lab {
     pub alpha: Scalar,
 }
 
+impl ColorSpace for Lab {
+    fn from_color(c: &Color) -> Self {
+        c.to_lab()
+    }
+
+    fn into_color(&self) -> Color {
+        Color::from_lab(self.l, self.a, self.b, self.alpha)
+    }
+
+    fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        Self {
+            l: interpolate(self.l, other.l, fraction),
+            a: interpolate(self.a, other.a, fraction),
+            b: interpolate(self.b, other.b, fraction),
+            alpha: interpolate(self.alpha, other.alpha, fraction),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct LCh {
     pub l: Scalar,
     pub c: Scalar,
     pub h: Scalar,
     pub alpha: Scalar,
+}
+
+impl ColorSpace for LCh {
+    fn from_color(c: &Color) -> Self {
+        c.to_lch()
+    }
+
+    fn into_color(&self) -> Color {
+        Color::from_lch(self.l, self.c, self.h, self.alpha)
+    }
+
+    fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        Self {
+            l: interpolate(self.l, other.l, fraction),
+            c: interpolate(self.c, other.c, fraction),
+            h: interpolate_angle(self.h, other.h, fraction),
+            alpha: interpolate(self.alpha, other.alpha, fraction),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -753,17 +839,17 @@ mod tests {
 
     #[test]
     fn xyz_conversion() {
-        assert_eq!(Color::white(), Color::from_xyz(0.9505, 1.0, 1.0890));
-        assert_eq!(Color::red(), Color::from_xyz(0.4123, 0.2126, 0.01933));
+        assert_eq!(Color::white(), Color::from_xyz(0.9505, 1.0, 1.0890, 1.0));
+        assert_eq!(Color::red(), Color::from_xyz(0.4123, 0.2126, 0.01933, 1.0));
         assert_eq!(
             Color::from_hsl(109.999, 0.08654, 0.407843),
-            Color::from_xyz(0.13123, 0.15372, 0.13174)
+            Color::from_xyz(0.13123, 0.15372, 0.13174, 1.0)
         );
 
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
             let xyz1 = color1.to_xyz();
-            let color2 = Color::from_xyz(xyz1.x, xyz1.y, xyz1.z);
+            let color2 = Color::from_xyz(xyz1.x, xyz1.y, xyz1.z, 1.0);
             assert_almost_equal(&color1, &color2);
         };
 
@@ -774,12 +860,12 @@ mod tests {
 
     #[test]
     fn lab_conversion() {
-        assert_eq!(Color::red(), Color::from_lab(53.233, 80.109, 67.22));
+        assert_eq!(Color::red(), Color::from_lab(53.233, 80.109, 67.22, 1.0));
 
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
             let lab1 = color1.to_lab();
-            let color2 = Color::from_lab(lab1.l, lab1.a, lab1.b);
+            let color2 = Color::from_lab(lab1.l, lab1.a, lab1.b, 1.0);
             assert_almost_equal(&color1, &color2);
         };
 
@@ -792,13 +878,13 @@ mod tests {
     fn lch_conversion() {
         assert_eq!(
             Color::from_hsl(0.0, 1.0, 0.245),
-            Color::from_lch(24.829, 60.093, 38.18)
+            Color::from_lch(24.829, 60.093, 38.18, 1.0)
         );
 
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
             let lch1 = color1.to_lch();
-            let color2 = Color::from_lch(lch1.l, lch1.c, lch1.h);
+            let color2 = Color::from_lch(lch1.l, lch1.c, lch1.h, 1.0);
             assert_almost_equal(&color1, &color2);
         };
 
@@ -909,13 +995,25 @@ mod tests {
 
     #[test]
     fn to_lab_string() {
-        let c = Color::from_lab(41.0, 83.0, -93.0);
+        let c = Color::from_lab(41.0, 83.0, -93.0, 1.0);
         assert_eq!("Lab(41, 83, -93)", c.to_lab_string(Format::Spaces));
     }
 
     #[test]
     fn to_lch_string() {
-        let c = Color::from_lch(52.0, 44.0, 271.0);
+        let c = Color::from_lch(52.0, 44.0, 271.0, 1.0);
         assert_eq!("LCh(52, 44, 271)", c.to_lch_string(Format::Spaces));
+    }
+
+    #[test]
+    fn mix() {
+        assert_eq!(
+            Color::purple(),
+            Color::red().mix::<RGBA<f64>>(&Color::blue(), Fraction::from(0.5))
+        );
+        assert_eq!(
+            Color::fuchsia(),
+            Color::red().mix::<HSLA>(&Color::blue(), Fraction::from(0.5))
+        );
     }
 }
