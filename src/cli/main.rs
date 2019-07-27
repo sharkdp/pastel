@@ -15,6 +15,7 @@ use commands::Command;
 use config::Config;
 use error::{PastelError, Result};
 
+use pastel::ansi::{self, Brush};
 use pastel::Color;
 
 type ExitCode = i32;
@@ -22,7 +23,17 @@ type ExitCode = i32;
 const SORT_OPTIONS: &[&'static str] = &["brightness", "luminance", "hue", "chroma", "random"];
 const DEFAULT_SORT_ORDER: &'static str = "hue";
 
-fn run(config: &Config) -> Result<ExitCode> {
+fn write_stderr(c: Color, title: &str, message: &str) {
+    writeln!(
+        io::stderr(),
+        "{}: {}",
+        Brush::from_environment().paint(format!("[{}]", title), c),
+        message
+    )
+    .ok();
+}
+
+fn run() -> Result<ExitCode> {
     let color_arg = Arg::with_name("color")
         .help(
             "Colors can be specified in many different formats, such as #RRGGBB, RRGGBB, \
@@ -329,9 +340,76 @@ fn run(config: &Config) -> Result<ExitCode> {
                      https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef",
                 )
                 .arg(color_arg.clone()),
-        );
+        )
+        .arg(
+            Arg::with_name("color-mode")
+            .long("color-mode")
+            .short("m")
+            .help("Terminal color mode")
+            .possible_values(&["24bit", "8bit", "off", "auto"])
+            .default_value("auto")
+            );
 
     let global_matches = app.get_matches();
+
+    let interactive_mode = atty::is(Stream::Stdout);
+
+    let color_mode = match global_matches
+        .value_of("color-mode")
+        .expect("required argument")
+    {
+        "24bit" => Some(ansi::Mode::TrueColor),
+        "8bit" => Some(ansi::Mode::Ansi8Bit),
+        "off" => None,
+        "auto" => {
+            let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
+            match env_color_mode.as_ref().map(|s| s.as_str()) {
+                Some("8bit") => Some(ansi::Mode::Ansi8Bit),
+                Some("24bit") => Some(ansi::Mode::TrueColor),
+                Some("off") => None,
+                Some(value) => {
+                    return Err(PastelError::UnknownColorMode(value.into()));
+                }
+                None => {
+                    let env_colorterm = std::env::var("COLORTERM").ok();
+                    match env_colorterm.as_ref().map(|s| s.as_str()) {
+                        Some("truecolor") | Some("24bit") => Some(ansi::Mode::TrueColor),
+                        _ => {
+                            if interactive_mode && global_matches.subcommand_name() != Some("paint")
+                            {
+                                write_stderr(Color::yellow(), "pastel warning",
+                                "Your terminal emulator does not appear to support 24-bit colors \
+                                (this means that the COLORTERM environment variable is not set to \
+                                'truecolor' or '24bit'). \
+                                pastel will fall back to 8-bit colors, but the range of colors \
+                                will be severely limited.\n\n\
+                                To fix this, follow these steps:\n  \
+                                  1. Run 'pastel colorcheck' to test if your terminal emulator\n     \
+                                     does, in fact, support 24-bit colors. If this is the case,\n     \
+                                     set 'PASTEL_COLOR_MODE=24bit' to force 24-bit mode and to\n     \
+                                     remove this warning. Alternatively, make sure that COLORTERM\n     \
+                                     is properly set by your terminal emulator.\n  \
+                                  2. If your terminal emulator does not support 24-bit colors, set\n     \
+                                     'PASTEL_COLOR_MODE=8bit' to remove this warning or try a\n     \
+                                     different terminal emulator.\n\n\
+                                \
+                                For more information, see https://gist.github.com/XVilka/8346728");
+                            }
+                            Some(ansi::Mode::Ansi8Bit)
+                        }
+                    }
+                }
+            }
+        }
+        _ => unreachable!("Unknown --color-mode argument"),
+    };
+
+    let config = Config {
+        padding: 2,
+        colorpicker_width: 40,
+        interactive_mode,
+        brush: Brush::from_mode(color_mode),
+    };
 
     if let (subcommand, Some(matches)) = global_matches.subcommand() {
         let command = Command::from_string(subcommand);
@@ -344,20 +422,11 @@ fn run(config: &Config) -> Result<ExitCode> {
 }
 
 fn main() {
-    let interactive_mode = atty::is(Stream::Stdout);
-    let config = Config::new(interactive_mode);
-
-    let result = run(&config);
+    let result = run();
     match result {
         Err(PastelError::StdoutClosed) => {}
         Err(err) => {
-            writeln!(
-                io::stderr(),
-                "{}: {}",
-                config.brush.paint("[pastel error]", Color::red()),
-                err.message()
-            )
-            .ok();
+            write_stderr(Color::red(), "pastel error", &err.message());
             std::process::exit(1);
         }
         Ok(exit_code) => {

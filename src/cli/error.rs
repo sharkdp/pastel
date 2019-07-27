@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub enum PastelError {
+    UnknownColorMode(String),
     ColorParseError(String),
     ColorInvalidUTF8,
     CouldNotReadFromStdin,
@@ -12,6 +13,9 @@ pub enum PastelError {
 impl PastelError {
     pub fn message(&self) -> String {
         match self {
+            PastelError::UnknownColorMode(mode) => {
+                format!("Unknown PASTEL_COLOR_MODE value ({})", mode)
+            }
             PastelError::ColorParseError(color) => format!("Could not parse color '{}'", color),
             PastelError::ColorInvalidUTF8 => "Color input contains invalid UTF8".into(),
             PastelError::CouldNotReadFromStdin => "could not read color from standard input".into(),
