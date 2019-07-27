@@ -18,8 +18,8 @@ impl ColorCommand for FormatCommand {
             "rgb" => color.to_rgb_string(Format::Spaces),
             "hex" => color.to_rgb_hex_string(),
             "hsl" => color.to_hsl_string(Format::Spaces),
-            "Lab" => color.to_lab_string(Format::Spaces),
-            "LCh" => color.to_lch_string(Format::Spaces),
+            "lab" => color.to_lab_string(Format::Spaces),
+            "lch" => color.to_lch_string(Format::Spaces),
             &_ => {
                 unreachable!("Unknown format type");
             }
