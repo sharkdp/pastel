@@ -42,6 +42,7 @@ impl Command {
             "darken" => Command::WithColor(Box::new(color_commands::DarkenCommand)),
             "rotate" => Command::WithColor(Box::new(color_commands::RotateCommand)),
             "complement" => Command::WithColor(Box::new(color_commands::ComplementCommand)),
+            "mix" => Command::WithColor(Box::new(color_commands::MixCommand)),
             "to-gray" => Command::WithColor(Box::new(color_commands::ToGrayCommand)),
             "pick" => Command::Generic(Box::new(PickCommand)),
             "gray" => Command::Generic(Box::new(GrayCommand)),

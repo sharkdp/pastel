@@ -181,7 +181,42 @@ fn run(config: &Config) -> Result<ExitCode> {
                 .arg(
                     Arg::with_name("type")
                         .help("Format type")
-                        .possible_values(&["rgb", "hex", "hsl", "Lab", "LCh"])
+                        .possible_values(&["rgb", "hex", "hsl", "lab", "lch"])
+                        .required(true),
+                )
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
+            SubCommand::with_name("mix")
+                .about("Mix two colors in the given colorspace")
+                .long_about(
+                    "Create new colors by interpolating between two colors in the given colorspace.\n\n\
+                     Example:\n\n  \
+                       pastel mix --colorspace=lab red blue
+                    ")
+                .arg(
+                    Arg::with_name("colorspace")
+                        .long("colorspace")
+                        .short("s")
+                        .help("The colorspace in which to interpolate")
+                        .possible_values(&["rgb", "hsl", "lab", "lch"])
+                        .default_value("lch")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("fraction")
+                        .long("fraction")
+                        .short("f")
+                        .help("The number between 0.0 and 1.0 determining how much to \
+                              mix in from the base color.")
+                        .required(true)
+                        .takes_value(true)
+                        .default_value("0.5"),
+                )
+                .arg(
+                    Arg::with_name("base")
+                        .value_name("color")
+                        .help("The base color which will be mixed with")
                         .required(true),
                 )
                 .arg(color_arg.clone()),

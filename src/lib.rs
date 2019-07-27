@@ -5,7 +5,8 @@ pub mod random;
 mod types;
 
 use colorspace::ColorSpace;
-use helper::{clamp, interpolate, interpolate_angle, mod_positive, Fraction};
+pub use helper::Fraction;
+use helper::{clamp, interpolate, interpolate_angle, mod_positive};
 use types::{Hue, Scalar};
 
 /// The representation of a color.
