@@ -76,7 +76,7 @@ impl AnsiColor for Color {
     ///
     /// See: https://en.wikipedia.org/wiki/ANSI_escape_code
     fn to_ansi_8bit(&self) -> u8 {
-        let mut codes: Vec<u8> = (0..255).collect();
+        let mut codes: Vec<u8> = (16..255).collect();
         codes.sort_by_key(|code| self.distance(&Color::from_ansi_8bit(*code)) as i32);
 
         codes[0]
@@ -144,8 +144,13 @@ impl Style {
             }
         }
         if let Some(ref bg) = self.background {
-            let rgb = bg.to_rgba();
-            codes.extend_from_slice(&[48, 2, rgb.r, rgb.g, rgb.b]);
+            match mode {
+                Mode::Ansi8Bit => codes.extend_from_slice(&[48, 5, bg.to_ansi_8bit()]),
+                Mode::TrueColor => {
+                    let rgb = bg.to_rgba();
+                    codes.extend_from_slice(&[48, 2, rgb.r, rgb.g, rgb.b]);
+                }
+            }
         }
 
         if self.bold {
@@ -233,8 +238,8 @@ pub struct Brush {
 }
 
 impl Brush {
-    pub fn from_mode(mode: Mode) -> Self {
-        Brush { mode: Some(mode) }
+    pub fn from_mode(mode: Option<Mode>) -> Self {
+        Brush { mode }
     }
 
     pub fn from_environment() -> Self {
@@ -297,24 +302,20 @@ mod tests {
 
     #[test]
     fn to_ansi_8bit_lower_16() {
-        assert_eq!(0, Color::black().to_ansi_8bit());
-        assert_eq!(1, Color::maroon().to_ansi_8bit());
-        assert_eq!(2, Color::green().to_ansi_8bit());
-        assert_eq!(3, Color::olive().to_ansi_8bit());
-        assert_eq!(4, Color::navy().to_ansi_8bit());
-        assert_eq!(5, Color::purple().to_ansi_8bit());
-        assert_eq!(6, Color::teal().to_ansi_8bit());
-        assert_eq!(7, Color::silver().to_ansi_8bit());
-        assert_eq!(8, Color::gray().to_ansi_8bit());
-        assert_eq!(9, Color::red().to_ansi_8bit());
-        assert_eq!(10, Color::lime().to_ansi_8bit());
-        assert_eq!(11, Color::yellow().to_ansi_8bit());
-        assert_eq!(12, Color::blue().to_ansi_8bit());
-        assert_eq!(13, Color::fuchsia().to_ansi_8bit());
-        assert_eq!(14, Color::aqua().to_ansi_8bit());
-        assert_eq!(15, Color::white().to_ansi_8bit());
+        assert_eq!(16, Color::black().to_ansi_8bit());
+        assert_eq!(231, Color::white().to_ansi_8bit());
 
-        assert_eq!(0, Color::black().lighten(0.01).to_ansi_8bit());
+        assert_eq!(196, Color::red().to_ansi_8bit());
+        assert_eq!(28, Color::green().to_ansi_8bit());
+        assert_eq!(21, Color::blue().to_ansi_8bit());
+
+        assert_eq!(46, Color::lime().to_ansi_8bit());
+        assert_eq!(226, Color::yellow().to_ansi_8bit());
+        assert_eq!(201, Color::fuchsia().to_ansi_8bit());
+        assert_eq!(51, Color::aqua().to_ansi_8bit());
+        assert_eq!(244, Color::gray().to_ansi_8bit());
+
+        assert_eq!(16, Color::black().lighten(0.01).to_ansi_8bit());
     }
 
     #[test]
@@ -339,7 +340,7 @@ mod tests {
         );
 
         assert_eq!(
-            "\x1b[38;5;9m",
+            "\x1b[38;5;196m",
             Color::red().ansi_style().escape_sequence(Mode::Ansi8Bit)
         );
 
@@ -357,7 +358,7 @@ mod tests {
 
     #[test]
     fn brush() {
-        let ansi = Brush::from_mode(Mode::TrueColor);
+        let ansi = Brush::from_mode(Some(Mode::TrueColor));
 
         assert_eq!(
             "\x1b[38;2;255;0;0;1mhello\x1b[0m",
