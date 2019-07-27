@@ -341,6 +341,11 @@ fn run() -> Result<ExitCode> {
                 )
                 .arg(color_arg.clone()),
         )
+        .subcommand(
+            SubCommand::with_name("colorcheck")
+                .about("Check if your terminal emulator supports 24-bit colors.")
+                .setting(AppSettings::Hidden)
+        )
         .arg(
             Arg::with_name("color-mode")
             .long("color-mode")
@@ -375,7 +380,9 @@ fn run() -> Result<ExitCode> {
                     match env_colorterm.as_ref().map(|s| s.as_str()) {
                         Some("truecolor") | Some("24bit") => Some(ansi::Mode::TrueColor),
                         _ => {
-                            if interactive_mode && global_matches.subcommand_name() != Some("paint")
+                            if interactive_mode
+                                && global_matches.subcommand_name() != Some("paint")
+                                && global_matches.subcommand_name() != Some("colorcheck")
                             {
                                 write_stderr(Color::yellow(), "pastel warning",
                                 "Your terminal emulator does not appear to support 24-bit colors \
@@ -393,7 +400,7 @@ fn run() -> Result<ExitCode> {
                                      'PASTEL_COLOR_MODE=8bit' to remove this warning or try a\n     \
                                      different terminal emulator.\n\n\
                                 \
-                                For more information, see https://gist.github.com/XVilka/8346728");
+                                For more information, see https://gist.github.com/XVilka/8346728\n");
                             }
                             Some(ansi::Mode::Ansi8Bit)
                         }
@@ -407,6 +414,7 @@ fn run() -> Result<ExitCode> {
     let config = Config {
         padding: 2,
         colorpicker_width: 40,
+        colorcheck_width: 8,
         interactive_mode,
         brush: Brush::from_mode(color_mode),
     };

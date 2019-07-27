@@ -3,6 +3,7 @@ use crate::error::Result;
 use clap::ArgMatches;
 
 mod color_commands;
+mod colorcheck;
 mod format;
 mod gray;
 mod io;
@@ -17,6 +18,7 @@ mod traits;
 
 use traits::{ColorCommand, GenericCommand};
 
+use colorcheck::ColorCheckCommand;
 use format::FormatCommand;
 use gray::GrayCommand;
 use list::ListCommand;
@@ -51,6 +53,7 @@ impl Command {
             "random" => Command::Generic(Box::new(RandomCommand)),
             "paint" => Command::Generic(Box::new(PaintCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),
+            "colorcheck" => Command::Generic(Box::new(ColorCheckCommand)),
             _ => unreachable!("Unknown subcommand"),
         }
     }
