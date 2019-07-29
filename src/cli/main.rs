@@ -196,6 +196,7 @@ fn run() -> Result<ExitCode> {
                                            "hsl", "hsl-hue", "hsl-saturation", "hsl-lightness",
                                            "lch", "lch-lightness", "lch-chroma", "lch-hue",
                                            "lab", "lab-a", "lab-b",
+                                           "luminance", "brightness",
                                            "name"])
                         .required(true),
                 )

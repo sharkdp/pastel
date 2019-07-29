@@ -29,6 +29,8 @@ impl ColorCommand for FormatCommand {
             "lab" => color.to_lab_string(Format::Spaces),
             "lab-a" => format!("{:.2}", color.to_lab().a),
             "lab-b" => format!("{:.2}", color.to_lab().b),
+            "luminance" => format!("{:.3}", color.luminance()),
+            "brightness" => format!("{:.3}", color.brightness()),
             "name" => similar_colors(color)[0].name.to_owned(),
             &_ => {
                 unreachable!("Unknown format type");
