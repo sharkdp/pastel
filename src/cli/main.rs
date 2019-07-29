@@ -118,6 +118,7 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("sort-by")
                 .about("Sort colors by the given property")
+                .alias("sort")
                 .arg(
                     Arg::with_name("sort-order")
                         .help("Sort order")
