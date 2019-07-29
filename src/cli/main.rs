@@ -191,8 +191,8 @@ fn run() -> Result<ExitCode> {
                 .about("Convert a color to a specific format")
                 .arg(
                     Arg::with_name("type")
-                        .help("Format type")
-                        .possible_values(&["rgb", "hex", "hsl", "lab", "lch"])
+                        .help("Output format type.")
+                        .possible_values(&["rgb", "hex", "hsl", "lab", "lch", "name"])
                         .required(true),
                 )
                 .arg(color_arg.clone()),

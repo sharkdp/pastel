@@ -1,4 +1,5 @@
 use crate::commands::prelude::*;
+use crate::utility::similar_colors;
 
 use pastel::Format;
 
@@ -20,6 +21,7 @@ impl ColorCommand for FormatCommand {
             "hsl" => color.to_hsl_string(Format::Spaces),
             "lab" => color.to_lab_string(Format::Spaces),
             "lch" => color.to_lch_string(Format::Spaces),
+            "name" => similar_colors(color)[0].name.to_owned(),
             &_ => {
                 unreachable!("Unknown format type");
             }
