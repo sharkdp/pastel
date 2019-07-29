@@ -188,11 +188,15 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("format")
-                .about("Convert a color to a specific format")
+                .about("Convert a color to the given format")
                 .arg(
                     Arg::with_name("type")
-                        .help("Output format type.")
-                        .possible_values(&["rgb", "hex", "hsl", "lab", "lch", "name"])
+                        .help("Output format type")
+                        .possible_values(&["rgb", "hex",
+                                           "hsl", "hsl-hue", "hsl-saturation", "hsl-lightness",
+                                           "lch", "lch-lightness", "lch-chroma", "lch-hue",
+                                           "lab", "lab-a", "lab-b",
+                                           "name"])
                         .required(true),
                 )
                 .arg(color_arg.clone()),

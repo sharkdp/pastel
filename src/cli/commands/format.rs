@@ -19,8 +19,16 @@ impl ColorCommand for FormatCommand {
             "rgb" => color.to_rgb_string(Format::Spaces),
             "hex" => color.to_rgb_hex_string(),
             "hsl" => color.to_hsl_string(Format::Spaces),
-            "lab" => color.to_lab_string(Format::Spaces),
+            "hsl-hue" => format!("{:.0}", color.to_hsla().h),
+            "hsl-saturation" => format!("{:.4}", color.to_hsla().s),
+            "hsl-lightness" => format!("{:.4}", color.to_hsla().l),
             "lch" => color.to_lch_string(Format::Spaces),
+            "lch-lightness" => format!("{:.2}", color.to_lch().l),
+            "lch-chroma" => format!("{:.2}", color.to_lch().c),
+            "lch-hue" => format!("{:.2}", color.to_lch().h),
+            "lab" => color.to_lab_string(Format::Spaces),
+            "lab-a" => format!("{:.2}", color.to_lab().a),
+            "lab-b" => format!("{:.2}", color.to_lab().b),
             "name" => similar_colors(color)[0].name.to_owned(),
             &_ => {
                 unreachable!("Unknown format type");
