@@ -38,7 +38,7 @@ fn run() -> Result<ExitCode> {
         .help(
             "Colors can be specified in many different formats, such as #RRGGBB, RRGGBB, \
              #RGB, 'rgb(…, …, …)', 'hsl(…, …, …)', 'gray(…)' or simply by the name of the \
-             color. If the color argument is not specified, the color will be read from \
+             color. If no color argument is specified, colors will be read from \
              standard input.\n\
              Examples:\
              \n  - cyan\
