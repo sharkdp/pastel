@@ -384,9 +384,12 @@ fn run() -> Result<ExitCode> {
             Arg::with_name("color-mode")
                 .long("color-mode")
                 .short("m")
-                .help("Specify the terminal color mode")
+                .value_name("mode")
+                .help("Specify the terminal color mode: 24bit, 8bit, off, *auto*")
                 .possible_values(&["24bit", "8bit", "off", "auto"])
-                .default_value("auto"),
+                .default_value("auto")
+                .hide_possible_values(true)
+                .hide_default_value(true)
         );
 
     let global_matches = app.get_matches();
