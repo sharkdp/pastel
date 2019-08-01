@@ -348,16 +348,16 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("colorcheck")
                 .about("Check if your terminal emulator supports 24-bit colors.")
-                .setting(AppSettings::Hidden)
+                .setting(AppSettings::Hidden),
         )
         .arg(
             Arg::with_name("color-mode")
-            .long("color-mode")
-            .short("m")
-            .help("Specify the terminal color mode")
-            .possible_values(&["24bit", "8bit", "off", "auto"])
-            .default_value("auto")
-            );
+                .long("color-mode")
+                .short("m")
+                .help("Specify the terminal color mode")
+                .possible_values(&["24bit", "8bit", "off", "auto"])
+                .default_value("auto"),
+        );
 
     let global_matches = app.get_matches();
 
