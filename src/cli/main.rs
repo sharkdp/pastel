@@ -69,7 +69,7 @@ fn run() -> Result<ExitCode> {
             SubCommand::with_name("show")
                 .alias("take")
                 .alias("color")
-                .about("Display information about the given color on the terminal")
+                .about("Display information about the given color")
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -86,7 +86,7 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("random")
-                .about("Generate random colors")
+                .about("Generate a list of random colors")
                 .arg(
                     Arg::with_name("strategy")
                         .long("strategy")
@@ -141,7 +141,7 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("paint")
-                .about("Print colorized text using ANSI escape sequences")
+                .about("Print colored text using ANSI escape sequences")
                 .arg(
                     Arg::with_name("color")
                         .help("The foreground color. Use '-' to read the color from STDIN")
@@ -303,7 +303,7 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("rotate")
-                .about("Rotate the hue channel by a specified angle")
+                .about("Rotate the hue channel by the specified angle")
                 .long_about(
                     "Rotate the HSL hue channel of a color by the specified angle (in \
                      degrees). A rotation by 180° returns the complementary color. A \
@@ -336,7 +336,7 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("to-gray")
-                .about("Completely desaturate a color (while preserving luminance)")
+                .about("Completely desaturate a color (preserving luminance)")
                 .long_about(
                     "Completely desaturate the given color while preserving the luminance.\n\
                      \n\
@@ -354,7 +354,7 @@ fn run() -> Result<ExitCode> {
             Arg::with_name("color-mode")
             .long("color-mode")
             .short("m")
-            .help("Terminal color mode")
+            .help("Specify the terminal color mode")
             .possible_values(&["24bit", "8bit", "off", "auto"])
             .default_value("auto")
             );
