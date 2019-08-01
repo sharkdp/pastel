@@ -206,6 +206,7 @@ fn run() -> Result<ExitCode> {
                                            "lab", "lab-a", "lab-b",
                                            "luminance", "brightness",
                                            "name"])
+                        .default_value("hex")
                         .required(true),
                 )
                 .arg(color_arg.clone()),
