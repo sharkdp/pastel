@@ -21,7 +21,7 @@ impl PastelError {
             PastelError::CouldNotReadFromStdin => "could not read color from standard input".into(),
             PastelError::ColorArgRequired => {
                 "A color argument needs to be provided on the command line or via a pipe. \
-                 Call the same command with '-h' or '--help' to get more information."
+                 Call this command again with '-h' or '--help' to get more information."
                     .into()
             }
             PastelError::CouldNotParseNumber(number) => {
