@@ -74,9 +74,10 @@ fn run() -> Result<ExitCode> {
         .max_term_width(100)
         .about(crate_description!())
         .subcommand(
-            SubCommand::with_name("show")
+            SubCommand::with_name("color")
                 .alias("take")
-                .alias("color")
+                .alias("show")
+                .alias("display")
                 .about("Display information about the given color")
                 .arg(color_arg.clone()),
         )

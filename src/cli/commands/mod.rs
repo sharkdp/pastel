@@ -39,7 +39,7 @@ pub enum Command {
 impl Command {
     pub fn from_string(command: &str) -> Command {
         match command {
-            "show" => Command::WithColor(Box::new(show::ShowCommand)),
+            "color" => Command::WithColor(Box::new(show::ShowCommand)),
             "saturate" => Command::WithColor(Box::new(color_commands::SaturateCommand)),
             "desaturate" => Command::WithColor(Box::new(color_commands::DesaturateCommand)),
             "lighten" => Command::WithColor(Box::new(color_commands::LightenCommand)),
