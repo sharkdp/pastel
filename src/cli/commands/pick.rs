@@ -43,6 +43,11 @@ impl GenericCommand for PickCommand {
 
         canvas.print(out)?;
 
+        writeln!(
+            out,
+            "TODO: add a way for the user to interactively narrow down his color choice"
+        )?;
+
         Ok(())
     }
 }
