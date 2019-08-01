@@ -52,6 +52,14 @@ fn run() -> Result<ExitCode> {
         .required(false)
         .multiple(true);
 
+    let colorspace_arg = Arg::with_name("colorspace")
+        .long("colorspace")
+        .short("s")
+        .help("The colorspace in which to interpolate")
+        .possible_values(&["rgb", "hsl", "lab", "lch"])
+        .default_value("rgb")
+        .required(true);
+
     let app = App::new(crate_name!())
         .version(crate_version!())
         .global_setting(AppSettings::ColorAuto)
@@ -202,6 +210,34 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("scale")
+                .about("Generate a list of colors")
+                .arg(
+                    Arg::with_name("color-start")
+                        .value_name("start")
+                        .help("The first color in the color scale")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("color-stop")
+                        .value_name("stop")
+                        .help("The last color in the color scale")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("number")
+                        .long("number")
+                        .short("n")
+                        .help("Number of colors to generate")
+                        .takes_value(true)
+                        .default_value("20")
+                        .value_name("count"),
+                )
+                .arg(
+                    colorspace_arg.clone()
+                )
+        )
+        .subcommand(
             SubCommand::with_name("mix")
                 .about("Mix two colors in the given colorspace")
                 .long_about(
@@ -210,13 +246,7 @@ fn run() -> Result<ExitCode> {
                        pastel mix --colorspace=lab red blue
                     ")
                 .arg(
-                    Arg::with_name("colorspace")
-                        .long("colorspace")
-                        .short("s")
-                        .help("The colorspace in which to interpolate")
-                        .possible_values(&["rgb", "hsl", "lab", "lch"])
-                        .default_value("rgb")
-                        .required(true),
+                    colorspace_arg.clone()
                 )
                 .arg(
                     Arg::with_name("fraction")
