@@ -93,7 +93,8 @@ lazy_static! {
             ^
             hsl\(
                 \s*
-                (\d+(?:\.\d+)?)
+                (-?\d+(?:\.\d+)?)
+                (?:deg|°)?
                 \s*
                 ,
                 \s*
@@ -252,12 +253,25 @@ fn parse_hsl() {
         parse_color("hsl(280,20%,50%)")
     );
     assert_eq!(
+        Some(Color::from_hsl(280.0, 0.2, 0.5)),
+        parse_color("hsl(280deg,20%,50%)")
+    );
+    assert_eq!(
+        Some(Color::from_hsl(280.0, 0.2, 0.5)),
+        parse_color("hsl(280°,20%,50%)")
+    );
+    assert_eq!(
         Some(Color::from_hsl(280.33, 0.123, 0.456)),
         parse_color("hsl(280.33001,12.3%,45.6%)")
     );
     assert_eq!(
         Some(Color::from_hsl(280.0, 0.2, 0.5)),
         parse_color("hsl(  280 , 20% , 50%)")
+    );
+
+    assert_eq!(
+        Some(Color::from_hsl(-140.0, 0.2, 0.5)),
+        parse_color("hsl(-140°,20%,50%)")
     );
 
     assert_eq!(None, parse_color("hsl(280,20%,50)"));
