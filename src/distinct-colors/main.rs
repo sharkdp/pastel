@@ -27,6 +27,7 @@ fn annealing(brush: &Brush, colors: &mut Vec<Color>) {
     let mut strategy = random::strategies::UniformRGB {};
 
     let mut min_distance = mutual_distance(colors);
+
     for iter in 0..10_000_000 {
         let random_index = random::<usize>() % colors.len();
         let new_color = strategy.generate();
@@ -41,8 +42,9 @@ fn annealing(brush: &Brush, colors: &mut Vec<Color>) {
             *colors = new_set;
         }
 
-        if iter % 100_000 == 0 {
-            println!("[Iteration {}] min. distance: {:.2}", iter, min_distance);
+        if iter % 1000 == 0 {
+            // colors.sort_by_key(|c| (c.to_lch().h * 100.0) as i32);
+            print!("[{:10.}] D = {:.2} ", iter, min_distance);
             for c in colors.iter() {
                 let tc = c.text_color();
                 let mut style = tc.ansi_style();
@@ -64,8 +66,9 @@ fn main() {
         .unwrap_or(10);
 
     let mut colors = Vec::new();
-    colors.resize(n, Color::black());
-
+    for _ in 0..n {
+        colors.push(random::strategies::UniformRGB.generate());
+    }
     let brush = Brush::from_environment();
     annealing(&brush, &mut colors);
     let min_dist = mutual_distance(&colors);
