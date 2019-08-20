@@ -2,59 +2,162 @@ use std::env;
 
 use rand::prelude::*;
 
+use core::f64 as scalar;
 use pastel::ansi::{Brush, ToAnsiStyle};
 use pastel::random::{self, RandomizationStrategy};
 use pastel::Color;
 
-fn mutual_distance(colors: &[Color]) -> f64 {
+type Scalar = f64;
+
+fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
     let num = colors.len();
 
-    let mut min_dist = 1000.0;
+    let mut distances = vec![vec![0.0; num]; num];
+    let mut min_closest_dist = scalar::MAX;
+
+    let mut pair = (0, 0);
 
     for i in 0..num {
         for j in (i + 1)..num {
             let dist = colors[i].distance(&colors[j]);
-            if dist < min_dist {
-                min_dist = dist;
+            if dist < min_closest_dist {
+                min_closest_dist = dist;
+                pair = (i, j);
+            }
+            distances[i][j] = dist;
+            distances[j][i] = dist;
+        }
+    }
+
+    // Find the distance to the nearest neighbor for each color
+    let mut closest_distances = vec![scalar::MAX; num];
+    for i in 0..num {
+        for j in 0..num {
+            if i != j && distances[i][j] < closest_distances[i] {
+                closest_distances[i] = distances[i][j];
             }
         }
     }
 
-    min_dist
+    let mut mean_closest_distance = 0.0;
+    for dist in closest_distances {
+        mean_closest_distance += dist;
+    }
+    mean_closest_distance /= num as Scalar;
+
+    (min_closest_dist, mean_closest_distance, pair)
 }
 
-fn annealing(brush: &Brush, colors: &mut Vec<Color>) {
-    let mut strategy = random::strategies::UniformRGB {};
+fn modify_channel(c: &mut u8) {
+    if random::<bool>() {
+        *c = c.saturating_add(random::<u8>() % 10);
+    } else {
+        *c = c.saturating_sub(random::<u8>() % 10);
+    }
+}
 
-    let mut min_distance = mutual_distance(colors);
+fn modify_color(color: &mut Color, only_small_modifications: bool) {
+    const STRATEGY: random::strategies::UniformRGB = random::strategies::UniformRGB {};
 
-    for iter in 0..10_000_000 {
-        let random_index = random::<usize>() % colors.len();
-        let new_color = strategy.generate();
-        let mut new_set = colors.clone();
-        new_set[random_index] = new_color;
-        let new_min_dist = mutual_distance(&new_set);
+    if only_small_modifications {
+        let mut rgb = color.to_rgba();
+        modify_channel(&mut rgb.r);
+        modify_channel(&mut rgb.g);
+        modify_channel(&mut rgb.b);
+        *color = Color::from_rgb(rgb.r, rgb.g, rgb.b);
+    } else {
+        *color = STRATEGY.generate();
+    }
+}
 
-        if new_min_dist > min_distance {
-            min_distance = new_min_dist;
-            *colors = new_set;
-        } else if new_min_dist == min_distance {
-            *colors = new_set;
+fn annealing(
+    brush: &Brush,
+    colors: &mut Vec<Color>,
+    num_iter: usize,
+    initial_temp: f64,
+    cooling_rate: f64,
+    optimize_mean: bool,
+    only_small_modifications: bool,
+) {
+    let mut temperature = initial_temp;
+
+    // let mut strategy = random::strategies::UniformRGB {};
+
+    let (mut min_closest_distance, mut mean_closest_distance, mut pair) = mutual_distance(colors);
+
+    for iter in 0..num_iter {
+        let random_index = if optimize_mean || only_small_modifications {
+            random::<usize>() % colors.len()
+        } else {
+            if random::<bool>() {
+                pair.0
+            } else {
+                pair.1
+            }
+        };
+        // let random_index = random::<usize>() % colors.len();
+
+        let mut new_colors = colors.clone();
+
+        modify_color(&mut new_colors[random_index], only_small_modifications);
+
+        let (new_min_dist, new_mean_dist, new_pair) = mutual_distance(&new_colors);
+
+        let score = if optimize_mean {
+            mean_closest_distance
+        } else {
+            min_closest_distance
+        };
+        let new_score = if optimize_mean {
+            new_mean_dist
+        } else {
+            new_min_dist
+        };
+
+        if new_score > score {
+            min_closest_distance = new_min_dist;
+            mean_closest_distance = new_mean_dist;
+            pair = new_pair;
+            *colors = new_colors;
+        } else {
+            let bolzmann = Scalar::exp(-(score - new_score) / temperature);
+            if random::<Scalar>() <= bolzmann {
+                min_closest_distance = new_min_dist;
+                mean_closest_distance = new_mean_dist;
+                pair = new_pair;
+                *colors = new_colors;
+            }
         }
 
-        if iter % 1000 == 0 {
+        if iter % 5_000 == 0 {
             // colors.sort_by_key(|c| (c.to_lch().h * 100.0) as i32);
-            print!("[{:10.}] D = {:.2} ", iter, min_distance);
+            print!(
+                "[{:10.}] D_mean = {:<6.2}; D_min = {:<6.2}; T = {:.6} ",
+                iter, mean_closest_distance, min_closest_distance, temperature
+            );
+            let mut ci = 0;
             for c in colors.iter() {
                 let tc = c.text_color();
                 let mut style = tc.ansi_style();
                 style.on(c);
+
+                if pair.0 == ci || pair.1 == ci {
+                    style.bold(true);
+                    style.underline(true);
+                }
+
                 print!(
                     "{} ",
                     brush.paint(format!("{}", c.to_rgb_hex_string()), style)
                 );
+
+                ci += 1;
             }
-            println!();
+            println!("");
+        }
+
+        if iter % 1_000 == 0 {
+            temperature *= cooling_rate;
         }
     }
 }
@@ -67,10 +170,22 @@ fn main() {
 
     let mut colors = Vec::new();
     for _ in 0..n {
-        colors.push(random::strategies::UniformRGB.generate());
+        // colors.push(random::strategies::UniformRGB.generate());
+        colors.push(Color::black());
     }
     let brush = Brush::from_environment();
-    annealing(&brush, &mut colors);
-    let min_dist = mutual_distance(&colors);
+
+    // Recipe 1: consistently leads to D_min ~ 72
+    annealing(&brush, &mut colors, 200_000, 3.0, 0.95, true, false);
+    // annealing(&brush, &mut colors, 1_000_000, 0.5, 0.995, false, false);
+    annealing(&brush, &mut colors, 10_000_000, 0.5, 0.99, false, true);
+
+    // annealing(&brush, &mut colors, 10_000_000, 2.0, 0.9, false);
+
+    let (min_dist, _, _) = mutual_distance(&colors);
     println!("min dist: {:.2}", min_dist);
 }
+
+// Best results so far:
+// [Iteration 1100000] min. distance: 74.07
+// #0800ff #004e00 #00005d #ff15bb #ff0700 #00ffe1 #00acff #ffec00 #00ff21 #ffcbad #520000
