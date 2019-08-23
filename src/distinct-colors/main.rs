@@ -70,6 +70,29 @@ fn modify_color(color: &mut Color, only_small_modifications: bool) {
     }
 }
 
+fn print_colors(brush: &Brush, colors: &[Color]) {
+    let (_, _, pair) = mutual_distance(colors);
+    let mut ci = 0;
+    for c in colors.iter() {
+        let tc = c.text_color();
+        let mut style = tc.ansi_style();
+        style.on(c);
+
+        if pair.0 == ci || pair.1 == ci {
+            style.bold(true);
+            style.underline(true);
+        }
+
+        print!(
+            "{} ",
+            brush.paint(format!("{}", c.to_rgb_hex_string()), style)
+        );
+
+        ci += 1;
+    }
+    println!("");
+}
+
 fn annealing(
     brush: &Brush,
     colors: &mut Vec<Color>,
@@ -135,25 +158,7 @@ fn annealing(
                 "[{:10.}] D_mean = {:<6.2}; D_min = {:<6.2}; T = {:.6} ",
                 iter, mean_closest_distance, min_closest_distance, temperature
             );
-            let mut ci = 0;
-            for c in colors.iter() {
-                let tc = c.text_color();
-                let mut style = tc.ansi_style();
-                style.on(c);
-
-                if pair.0 == ci || pair.1 == ci {
-                    style.bold(true);
-                    style.underline(true);
-                }
-
-                print!(
-                    "{} ",
-                    brush.paint(format!("{}", c.to_rgb_hex_string()), style)
-                );
-
-                ci += 1;
-            }
-            println!("");
+            print_colors(brush, &colors);
         }
 
         if iter % 1_000 == 0 {
