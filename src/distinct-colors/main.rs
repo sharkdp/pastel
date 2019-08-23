@@ -19,7 +19,7 @@ fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
 
     for i in 0..num {
         for j in (i + 1)..num {
-            let dist = colors[i].distance(&colors[j]);
+            let dist = colors[i].distance_delta_e_cie76(&colors[j]);
             if dist < min_closest_dist {
                 min_closest_dist = dist;
                 pair = (i, j);
@@ -175,22 +175,21 @@ fn main() {
 
     let mut colors = Vec::new();
     for _ in 0..n {
-        // colors.push(random::strategies::UniformRGB.generate());
-        colors.push(Color::black());
+        colors.push(random::strategies::UniformRGB.generate());
     }
     let brush = Brush::from_environment();
 
-    // Recipe 1: consistently leads to D_min ~ 72
     annealing(&brush, &mut colors, 200_000, 3.0, 0.95, true, false);
-    // annealing(&brush, &mut colors, 1_000_000, 0.5, 0.995, false, false);
-    annealing(&brush, &mut colors, 10_000_000, 0.5, 0.99, false, true);
+    annealing(&brush, &mut colors, 1_000_000, 0.5, 0.99, false, true);
 
-    // annealing(&brush, &mut colors, 10_000_000, 2.0, 0.9, false);
-
-    let (min_dist, _, _) = mutual_distance(&colors);
-    println!("min dist: {:.2}", min_dist);
+    println!();
+    println!("Sorted by L*:");
+    colors.sort_by_key(|c| (c.to_lab().l * 100.0) as i32);
+    print_colors(&brush, &colors);
+    println!("Sorted by a*:");
+    colors.sort_by_key(|c| (c.to_lab().a * 100.0) as i32);
+    print_colors(&brush, &colors);
+    println!("Sorted by b*:");
+    colors.sort_by_key(|c| (c.to_lab().b * 100.0) as i32);
+    print_colors(&brush, &colors);
 }
-
-// Best results so far:
-// [Iteration 1100000] min. distance: 74.07
-// #0800ff #004e00 #00005d #ff15bb #ff0700 #00ffe1 #00acff #ffec00 #00ff21 #ffcbad #520000
