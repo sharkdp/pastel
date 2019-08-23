@@ -19,7 +19,7 @@ fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
 
     for i in 0..num {
         for j in (i + 1)..num {
-            let dist = colors[i].distance_delta_e_cie76(&colors[j]);
+            let dist = colors[i].distance_delta_e_ciede2000(&colors[j]);
             if dist < min_closest_dist {
                 min_closest_dist = dist;
                 pair = (i, j);
