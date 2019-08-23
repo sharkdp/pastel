@@ -77,7 +77,7 @@ impl AnsiColor for Color {
     /// See: https://en.wikipedia.org/wiki/ANSI_escape_code
     fn to_ansi_8bit(&self) -> u8 {
         let mut codes: Vec<u8> = (16..255).collect();
-        codes.sort_by_key(|code| self.distance(&Color::from_ansi_8bit(*code)) as i32);
+        codes.sort_by_key(|code| self.distance_delta_e_cie76(&Color::from_ansi_8bit(*code)) as i32);
 
         codes[0]
     }

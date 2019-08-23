@@ -1,5 +1,6 @@
 pub mod ansi;
 pub mod colorspace;
+mod delta_e;
 mod helper;
 pub mod random;
 mod types;
@@ -220,9 +221,15 @@ impl Color {
     }
 
     /// Format the color as a RGB-representation string (`#fc0070`).
-    pub fn to_rgb_hex_string(&self) -> String {
+    pub fn to_rgb_hex_string(&self, leading_hash: bool) -> String {
         let rgba = self.to_rgba();
-        format!("#{:02x}{:02x}{:02x}", rgba.r, rgba.g, rgba.b)
+        format!(
+            "{}{:02x}{:02x}{:02x}",
+            if leading_hash { "#" } else { "" },
+            rgba.r,
+            rgba.g,
+            rgba.b
+        )
     }
 
     /// Convert a `Color` to its red, green, blue and alpha values. All numbers are from the range
@@ -581,11 +588,19 @@ impl Color {
     /// standard. A distance below ~2.3 is not noticable.
     ///
     /// See: https://en.wikipedia.org/wiki/Color_difference
-    pub fn distance(&self, other: &Color) -> Scalar {
+    pub fn distance_delta_e_cie76(&self, other: &Color) -> Scalar {
         let c1 = self.to_lab();
         let c2 = other.to_lab();
 
         ((c1.l - c2.l).powi(2) + (c1.a - c2.a).powi(2) + (c1.b - c2.b).powi(2)).sqrt()
+    }
+
+    /// Compute the perceived 'distance' between two colors according to the CIEDE2000 delta-E
+    /// standard.
+    ///
+    /// See: https://en.wikipedia.org/wiki/Color_difference
+    pub fn distance_delta_e_ciede2000(&self, other: &Color) -> Scalar {
+        delta_e::delta_e_ciede2000(self.to_lab(), other.to_lab())
     }
 
     /// Mix two colors by linearly interpolating between them in the specified color space.
@@ -967,13 +982,13 @@ mod tests {
     }
 
     #[test]
-    fn distance() {
+    fn distance_delta_e_cie76() {
         let c = Color::from_rgb(255, 127, 14);
-        assert_eq!(0.0, c.distance(&c));
+        assert_eq!(0.0, c.distance_delta_e_cie76(&c));
 
         let c1 = Color::from_rgb(50, 100, 200);
         let c2 = Color::from_rgb(200, 10, 0);
-        assert_eq!(123.0, c1.distance(&c2).round());
+        assert_eq!(123.0, c1.distance_delta_e_cie76(&c2).round());
     }
 
     #[test]
@@ -991,7 +1006,8 @@ mod tests {
     #[test]
     fn to_rgb_hex_string() {
         let c = Color::from_rgb(255, 127, 4);
-        assert_eq!("#ff7f04", c.to_rgb_hex_string());
+        assert_eq!("ff7f04", c.to_rgb_hex_string(false));
+        assert_eq!("#ff7f04", c.to_rgb_hex_string(true));
     }
 
     #[test]

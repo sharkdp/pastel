@@ -33,7 +33,7 @@ pub fn show_color_tty(out: &mut dyn Write, config: &Config, color: &Color) -> Re
     canvas.draw_text(
         text_position_y + 0,
         text_position_x,
-        &format!("Hex: {}", color.to_rgb_hex_string()),
+        &format!("Hex: {}", color.to_rgb_hex_string(true)),
     );
     canvas.draw_text(
         text_position_y + 2,

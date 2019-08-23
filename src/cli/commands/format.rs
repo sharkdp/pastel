@@ -17,7 +17,7 @@ impl ColorCommand for FormatCommand {
 
         let output = match format_type {
             "rgb" => color.to_rgb_string(Format::Spaces),
-            "hex" => color.to_rgb_hex_string(),
+            "hex" => color.to_rgb_hex_string(true),
             "hsl" => color.to_hsl_string(Format::Spaces),
             "hsl-hue" => format!("{:.0}", color.to_hsla().h),
             "hsl-saturation" => format!("{:.4}", color.to_hsla().s),

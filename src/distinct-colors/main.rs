@@ -85,7 +85,7 @@ fn print_colors(brush: &Brush, colors: &[Color]) {
 
         print!(
             "{} ",
-            brush.paint(format!("{}", c.to_rgb_hex_string()), style)
+            brush.paint(format!("{}", c.to_rgb_hex_string(false)), style)
         );
 
         ci += 1;
