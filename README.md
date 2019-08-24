@@ -4,6 +4,21 @@
 
 ## Tutorial
 
+### General remarks
+
+`pastel` provides a number of commands like `saturate`, `mix` or `paint`. To see a complete list, you can simply run
+``` bash
+pastel
+```
+To get more information about a specific subcommand (say `mix`), you can call `pastel mix -h` or `pastel help mix`.
+
+Many `pastel` commands can be composed by piping the output of one command to another, for example:
+``` bash
+pastel random | pastel mix red | pastel lighten 0.2 | pastel format hex
+```
+
+### Showing colors
+
 ### Converting colors
 
 ### Manipulating colors
@@ -44,4 +59,4 @@ Maximally distinct colors:
 Other articles and videos:
 
 * [Color Matching](https://www.youtube.com/watch?v=82ItpxqPP4I)
-* [Introduction to color spaces)(https://ciechanow.ski/color-spaces/)
+* [Introduction to color spaces](https://ciechanow.ski/color-spaces/)
