@@ -7,14 +7,32 @@ use crate::Color;
 
 type Scalar = f64;
 
-pub fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
+pub struct DistanceResult {
+    /// The closest distance between any two colors
+    pub min_closest_distance: Scalar,
+
+    /// The average over all nearest-neighbor distances
+    pub mean_closest_distance: Scalar,
+
+    /// Indices of the colors that were closest to each other
+    pub closest_pair: (usize, usize),
+}
+
+pub struct IterationStatistics<'a> {
+    pub iteration: usize,
+    pub temperature: Scalar,
+    pub distance_result: &'a DistanceResult,
+    pub colors: &'a [Color],
+}
+
+pub fn mutual_distance(colors: &[Color]) -> DistanceResult {
     let num_colors = colors.len();
 
     // The distance to the nearest neighbor for every color
     let mut closest_distances = vec![scalar::MAX; num_colors];
 
     // The absolute closest distance
-    let mut min_closest_dist = scalar::MAX;
+    let mut min_closest_distance = scalar::MAX;
 
     // The indices of the colors that were closest
     let mut closest_pair = (std::usize::MAX, std::usize::MAX);
@@ -23,8 +41,8 @@ pub fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
         for j in (i + 1)..num_colors {
             let dist = colors[i].distance_delta_e_ciede2000(&colors[j]);
 
-            if dist < min_closest_dist {
-                min_closest_dist = dist;
+            if dist < min_closest_distance {
+                min_closest_distance = dist;
                 closest_pair = (i, j);
             }
 
@@ -44,7 +62,11 @@ pub fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
     }
     mean_closest_distance /= num_colors as Scalar;
 
-    (min_closest_dist, mean_closest_distance, closest_pair)
+    DistanceResult {
+        min_closest_distance,
+        mean_closest_distance,
+        closest_pair,
+    }
 }
 
 fn modify_channel(c: &mut u8) {
@@ -78,66 +100,59 @@ pub fn annealing<C>(
     optimize_mean: bool,
     only_small_modifications: bool,
 ) where
-    C: FnMut(&[Color]),
+    C: FnMut(&IterationStatistics),
 {
     let mut temperature = initial_temp;
 
-    // let mut strategy = random::strategies::UniformRGB {};
-
-    let (mut min_closest_distance, mut mean_closest_distance, mut pair) = mutual_distance(colors);
+    let mut result = mutual_distance(colors);
 
     for iter in 0..num_iter {
         let random_index = if optimize_mean || only_small_modifications {
             random::<usize>() % colors.len()
         } else {
             if random::<bool>() {
-                pair.0
+                result.closest_pair.0
             } else {
-                pair.1
+                result.closest_pair.1
             }
         };
-        // let random_index = random::<usize>() % colors.len();
 
         let mut new_colors = colors.clone();
 
         modify_color(&mut new_colors[random_index], only_small_modifications);
 
-        let (new_min_dist, new_mean_dist, new_pair) = mutual_distance(&new_colors);
+        let new_result = mutual_distance(&new_colors);
 
         let score = if optimize_mean {
-            mean_closest_distance
+            result.mean_closest_distance
         } else {
-            min_closest_distance
+            result.min_closest_distance
         };
         let new_score = if optimize_mean {
-            new_mean_dist
+            new_result.mean_closest_distance
         } else {
-            new_min_dist
+            new_result.min_closest_distance
         };
 
         if new_score > score {
-            min_closest_distance = new_min_dist;
-            mean_closest_distance = new_mean_dist;
-            pair = new_pair;
+            result = new_result;
             *colors = new_colors;
         } else {
             let bolzmann = Scalar::exp(-(score - new_score) / temperature);
             if random::<Scalar>() <= bolzmann {
-                min_closest_distance = new_min_dist;
-                mean_closest_distance = new_mean_dist;
-                pair = new_pair;
+                result = new_result;
                 *colors = new_colors;
             }
         }
 
         if iter % 5_000 == 0 {
-            // colors.sort_by_key(|c| (c.to_lch().h * 100.0) as i32);
-            print!(
-                "[{:10.}] D_mean = {:<6.2}; D_min = {:<6.2}; T = {:.6} ",
-                iter, mean_closest_distance, min_closest_distance, temperature
-            );
-            // print_colors(brush, &colors);
-            callback(&colors);
+            let statistics = IterationStatistics {
+                iteration: iter,
+                temperature,
+                distance_result: &result,
+                colors,
+            };
+            callback(&statistics);
         }
 
         if iter % 1_000 == 0 {
