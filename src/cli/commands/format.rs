@@ -1,6 +1,7 @@
 use crate::commands::prelude::*;
 use crate::utility::similar_colors;
 
+use pastel::ansi::Mode;
 use pastel::Format;
 
 pub struct FormatCommand;
@@ -14,8 +15,9 @@ impl ColorCommand for FormatCommand {
         color: &Color,
     ) -> Result<()> {
         let format_type = matches.value_of("type").expect("required argument");
+        let format_type = format_type.to_lowercase();
 
-        let output = match format_type.to_lowercase().as_ref() {
+        let output = match format_type.as_ref() {
             "rgb" => color.to_rgb_string(Format::Spaces),
             "hex" => color.to_rgb_hex_string(true),
             "hsl" => color.to_hsl_string(Format::Spaces),
@@ -31,19 +33,30 @@ impl ColorCommand for FormatCommand {
             "lab-b" => format!("{:.2}", color.to_lab().b),
             "luminance" => format!("{:.3}", color.luminance()),
             "brightness" => format!("{:.3}", color.brightness()),
+            "ansi-8bit" => color.to_ansi_sequence(Mode::Ansi8Bit),
+            "ansi-24bit" => color.to_ansi_sequence(Mode::TrueColor),
             "name" => similar_colors(color)[0].name.to_owned(),
             &_ => {
                 unreachable!("Unknown format type");
             }
         };
 
-        writeln!(
-            out,
-            "{}",
-            config
-                .brush
-                .paint(output, color.text_color().ansi_style().on(color))
-        )?;
+        let write_colored_line = match format_type.as_ref() {
+            "ansi-8bit" | "ansi-24bit" => false,
+            _ => true,
+        };
+
+        if write_colored_line {
+            writeln!(
+                out,
+                "{}",
+                config
+                    .brush
+                    .paint(output, color.text_color().ansi_style().on(color))
+            )?;
+        } else {
+            write!(out, "{}", output)?;
+        }
 
         Ok(())
     }

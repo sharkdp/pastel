@@ -205,6 +205,7 @@ fn run() -> Result<ExitCode> {
                                            "lch", "lch-lightness", "lch-chroma", "lch-hue",
                                            "lab", "lab-a", "lab-b",
                                            "luminance", "brightness",
+                                           "ansi-8bit", "ansi-24bit",
                                            "name"])
                         .case_insensitive(true)
                         .default_value("hex")
