@@ -27,7 +27,7 @@ use std::f64;
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-pub fn delta_e_ciede2000(color1: Lab, color2: Lab) -> f64 {
+pub fn delta_e_ciede2000(color1: &Lab, color2: &Lab) -> f64 {
     let ksub_l = 1.0;
     let ksub_c = 1.0;
     let ksub_h = 1.0;
@@ -167,7 +167,7 @@ mod tests {
             alpha: 1.0,
         };
 
-        assert_eq!(round(delta_e_ciede2000(color1, color2)), expected);
+        assert_eq!(round(delta_e_ciede2000(&color1, &color2)), expected);
     }
 
     // Tests taken from Table 1: "CIEDE2000 total color difference test data" of

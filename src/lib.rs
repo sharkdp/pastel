@@ -601,7 +601,7 @@ impl Color {
     ///
     /// See: https://en.wikipedia.org/wiki/Color_difference
     pub fn distance_delta_e_ciede2000(&self, other: &Color) -> Scalar {
-        delta_e::delta_e_ciede2000(self.to_lab(), other.to_lab())
+        delta_e::delta_e_ciede2000(&self.to_lab(), &other.to_lab())
     }
 
     /// Mix two colors by linearly interpolating between them in the specified color space.

@@ -1,8 +1,16 @@
 use std::borrow::Borrow;
 
-use crate::Color;
-
 use atty::{self, Stream};
+use lazy_static::lazy_static;
+
+use crate::delta_e::delta_e_ciede2000;
+use crate::{Color, Lab};
+
+lazy_static! {
+    static ref ANSI_LAB_REPRESENTATIONS: Vec<(u8, Lab)> = (16..255)
+        .map(|code| (code, Color::from_ansi_8bit(code).to_lab()))
+        .collect();
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum Mode {
@@ -76,12 +84,12 @@ impl AnsiColor for Color {
     ///
     /// See: https://en.wikipedia.org/wiki/ANSI_escape_code
     fn to_ansi_8bit(&self) -> u8 {
-        let mut codes: Vec<u8> = (16..255).collect();
-        codes.sort_by_key(|code| {
-            self.distance_delta_e_ciede2000(&Color::from_ansi_8bit(*code)) as i32
-        });
-
-        codes[0]
+        let self_lab = self.to_lab();
+        ANSI_LAB_REPRESENTATIONS
+            .iter()
+            .min_by_key(|(_, lab)| delta_e_ciede2000(&self_lab, &lab) as i32)
+            .expect("list of codes can not be empty")
+            .0
     }
 
     /// Return an ANSI escape sequence in 8-bit or 24-bit representation:
