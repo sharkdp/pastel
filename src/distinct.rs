@@ -8,19 +8,19 @@ use crate::Color;
 type Scalar = f64;
 
 pub fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
-    let num = colors.len();
+    let num_colors = colors.len();
 
-    let mut distances = vec![vec![0.0; num]; num];
+    let mut distances = vec![vec![0.0; num_colors]; num_colors];
     let mut min_closest_dist = scalar::MAX;
 
-    let mut pair = (0, 0);
+    let mut closest_pair = (0, 0);
 
-    for i in 0..num {
-        for j in (i + 1)..num {
+    for i in 0..num_colors {
+        for j in (i + 1)..num_colors {
             let dist = colors[i].distance_delta_e_ciede2000(&colors[j]);
             if dist < min_closest_dist {
                 min_closest_dist = dist;
-                pair = (i, j);
+                closest_pair = (i, j);
             }
             distances[i][j] = dist;
             distances[j][i] = dist;
@@ -28,9 +28,9 @@ pub fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
     }
 
     // Find the distance to the nearest neighbor for each color
-    let mut closest_distances = vec![scalar::MAX; num];
-    for i in 0..num {
-        for j in 0..num {
+    let mut closest_distances = vec![scalar::MAX; num_colors];
+    for i in 0..num_colors {
+        for j in 0..num_colors {
             if i != j && distances[i][j] < closest_distances[i] {
                 closest_distances[i] = distances[i][j];
             }
@@ -41,9 +41,9 @@ pub fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
     for dist in closest_distances {
         mean_closest_distance += dist;
     }
-    mean_closest_distance /= num as Scalar;
+    mean_closest_distance /= num_colors as Scalar;
 
-    (min_closest_dist, mean_closest_distance, pair)
+    (min_closest_dist, mean_closest_distance, closest_pair)
 }
 
 fn modify_channel(c: &mut u8) {
