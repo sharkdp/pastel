@@ -1,4 +1,8 @@
+use std::io;
+use std::process::Command;
+
 use crate::commands::prelude::*;
+use crate::commands::show::show_color;
 use crate::hdcanvas::Canvas;
 
 pub struct PickCommand;
@@ -17,7 +21,7 @@ impl GenericCommand for PickCommand {
             config.padding,
             width + 2,
             width + 2,
-            &Color::graytone(0.39),
+            &Color::white(),
         );
 
         for y in 0..width {
@@ -27,7 +31,7 @@ impl GenericCommand for PickCommand {
 
                 let h = 360.0 * rx;
                 let s = 0.6;
-                let l = 0.81 * ry + 0.05;
+                let l = 0.95 * ry;
 
                 // Start with HSL
                 let color = Color::from_hsl(h, s, l);
@@ -41,12 +45,33 @@ impl GenericCommand for PickCommand {
             }
         }
 
-        canvas.print(out)?;
+        let stderr_handle = io::stderr();
+        let mut stderr = stderr_handle.lock();
 
-        writeln!(
-            out,
-            "TODO: add a way for the user to interactively narrow down his color choice"
-        )?;
+        canvas.print(&mut stderr)?;
+        writeln!(&mut stderr)?;
+
+        // Run an external X11 color picker tool
+        // TODO: support more tools, not just xcolor
+
+        let result = Command::new("xcolor").arg("--version").output();
+        match result {
+            Ok(ref output) if output.status.success() && output.stdout.starts_with(b"xcolor") => {}
+            _ => return Err(PastelError::NoColorPickerFound),
+        }
+
+        let result = Command::new("xcolor").arg("--format").arg("hex").output()?;
+        if !result.status.success() {
+            return Err(PastelError::NoColorPickerFound);
+        }
+
+        let color_str =
+            String::from_utf8(result.stdout).map_err(|_| PastelError::ColorInvalidUTF8)?;
+        let color_str = color_str.trim();
+
+        let color = ColorArgIterator::from_color_arg(color_str)?;
+
+        show_color(out, config, &color)?;
 
         Ok(())
     }

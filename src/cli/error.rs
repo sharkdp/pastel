@@ -8,6 +8,7 @@ pub enum PastelError {
     CouldNotParseNumber(String),
     StdoutClosed,
     GradientNumberMustBeLargerThanOne,
+    NoColorPickerFound,
     IoError(std::io::Error),
 }
 
@@ -31,6 +32,9 @@ impl PastelError {
             PastelError::StdoutClosed => "Output pipe has been closed".into(),
             PastelError::GradientNumberMustBeLargerThanOne => {
                 "The number of colors must be larger one".into()
+            }
+            PastelError::NoColorPickerFound => {
+                "Could not find any external color picker tool. See 'pastel pick -h' for more information.".into()
             }
             PastelError::IoError(err) => format!("I/O error: {}", err),
         }

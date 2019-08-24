@@ -289,6 +289,12 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("pick")
                 .about("Print a spectrum of colors to choose from")
+                .long_about("Print a spectrum of colors to choose from. This command requires an \
+                external color picker tool to be installed.\n\
+                \n\
+                Supported tools:  \n\
+                  - xcolor (https://github.com/Soft/xcolor)
+                ")
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -473,7 +479,7 @@ fn run() -> Result<ExitCode> {
 
     let config = Config {
         padding: 2,
-        colorpicker_width: 40,
+        colorpicker_width: 48,
         colorcheck_width: 8,
         interactive_mode,
         brush: Brush::from_mode(color_mode),
