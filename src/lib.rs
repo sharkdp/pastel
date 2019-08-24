@@ -268,7 +268,7 @@ impl Color {
     /// Return the color as an integer in RGB representation (`0xRRGGBB`)
     pub fn to_u32(&self) -> u32 {
         let rgba = self.to_rgba();
-        (rgba.r as u32).wrapping_shl(16) + (rgba.g as u32).wrapping_shl(8) + (rgba.b as u32)
+        u32::from(rgba.r).wrapping_shl(16) + u32::from(rgba.g).wrapping_shl(8) + u32::from(rgba.b)
     }
 
     /// Get XYZ coordinates according to the CIE 1931 color space.

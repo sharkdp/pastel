@@ -267,7 +267,7 @@ impl Brush {
         Brush { mode }
     }
 
-    pub fn paint<S>(&self, text: S, style: impl Into<Style>) -> String
+    pub fn paint<S>(self, text: S, style: impl Into<Style>) -> String
     where
         S: AsRef<str>,
     {
