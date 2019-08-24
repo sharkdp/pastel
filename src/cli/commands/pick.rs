@@ -10,7 +10,8 @@ impl GenericCommand for PickCommand {
         print_colorspectrum(config)?;
         let color_str = run_external_colorpicker()?;
 
-        let color = ColorArgIterator::from_color_arg(config, &color_str)?;
+        let mut print_spectrum = PrintSpectrum::No;
+        let color = ColorArgIterator::from_color_arg(config, &color_str, &mut print_spectrum)?;
         show_color(out, config, &color)?;
 
         Ok(())

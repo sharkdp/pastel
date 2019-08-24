@@ -15,13 +15,17 @@ impl GenericCommand for GradientCommand {
             return Err(PastelError::GradientNumberMustBeLargerThanOne);
         }
 
+        let mut print_spectrum = PrintSpectrum::Yes;
+
         let start = ColorArgIterator::from_color_arg(
             config,
             matches.value_of("color-start").expect("required argument"),
+            &mut print_spectrum,
         )?;
         let stop = ColorArgIterator::from_color_arg(
             config,
             matches.value_of("color-stop").expect("required argument"),
+            &mut print_spectrum,
         )?;
 
         for i in 0..count {

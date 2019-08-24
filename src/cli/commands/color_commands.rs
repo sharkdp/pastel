@@ -54,9 +54,12 @@ color_command!(ComplementCommand, _config, _matches, color, {
 color_command!(ToGrayCommand, _config, _matches, color, { color.to_gray() });
 
 color_command!(MixCommand, config, matches, color, {
+    let mut print_spectrum = PrintSpectrum::Yes;
+
     let base = ColorArgIterator::from_color_arg(
         config,
         matches.value_of("base").expect("required argument"),
+        &mut print_spectrum,
     )?;
     let fraction = Fraction::from(1.0 - number_arg(matches, "fraction")?);
 
