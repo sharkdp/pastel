@@ -1,3 +1,5 @@
+use std::io::{self, Read};
+
 use crate::commands::prelude::*;
 use crate::parser::parse_color;
 
@@ -9,8 +11,6 @@ pub struct PaintCommand;
 
 impl GenericCommand for PaintCommand {
     fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let text = matches.value_of("text").expect("required argument");
-
         let fg = matches.value_of("color").expect("required argument");
         let fg = if fg.trim() == "default" {
             None
@@ -22,6 +22,15 @@ impl GenericCommand for PaintCommand {
             Some(parse_color(bg).ok_or(PastelError::ColorParseError(bg.into()))?)
         } else {
             None
+        };
+
+        let text = match matches.value_of("text") {
+            Some(content) => content.to_string(),
+            _ => {
+                let mut buffer = String::new();
+                io::stdin().read_to_string(&mut buffer)?;
+                buffer
+            }
         };
 
         let mut style = Style::default();

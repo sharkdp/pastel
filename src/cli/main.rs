@@ -169,13 +169,13 @@ fn run() -> Result<ExitCode> {
                 .about("Print colored text using ANSI escape sequences")
                 .arg(
                     Arg::with_name("color")
-                        .help("The foreground color. Use '-' to read the color from STDIN")
+                        .help("The foreground color. Use '-' to read the color from STDIN.")
                         .required(true),
                 )
                 .arg(
                     Arg::with_name("text")
-                        .help("The text to be printed in color")
-                        .required(true),
+                        .help("The text to be printed in color. If no argument is given, \
+                               the input is read from STDIN.")
                 )
                 .arg(
                     Arg::with_name("on")
