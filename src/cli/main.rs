@@ -404,6 +404,14 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("textcolor")
+                .about("Get a readable text color for the given background color")
+                .long_about("Return a readable foreground text color (either black or white) for a \
+                            given background color. This can also be used in the opposite way, \
+                            i.e. to create a background color for a given text color.")
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("colorcheck")
                 .about("Check if your terminal emulator supports 24-bit colors.")
                 .setting(AppSettings::Hidden),

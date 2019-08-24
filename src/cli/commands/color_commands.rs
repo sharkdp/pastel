@@ -53,6 +53,10 @@ color_command!(ComplementCommand, _config, _matches, color, {
 
 color_command!(ToGrayCommand, _config, _matches, color, { color.to_gray() });
 
+color_command!(TextColorCommand, _config, _matches, color, {
+    color.text_color()
+});
+
 color_command!(MixCommand, config, matches, color, {
     let mut print_spectrum = PrintSpectrum::Yes;
 

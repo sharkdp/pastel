@@ -50,6 +50,7 @@ impl Command {
             "complement" => Command::WithColor(Box::new(color_commands::ComplementCommand)),
             "mix" => Command::WithColor(Box::new(color_commands::MixCommand)),
             "to-gray" => Command::WithColor(Box::new(color_commands::ToGrayCommand)),
+            "textcolor" => Command::WithColor(Box::new(color_commands::TextColorCommand)),
             "pick" => Command::Generic(Box::new(PickCommand)),
             "gray" => Command::Generic(Box::new(GrayCommand)),
             "list" => Command::Generic(Box::new(ListCommand)),
