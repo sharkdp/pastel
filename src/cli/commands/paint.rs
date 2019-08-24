@@ -29,8 +29,8 @@ impl GenericCommand for PaintCommand {
             None
         };
 
-        let text = match matches.value_of("text") {
-            Some(content) => content.to_string(),
+        let text = match matches.values_of("text") {
+            Some(values) => values.map(|v| v.to_string()).collect::<Vec<_>>().join(" "),
             _ => {
                 let mut buffer = String::new();
                 io::stdin().read_to_string(&mut buffer)?;

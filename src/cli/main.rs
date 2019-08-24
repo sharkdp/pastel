@@ -225,6 +225,7 @@ fn run() -> Result<ExitCode> {
                     Arg::with_name("text")
                         .help("The text to be printed in color. If no argument is given, \
                                the input is read from STDIN.")
+                        .multiple(true)
                 )
                 .arg(
                     Arg::with_name("on")
