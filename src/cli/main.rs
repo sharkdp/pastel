@@ -125,6 +125,19 @@ fn run() -> Result<ExitCode> {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("distinct")
+                .about("Generate a set of visually distinct colors")
+                .arg(
+                    Arg::with_name("number")
+                        .long("number")
+                        .short("n")
+                        .help("Number of distinct colors in the set")
+                        .takes_value(true)
+                        .default_value("8")
+                        .value_name("count"),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("sort-by")
                 .about("Sort colors by the given property")
                 .alias("sort")

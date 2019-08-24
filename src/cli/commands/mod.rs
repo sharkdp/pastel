@@ -4,6 +4,7 @@ use clap::ArgMatches;
 
 mod color_commands;
 mod colorcheck;
+mod distinct;
 mod format;
 mod gray;
 mod io;
@@ -20,6 +21,7 @@ mod traits;
 use traits::{ColorCommand, GenericCommand};
 
 use colorcheck::ColorCheckCommand;
+use distinct::DistinctCommand;
 use format::FormatCommand;
 use gray::GrayCommand;
 use list::ListCommand;
@@ -53,6 +55,7 @@ impl Command {
             "list" => Command::Generic(Box::new(ListCommand)),
             "sort-by" => Command::Generic(Box::new(SortCommand)),
             "random" => Command::Generic(Box::new(RandomCommand)),
+            "distinct" => Command::Generic(Box::new(DistinctCommand)),
             "scale" => Command::Generic(Box::new(ScaleCommand)),
             "paint" => Command::Generic(Box::new(PaintCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),

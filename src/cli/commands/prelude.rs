@@ -8,5 +8,5 @@ pub use clap::ArgMatches;
 pub use super::io::*;
 pub use super::traits::*;
 
-pub use pastel::ansi::{AnsiColor, ToAnsiStyle};
+pub use pastel::ansi::{AnsiColor, Brush, ToAnsiStyle};
 pub use pastel::Color;

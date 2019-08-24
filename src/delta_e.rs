@@ -145,7 +145,7 @@ fn degrees_to_radians(degrees: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{Lab, delta_e_ciede2000};
+    use super::{delta_e_ciede2000, Lab};
 
     fn round(val: f64) -> f64 {
         let rounded = val * 10000 as f64;

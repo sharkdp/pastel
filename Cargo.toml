@@ -28,10 +28,5 @@ name = "pastel"
 path = "src/cli/main.rs"
 
 
-[[bin]]
-name = "distinct-colors"
-path = "src/distinct-colors/main.rs"
-
-
 [dev-dependencies]
 approx = "0.3"
