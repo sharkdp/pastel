@@ -1,5 +1,3 @@
-#![feature(test)]
-
 pub mod ansi;
 pub mod colorspace;
 pub mod delta_e;
