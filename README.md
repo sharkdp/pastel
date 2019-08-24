@@ -1,6 +1,6 @@
 # pastel
 
-*A command-line tool to analyze, convert and manipulate colors*
+*A command-line tool to generate, analyze, convert and manipulate colors.*
 
 ## Tutorial
 
