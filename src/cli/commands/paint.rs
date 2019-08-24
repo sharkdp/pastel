@@ -15,7 +15,7 @@ impl GenericCommand for PaintCommand {
         let fg = if fg.trim() == "default" {
             None
         } else {
-            Some(ColorArgIterator::from_color_arg(fg)?)
+            Some(ColorArgIterator::from_color_arg(config, fg)?)
         };
 
         let bg = if let Some(bg) = matches.value_of("on") {

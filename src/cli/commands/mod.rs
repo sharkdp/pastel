@@ -71,7 +71,7 @@ impl Command {
         match self {
             Command::Generic(cmd) => cmd.run(&mut out, matches, config),
             Command::WithColor(cmd) => {
-                for color in ColorArgIterator::from_args(matches.values_of("color"))? {
+                for color in ColorArgIterator::from_args(config, matches.values_of("color"))? {
                     cmd.run(&mut out, matches, config, &color?)?;
                 }
 

@@ -4,7 +4,7 @@ use pastel::{Fraction, LCh, Lab, HSLA, RGBA};
 use super::show::show_color;
 
 macro_rules! color_command {
-    ($cmd_name:ident, $matches:ident, $color:ident, $body:block) => {
+    ($cmd_name:ident, $config:ident, $matches:ident, $color:ident, $body:block) => {
         pub struct $cmd_name;
 
         impl ColorCommand for $cmd_name {
@@ -12,50 +12,52 @@ macro_rules! color_command {
                 &self,
                 out: &mut dyn Write,
                 $matches: &ArgMatches,
-                config: &Config,
+                $config: &Config,
                 $color: &Color,
             ) -> Result<()> {
                 let output = $body;
-                show_color(out, &config, &output)
+                show_color(out, $config, &output)
             }
         }
     };
 }
 
-color_command!(SaturateCommand, matches, color, {
+color_command!(SaturateCommand, _config, matches, color, {
     let amount = number_arg(matches, "amount")?;
     color.saturate(amount)
 });
 
-color_command!(DesaturateCommand, matches, color, {
+color_command!(DesaturateCommand, _config, matches, color, {
     let amount = number_arg(matches, "amount")?;
     color.desaturate(amount)
 });
 
-color_command!(LightenCommand, matches, color, {
+color_command!(LightenCommand, _config, matches, color, {
     let amount = number_arg(matches, "amount")?;
     color.lighten(amount)
 });
 
-color_command!(DarkenCommand, matches, color, {
+color_command!(DarkenCommand, _config, matches, color, {
     let amount = number_arg(matches, "amount")?;
     color.darken(amount)
 });
 
-color_command!(RotateCommand, matches, color, {
+color_command!(RotateCommand, _config, matches, color, {
     let degrees = number_arg(matches, "degrees")?;
     color.rotate_hue(degrees)
 });
 
-color_command!(ComplementCommand, _matches, color, {
+color_command!(ComplementCommand, _config, _matches, color, {
     color.complementary()
 });
 
-color_command!(ToGrayCommand, _matches, color, { color.to_gray() });
+color_command!(ToGrayCommand, _config, _matches, color, { color.to_gray() });
 
-color_command!(MixCommand, matches, color, {
-    let base =
-        ColorArgIterator::from_color_arg(matches.value_of("base").expect("required argument"))?;
+color_command!(MixCommand, config, matches, color, {
+    let base = ColorArgIterator::from_color_arg(
+        config,
+        matches.value_of("base").expect("required argument"),
+    )?;
     let fraction = Fraction::from(1.0 - number_arg(matches, "fraction")?);
 
     match matches.value_of("colorspace").expect("required argument") {

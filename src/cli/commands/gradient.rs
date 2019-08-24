@@ -16,9 +16,11 @@ impl GenericCommand for GradientCommand {
         }
 
         let start = ColorArgIterator::from_color_arg(
+            config,
             matches.value_of("color-start").expect("required argument"),
         )?;
         let stop = ColorArgIterator::from_color_arg(
+            config,
             matches.value_of("color-stop").expect("required argument"),
         )?;
 

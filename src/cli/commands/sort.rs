@@ -23,7 +23,7 @@ impl GenericCommand for SortCommand {
         let sort_order = matches.value_of("sort-order").expect("required argument");
 
         let mut colors: Vec<Color> = vec![];
-        for color in ColorArgIterator::from_args(matches.values_of("color"))? {
+        for color in ColorArgIterator::from_args(config, matches.values_of("color"))? {
             colors.push(color?);
         }
 

@@ -3,6 +3,7 @@ use std::io::{self, Write};
 use atty::Stream;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
+mod colorpicker;
 mod commands;
 mod config;
 mod error;

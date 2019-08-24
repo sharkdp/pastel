@@ -2,6 +2,8 @@ use std::io::{self, BufRead};
 
 use clap::{ArgMatches, Values};
 
+use crate::colorpicker::{print_colorspectrum, run_external_colorpicker};
+use crate::config::Config;
 use crate::parser::parse_color;
 use crate::{PastelError, Result};
 
@@ -15,14 +17,17 @@ pub fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
 }
 
 pub enum ColorArgIterator<'a> {
-    FromPositionalArguments(Values<'a>),
+    FromPositionalArguments(&'a Config, Values<'a>),
     FromStdin,
 }
 
 impl<'a> ColorArgIterator<'a> {
-    pub fn from_args(args: Option<Values<'a>>) -> Result<Self> {
+    pub fn from_args(config: &'a Config, args: Option<Values<'a>>) -> Result<Self> {
         match args {
-            Some(positionals) => Ok(ColorArgIterator::FromPositionalArguments(positionals)),
+            Some(positionals) => Ok(ColorArgIterator::FromPositionalArguments(
+                config,
+                positionals,
+            )),
             None => {
                 use atty::Stream;
                 if atty::is(Stream::Stdin) {
@@ -51,9 +56,14 @@ impl<'a> ColorArgIterator<'a> {
         parse_color(&line).ok_or(PastelError::ColorParseError(line.to_string()))
     }
 
-    pub fn from_color_arg(arg: &str) -> Result<Color> {
+    pub fn from_color_arg(config: &'a Config, arg: &str) -> Result<Color> {
         match arg {
             "-" => Self::color_from_stdin(),
+            "pick" => {
+                print_colorspectrum(config)?;
+                let color_str = run_external_colorpicker()?;
+                ColorArgIterator::from_color_arg(config, &color_str)
+            }
             color_str => {
                 parse_color(color_str).ok_or(PastelError::ColorParseError(color_str.into()))
             }
@@ -66,10 +76,12 @@ impl<'a> Iterator for ColorArgIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
-            ColorArgIterator::FromPositionalArguments(ref mut args) => match args.next() {
-                Some(color_arg) => Some(Self::from_color_arg(color_arg)),
-                None => None,
-            },
+            ColorArgIterator::FromPositionalArguments(ref mut config, ref mut args) => {
+                match args.next() {
+                    Some(color_arg) => Some(Self::from_color_arg(config, color_arg)),
+                    None => None,
+                }
+            }
             ColorArgIterator::FromStdin => match Self::color_from_stdin() {
                 Ok(color) => Some(Ok(color)),
                 Err(PastelError::CouldNotReadFromStdin) => None,
