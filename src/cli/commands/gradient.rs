@@ -3,16 +3,16 @@ use crate::commands::show::show_color;
 
 use pastel::{Fraction, LCh, Lab, HSLA, RGBA};
 
-pub struct ScaleCommand;
+pub struct GradientCommand;
 
-impl GenericCommand for ScaleCommand {
+impl GenericCommand for GradientCommand {
     fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
         let count = matches.value_of("number").expect("required argument");
         let count = count
             .parse::<usize>()
             .map_err(|_| PastelError::CouldNotParseNumber(count.into()))?;
         if count < 2 {
-            return Err(PastelError::ScaleNumberMustBeLargerThanOne);
+            return Err(PastelError::GradientNumberMustBeLargerThanOne);
         }
 
         let start = ColorArgIterator::from_color_arg(

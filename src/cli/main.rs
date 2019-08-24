@@ -55,6 +55,7 @@ fn run() -> Result<ExitCode> {
     let colorspace_arg = Arg::with_name("colorspace")
         .long("colorspace")
         .short("s")
+        .value_name("name")
         .help("The colorspace in which to interpolate")
         .possible_values(&["rgb", "hsl", "lab", "lch"])
         .default_value("rgb")
@@ -127,6 +128,8 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("distinct")
                 .about("Generate a set of visually distinct colors")
+                .long_about("Generate a set of visually distinct colors by maximizing \
+                            the perceived color difference between pairs of colors.")
                 .arg(
                     Arg::with_name("number")
                         .long("number")
@@ -225,18 +228,20 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
-            SubCommand::with_name("scale")
-                .about("Generate a list of colors")
+            SubCommand::with_name("gradient")
+                .about("Generate an interpolating sequence of colors")
+                .long_about("Generate a sequence of colors that interpolates between 'start' and \
+                            'stop'. The interpolation is performed in the specified color space.")
                 .arg(
                     Arg::with_name("color-start")
                         .value_name("start")
-                        .help("The first color in the color scale")
+                        .help("The first color in the color gradient")
                         .required(true),
                 )
                 .arg(
                     Arg::with_name("color-stop")
                         .value_name("stop")
-                        .help("The last color in the color scale")
+                        .help("The last color in the color gradient")
                         .required(true),
                 )
                 .arg(
@@ -245,7 +250,7 @@ fn run() -> Result<ExitCode> {
                         .short("n")
                         .help("Number of colors to generate")
                         .takes_value(true)
-                        .default_value("20")
+                        .default_value("10")
                         .value_name("count"),
                 )
                 .arg(

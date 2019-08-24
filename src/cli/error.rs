@@ -7,7 +7,7 @@ pub enum PastelError {
     ColorArgRequired,
     CouldNotParseNumber(String),
     StdoutClosed,
-    ScaleNumberMustBeLargerThanOne,
+    GradientNumberMustBeLargerThanOne,
     IoError(std::io::Error),
 }
 
@@ -29,7 +29,7 @@ impl PastelError {
                 format!("Could not parse number '{}'", number)
             }
             PastelError::StdoutClosed => "Output pipe has been closed".into(),
-            PastelError::ScaleNumberMustBeLargerThanOne => {
+            PastelError::GradientNumberMustBeLargerThanOne => {
                 "The number of colors must be larger one".into()
             }
             PastelError::IoError(err) => format!("I/O error: {}", err),

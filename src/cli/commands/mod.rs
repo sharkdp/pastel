@@ -6,6 +6,7 @@ mod color_commands;
 mod colorcheck;
 mod distinct;
 mod format;
+mod gradient;
 mod gray;
 mod io;
 mod list;
@@ -13,7 +14,6 @@ mod paint;
 mod pick;
 mod prelude;
 mod random;
-mod scale;
 mod show;
 mod sort;
 mod traits;
@@ -23,12 +23,12 @@ use traits::{ColorCommand, GenericCommand};
 use colorcheck::ColorCheckCommand;
 use distinct::DistinctCommand;
 use format::FormatCommand;
+use gradient::GradientCommand;
 use gray::GrayCommand;
 use list::ListCommand;
 use paint::PaintCommand;
 use pick::PickCommand;
 use random::RandomCommand;
-use scale::ScaleCommand;
 use sort::SortCommand;
 
 use io::ColorArgIterator;
@@ -56,7 +56,7 @@ impl Command {
             "sort-by" => Command::Generic(Box::new(SortCommand)),
             "random" => Command::Generic(Box::new(RandomCommand)),
             "distinct" => Command::Generic(Box::new(DistinctCommand)),
-            "scale" => Command::Generic(Box::new(ScaleCommand)),
+            "gradient" => Command::Generic(Box::new(GradientCommand)),
             "paint" => Command::Generic(Box::new(PaintCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),
             "colorcheck" => Command::Generic(Box::new(ColorCheckCommand)),
