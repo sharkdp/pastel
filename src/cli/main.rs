@@ -57,8 +57,8 @@ fn run() -> Result<ExitCode> {
         .short("s")
         .value_name("name")
         .help("The colorspace in which to interpolate")
-        .possible_values(&["rgb", "hsl", "lab", "lch"])
-        .default_value("rgb")
+        .possible_values(&["lab", "lch", "rgb", "hsl"])
+        .default_value("lab")
         .required(true);
 
     let app = App::new(crate_name!())
