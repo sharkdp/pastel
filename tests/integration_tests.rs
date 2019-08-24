@@ -1,7 +1,7 @@
 use assert_cmd::prelude::*;
 use escargot::CargoRun;
-use std::process::Command;
 use lazy_static::lazy_static;
+use std::process::Command;
 
 lazy_static! {
     static ref CARGO_RUN: CargoRun = escargot::CargoBuild::new()
@@ -34,11 +34,7 @@ fn color_reads_colors_from_args() {
         .success()
         .stdout("hsl(0,100.0%,50.0%)\nhsl(240,100.0%,50.0%)\n");
 
-    pastel()
-        .arg("color")
-        .arg("no color")
-        .assert()
-        .failure();
+    pastel().arg("color").arg("no color").assert().failure();
 }
 
 #[test]
@@ -88,7 +84,6 @@ fn pipe_into_format_command() {
         .arg("hotpink")
         .assert()
         .success();
-
 
     pastel()
         .arg("format")
