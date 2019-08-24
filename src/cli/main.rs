@@ -39,16 +39,18 @@ fn run() -> Result<ExitCode> {
         .help(
             "Colors can be specified in many different formats, such as #RRGGBB, RRGGBB, \
              #RGB, 'rgb(…, …, …)', 'hsl(…, …, …)', 'gray(…)' or simply by the name of the \
-             color. If no color argument is specified, colors will be read from \
+             color. The identifier '-' can be used to read a single color from standard input. \
+             Also, the special identifier 'pick' can be used to run an external color picker \
+             to choose a color. If no color argument is specified, colors will be read from \
              standard input.\n\
-             Examples:\
-             \n  - cyan\
-             \n  - salmon\
-             \n  - skyblue\
-             \n  - '#ff0077'\
-             \n  - f07\
-             \n  - 'rgb(216, 180, 140)'\
-             \n  - 'hsl(128, 100%, 54%)'",
+             Examples (all of these specify the same color):\
+             \n  - lightslategray\
+             \n  - '#778899'\
+             \n  - 778899\
+             \n  - 789\
+             \n  - 'rgb(119, 136, 153)'\
+             \n  - '119,136,153'\
+             \n  - 'hsl(210, 14.3%, 53.3%)'",
         )
         .required(false)
         .multiple(true);
@@ -296,7 +298,6 @@ fn run() -> Result<ExitCode> {
                 Supported tools:  \n\
                   - xcolor (https://github.com/Soft/xcolor)
                 ")
-                .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("saturate")
