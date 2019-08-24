@@ -10,29 +10,30 @@ type Scalar = f64;
 pub fn mutual_distance(colors: &[Color]) -> (Scalar, Scalar, (usize, usize)) {
     let num_colors = colors.len();
 
-    let mut distances = vec![vec![0.0; num_colors]; num_colors];
+    // The distance to the nearest neighbor for every color
+    let mut closest_distances = vec![scalar::MAX; num_colors];
+
+    // The absolute closest distance
     let mut min_closest_dist = scalar::MAX;
 
-    let mut closest_pair = (0, 0);
+    // The indices of the colors that were closest
+    let mut closest_pair = (std::usize::MAX, std::usize::MAX);
 
     for i in 0..num_colors {
         for j in (i + 1)..num_colors {
             let dist = colors[i].distance_delta_e_ciede2000(&colors[j]);
+
             if dist < min_closest_dist {
                 min_closest_dist = dist;
                 closest_pair = (i, j);
             }
-            distances[i][j] = dist;
-            distances[j][i] = dist;
-        }
-    }
 
-    // Find the distance to the nearest neighbor for each color
-    let mut closest_distances = vec![scalar::MAX; num_colors];
-    for i in 0..num_colors {
-        for j in 0..num_colors {
-            if i != j && distances[i][j] < closest_distances[i] {
-                closest_distances[i] = distances[i][j];
+            if dist < closest_distances[i] {
+                closest_distances[i] = dist;
+            }
+
+            if dist < closest_distances[j] {
+                closest_distances[j] = dist;
             }
         }
     }
