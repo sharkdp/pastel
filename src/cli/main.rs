@@ -184,12 +184,12 @@ fn run() -> Result<ExitCode> {
                 .long_about("Print a spectrum of colors to choose from. This command requires an \
                 external color picker tool to be installed.\n\
                 \n\
-                Supported tools:  \n\
-                  - gpick (https://github.com/thezbyg/gpick)
-                  - xcolor (https://github.com/Soft/xcolor)
-                  - grabc (https://www.muquit.com/muquit/software/grabc/grabc.html)
-                  - chameleon (https://github.com/seebye/chameleon)
-                ")
+                Supported tools:\n  \
+                  - gpick (https://github.com/thezbyg/gpick)\n  \
+                  - xcolor (https://github.com/Soft/xcolor)\n  \
+                  - grabc (https://www.muquit.com/muquit/software/grabc/grabc.html)\n  \
+                  - colorpicker (https://github.com/Jack12816/colorpicker)\n  \
+                  - chameleon (https://github.com/seebye/chameleon)")
         )
         .subcommand(
             SubCommand::with_name("format")

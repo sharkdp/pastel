@@ -83,10 +83,16 @@ pub fn run_external_colorpicker() -> Result<String> {
             version_output_starts_with: b"grabc",
         },
         ColorPickerTool {
+            command: "colorpicker",
+            args: vec!["--one-shot", "--short"],
+            version_args: vec!["--help"],
+            version_output_starts_with: b"",
+        },
+        ColorPickerTool {
             command: "chameleon",
             args: vec![],
             version_args: vec!["-h"],
-            version_output_starts_with: b"Usage:",
+            version_output_starts_with: b"",
         },
     ];
 
