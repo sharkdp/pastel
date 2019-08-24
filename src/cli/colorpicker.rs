@@ -54,23 +54,68 @@ pub fn print_colorspectrum(config: &Config) -> Result<()> {
     Ok(())
 }
 
-/// Run an external X11 color picker tool (e.g. xcolor) and get the output as a string.
-///
-/// TODO: support more tools
+struct ColorPickerTool {
+    command: &'static str,
+    args: Vec<&'static str>,
+    version_args: Vec<&'static str>,
+    version_output_starts_with: &'static [u8],
+}
+
+/// Run an external X11 color picker tool (e.g. gpick or xcolor) and get the output as a string.
 pub fn run_external_colorpicker() -> Result<String> {
-    let result = Command::new("xcolor").arg("--version").output();
-    match result {
-        Ok(ref output) if output.status.success() && output.stdout.starts_with(b"xcolor") => {}
-        _ => return Err(PastelError::NoColorPickerFound),
+    let tools = [
+        ColorPickerTool {
+            command: "gpick",
+            args: vec!["--pick", "--single", "--output"],
+            version_args: vec!["--version"],
+            version_output_starts_with: b"Gpick",
+        },
+        ColorPickerTool {
+            command: "xcolor",
+            args: vec!["--format", "hex"],
+            version_args: vec!["--version"],
+            version_output_starts_with: b"xcolor",
+        },
+        ColorPickerTool {
+            command: "grabc",
+            args: vec!["-hex"],
+            version_args: vec!["-v"],
+            version_output_starts_with: b"grabc",
+        },
+        ColorPickerTool {
+            command: "chameleon",
+            args: vec![],
+            version_args: vec!["-h"],
+            version_output_starts_with: b"Usage:",
+        },
+    ];
+
+    for tool in &tools {
+        let result = Command::new(tool.command).args(&tool.version_args).output();
+
+        let tool_is_available = match result {
+            Ok(ref output) => {
+                output.stdout.starts_with(tool.version_output_starts_with)
+                    || output.stderr.starts_with(tool.version_output_starts_with)
+            }
+            _ => false,
+        };
+
+        if tool_is_available {
+            let result = Command::new(tool.command).args(&tool.args).output()?;
+            if !result.status.success() {
+                return Err(PastelError::ColorPickerExecutionError(
+                    tool.command.to_string(),
+                ));
+            }
+
+            let color =
+                String::from_utf8(result.stdout).map_err(|_| PastelError::ColorInvalidUTF8)?;
+            let color = color.trim();
+
+            return Ok(color.to_string());
+        }
     }
 
-    let result = Command::new("xcolor").arg("--format").arg("hex").output()?;
-    if !result.status.success() {
-        return Err(PastelError::NoColorPickerFound);
-    }
-
-    let color = String::from_utf8(result.stdout).map_err(|_| PastelError::ColorInvalidUTF8)?;
-    let color = color.trim();
-
-    Ok(color.to_string())
+    return Err(PastelError::NoColorPickerFound);
 }

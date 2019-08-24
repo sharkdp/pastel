@@ -180,12 +180,15 @@ fn run() -> Result<ExitCode> {
         )
         .subcommand(
             SubCommand::with_name("pick")
-                .about("Print a spectrum of colors to choose from")
+                .about("Interactively pick a color from the screen (pipette)")
                 .long_about("Print a spectrum of colors to choose from. This command requires an \
                 external color picker tool to be installed.\n\
                 \n\
                 Supported tools:  \n\
+                  - gpick (https://github.com/thezbyg/gpick)
                   - xcolor (https://github.com/Soft/xcolor)
+                  - grabc (https://www.muquit.com/muquit/software/grabc/grabc.html)
+                  - chameleon (https://github.com/seebye/chameleon)
                 ")
         )
         .subcommand(
