@@ -83,6 +83,9 @@ fn run() -> Result<ExitCode> {
                 .alias("show")
                 .alias("display")
                 .about("Display information about the given color")
+                .long_about("Show and display some information about the given color(s).\n\n\
+                Example:\n  \
+                  pastel color 556270 4ecdc4 c7f484 ff6b6b c44d58")
                 .arg(color_arg.clone()),
         )
         .subcommand(
@@ -100,6 +103,9 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("random")
                 .about("Generate a list of random colors")
+                .long_about("Generate a list of random colors.\n\n\
+                Example:\n  \
+                  pastel random -n 20 --strategy lch_hue")
                 .arg(
                     Arg::with_name("strategy")
                         .long("strategy")
@@ -146,6 +152,9 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("sort-by")
                 .about("Sort colors by the given property")
+                .long_about("Sort a list of colors by the given property.\n\n\
+                Example:\n  \
+                  pastel random -n 20 | pastel sort-by hue | pastel format hex")
                 .alias("sort")
                 .arg(
                     Arg::with_name("sort-order")
@@ -180,6 +189,9 @@ fn run() -> Result<ExitCode> {
         .subcommand(
             SubCommand::with_name("format")
                 .about("Convert a color to the given format")
+                .long_about("Convert the given color(s) to a specific format.\n\n\
+                Example:\n  \
+                  pastel random -n 20 | pastel format rgb")
                 .arg(
                     Arg::with_name("type")
                         .help("Output format type")
@@ -275,9 +287,8 @@ fn run() -> Result<ExitCode> {
                 .about("Mix two colors in the given colorspace")
                 .long_about(
                     "Create new colors by interpolating between two colors in the given colorspace.\n\n\
-                     Example:\n\n  \
-                       pastel mix --colorspace=lab red blue
-                    ")
+                     Example:\n  \
+                       pastel mix --colorspace=lab red blue")
                 .arg(
                     colorspace_arg.clone()
                 )
