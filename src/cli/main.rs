@@ -168,6 +168,33 @@ fn run() -> Result<ExitCode> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("pick")
+                .about("Print a spectrum of colors to choose from")
+                .long_about("Print a spectrum of colors to choose from. This command requires an \
+                external color picker tool to be installed.\n\
+                \n\
+                Supported tools:  \n\
+                  - xcolor (https://github.com/Soft/xcolor)
+                ")
+        )
+        .subcommand(
+            SubCommand::with_name("format")
+                .about("Convert a color to the given format")
+                .arg(
+                    Arg::with_name("type")
+                        .help("Output format type")
+                        .possible_values(&["rgb", "hex",
+                                           "hsl", "hsl-hue", "hsl-saturation", "hsl-lightness",
+                                           "lch", "lch-lightness", "lch-chroma", "lch-hue",
+                                           "lab", "lab-a", "lab-b",
+                                           "luminance", "brightness",
+                                           "name"])
+                        .default_value("hex")
+                        .required(true),
+                )
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("paint")
                 .about("Print colored text using ANSI escape sequences")
                 .arg(
@@ -212,23 +239,6 @@ fn run() -> Result<ExitCode> {
                         .long("no-newline")
                         .help("Do not print a trailing newline character"),
                 ),
-        )
-        .subcommand(
-            SubCommand::with_name("format")
-                .about("Convert a color to the given format")
-                .arg(
-                    Arg::with_name("type")
-                        .help("Output format type")
-                        .possible_values(&["rgb", "hex",
-                                           "hsl", "hsl-hue", "hsl-saturation", "hsl-lightness",
-                                           "lch", "lch-lightness", "lch-chroma", "lch-hue",
-                                           "lab", "lab-a", "lab-b",
-                                           "luminance", "brightness",
-                                           "name"])
-                        .default_value("hex")
-                        .required(true),
-                )
-                .arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("gradient")
@@ -288,16 +298,6 @@ fn run() -> Result<ExitCode> {
                         .required(true),
                 )
                 .arg(color_arg.clone()),
-        )
-        .subcommand(
-            SubCommand::with_name("pick")
-                .about("Print a spectrum of colors to choose from")
-                .long_about("Print a spectrum of colors to choose from. This command requires an \
-                external color picker tool to be installed.\n\
-                \n\
-                Supported tools:  \n\
-                  - xcolor (https://github.com/Soft/xcolor)
-                ")
         )
         .subcommand(
             SubCommand::with_name("saturate")
