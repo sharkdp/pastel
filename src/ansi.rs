@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 
-use atty::{self, Stream};
+use atty;
+pub use atty::Stream;
 use lazy_static::lazy_static;
 
 use crate::delta_e::delta_e_ciede2000;
@@ -252,8 +253,8 @@ impl Brush {
         Brush { mode }
     }
 
-    pub fn from_environment() -> Self {
-        let mode = if atty::is(Stream::Stdout) {
+    pub fn from_environment(stream: Stream) -> Self {
+        let mode = if atty::is(stream) {
             if std::env::var("COLORTERM") == Ok("truecolor".into()) {
                 Some(Mode::TrueColor)
             } else {

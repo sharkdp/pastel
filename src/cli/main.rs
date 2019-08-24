@@ -27,7 +27,7 @@ fn write_stderr(c: Color, title: &str, message: &str) {
     writeln!(
         io::stderr(),
         "{}: {}",
-        Brush::from_environment().paint(format!("[{}]", title), c),
+        Brush::from_environment(Stream::Stdout).paint(format!("[{}]", title), c),
         message
     )
     .ok();

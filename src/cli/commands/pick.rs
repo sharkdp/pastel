@@ -5,6 +5,8 @@ use crate::commands::prelude::*;
 use crate::commands::show::show_color;
 use crate::hdcanvas::Canvas;
 
+use pastel::ansi::Stream;
+
 pub struct PickCommand;
 
 impl GenericCommand for PickCommand {
@@ -14,7 +16,7 @@ impl GenericCommand for PickCommand {
         let mut canvas = Canvas::new(
             width + 2 * config.padding,
             width + 2 * config.padding,
-            config.brush,
+            Brush::from_environment(Stream::Stderr),
         );
         canvas.draw_rect(
             config.padding,
