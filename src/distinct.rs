@@ -77,17 +77,32 @@ fn modify_channel(c: &mut u8) {
     }
 }
 
-fn modify_color(color: &mut Color, only_small_modifications: bool) {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum OptimizationTarget {
+    Mean,
+    Min,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum OptimizationMode {
+    Global,
+    Local,
+}
+
+fn modify_color(color: &mut Color, mode: OptimizationMode) {
     const STRATEGY: random::strategies::UniformRGB = random::strategies::UniformRGB {};
 
-    if only_small_modifications {
-        let mut rgb = color.to_rgba();
-        modify_channel(&mut rgb.r);
-        modify_channel(&mut rgb.g);
-        modify_channel(&mut rgb.b);
-        *color = Color::from_rgb(rgb.r, rgb.g, rgb.b);
-    } else {
-        *color = STRATEGY.generate();
+    match mode {
+        OptimizationMode::Local => {
+            let mut rgb = color.to_rgba();
+            modify_channel(&mut rgb.r);
+            modify_channel(&mut rgb.g);
+            modify_channel(&mut rgb.b);
+            *color = Color::from_rgb(rgb.r, rgb.g, rgb.b);
+        }
+        OptimizationMode::Global => {
+            *color = STRATEGY.generate();
+        }
     }
 }
 
@@ -97,8 +112,8 @@ pub fn annealing<C>(
     num_iter: usize,
     initial_temp: Scalar,
     cooling_rate: Scalar,
-    optimize_mean: bool,
-    only_small_modifications: bool,
+    target: OptimizationTarget,
+    mode: OptimizationMode,
 ) where
     C: FnMut(&IterationStatistics),
 {
@@ -107,7 +122,8 @@ pub fn annealing<C>(
     let mut result = mutual_distance(colors);
 
     for iter in 0..num_iter {
-        let random_index = if optimize_mean || only_small_modifications {
+        let random_index = if target == OptimizationTarget::Mean || mode == OptimizationMode::Local
+        {
             random::<usize>() % colors.len()
         } else {
             if random::<bool>() {
@@ -119,19 +135,18 @@ pub fn annealing<C>(
 
         let mut new_colors = colors.clone();
 
-        modify_color(&mut new_colors[random_index], only_small_modifications);
+        modify_color(&mut new_colors[random_index], mode);
 
         let new_result = mutual_distance(&new_colors);
 
-        let score = if optimize_mean {
-            result.mean_closest_distance
-        } else {
-            result.min_closest_distance
-        };
-        let new_score = if optimize_mean {
-            new_result.mean_closest_distance
-        } else {
-            new_result.min_closest_distance
+        let (score, new_score) = match target {
+            OptimizationTarget::Mean => (
+                result.mean_closest_distance,
+                new_result.mean_closest_distance,
+            ),
+            OptimizationTarget::Min => {
+                (result.min_closest_distance, new_result.min_closest_distance)
+            }
         };
 
         if new_score > score {

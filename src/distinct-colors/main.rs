@@ -1,7 +1,7 @@
 use std::env;
 
 use pastel::ansi::{Brush, ToAnsiStyle};
-use pastel::distinct::{annealing, IterationStatistics};
+use pastel::distinct::{annealing, IterationStatistics, OptimizationMode, OptimizationTarget};
 use pastel::random::{self, RandomizationStrategy};
 use pastel::Color;
 
@@ -58,8 +58,24 @@ fn main() {
         print_iteration(&brush, stats);
     };
 
-    annealing(callback, &mut colors, 200_000, 3.0, 0.95, true, false);
-    annealing(callback, &mut colors, 1_000_000, 0.5, 0.99, false, true);
+    annealing(
+        callback,
+        &mut colors,
+        200_000,
+        3.0,
+        0.95,
+        OptimizationTarget::Mean,
+        OptimizationMode::Global,
+    );
+    annealing(
+        callback,
+        &mut colors,
+        1_000_000,
+        0.5,
+        0.99,
+        OptimizationTarget::Min,
+        OptimizationMode::Local,
+    );
 
     println!();
     println!("Sorted by L*:");
