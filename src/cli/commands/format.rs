@@ -15,7 +15,7 @@ impl ColorCommand for FormatCommand {
     ) -> Result<()> {
         let format_type = matches.value_of("type").expect("required argument");
 
-        let output = match format_type {
+        let output = match format_type.to_lowercase().as_ref() {
             "rgb" => color.to_rgb_string(Format::Spaces),
             "hex" => color.to_rgb_hex_string(true),
             "hsl" => color.to_hsl_string(Format::Spaces),

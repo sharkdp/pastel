@@ -1,5 +1,6 @@
+use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
-use pastel::{Fraction, LCh, Lab, HSLA, RGBA};
+use pastel::Fraction;
 
 use super::show::show_color;
 
@@ -67,11 +68,7 @@ color_command!(MixCommand, config, matches, color, {
     )?;
     let fraction = Fraction::from(1.0 - number_arg(matches, "fraction")?);
 
-    match matches.value_of("colorspace").expect("required argument") {
-        "rgb" => base.mix::<RGBA<f64>>(&color, fraction),
-        "hsl" => base.mix::<HSLA>(&color, fraction),
-        "lab" => base.mix::<Lab>(&color, fraction),
-        "lch" => base.mix::<LCh>(&color, fraction),
-        _ => unimplemented!("Unknown color space"),
-    }
+    let mix = get_mixing_function(matches.value_of("colorspace").expect("required argument"));
+
+    mix(&base, &color, fraction)
 });

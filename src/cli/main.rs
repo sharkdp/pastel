@@ -4,6 +4,7 @@ use atty::Stream;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
 mod colorpicker;
+mod colorspace;
 mod commands;
 mod config;
 mod error;
@@ -60,8 +61,9 @@ fn run() -> Result<ExitCode> {
         .short("s")
         .value_name("name")
         .help("The colorspace in which to interpolate")
-        .possible_values(&["lab", "lch", "rgb", "hsl"])
-        .default_value("lab")
+        .possible_values(&["Lab", "LCh", "RGB", "HSL"])
+        .case_insensitive(true)
+        .default_value("Lab")
         .required(true);
 
     let app = App::new(crate_name!())
@@ -201,6 +203,7 @@ fn run() -> Result<ExitCode> {
                                            "lab", "lab-a", "lab-b",
                                            "luminance", "brightness",
                                            "name"])
+                        .case_insensitive(true)
                         .default_value("hex")
                         .required(true),
                 )
@@ -256,7 +259,9 @@ fn run() -> Result<ExitCode> {
             SubCommand::with_name("gradient")
                 .about("Generate an interpolating sequence of colors")
                 .long_about("Generate a sequence of colors that interpolates between 'start' and \
-                            'stop'. The interpolation is performed in the specified color space.")
+                            'stop'. The interpolation is performed in the specified color space.\n\n\
+                            Example:\n  \
+                              pastel gradient --colorspace=HSL ffffcc fd8d3c")
                 .arg(
                     Arg::with_name("color-start")
                         .value_name("start")
@@ -288,7 +293,7 @@ fn run() -> Result<ExitCode> {
                 .long_about(
                     "Create new colors by interpolating between two colors in the given colorspace.\n\n\
                      Example:\n  \
-                       pastel mix --colorspace=lab red blue")
+                       pastel mix --colorspace=RGB red blue")
                 .arg(
                     colorspace_arg.clone()
                 )

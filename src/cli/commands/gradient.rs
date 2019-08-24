@@ -1,7 +1,8 @@
+use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
 use crate::commands::show::show_color;
 
-use pastel::{Fraction, LCh, Lab, HSLA, RGBA};
+use pastel::Fraction;
 
 pub struct GradientCommand;
 
@@ -28,16 +29,11 @@ impl GenericCommand for GradientCommand {
             &mut print_spectrum,
         )?;
 
+        let mix = get_mixing_function(matches.value_of("colorspace").expect("required argument"));
+
         for i in 0..count {
             let fraction = Fraction::from(i as f64 / (count as f64 - 1.0));
-
-            let color = match matches.value_of("colorspace").expect("required argument") {
-                "rgb" => start.mix::<RGBA<f64>>(&stop, fraction),
-                "hsl" => start.mix::<HSLA>(&stop, fraction),
-                "lab" => start.mix::<Lab>(&stop, fraction),
-                "lch" => start.mix::<LCh>(&stop, fraction),
-                _ => unimplemented!("Unknown color space"),
-            };
+            let color = mix(&start, &stop, fraction);
 
             show_color(out, &config, &color)?;
         }
