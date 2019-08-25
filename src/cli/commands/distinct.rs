@@ -5,8 +5,8 @@ use crate::commands::show::show_color;
 
 use pastel::ansi::Stream;
 use pastel::distinct::{
-    DistanceMetric, IterationStatistics, OptimizationMode, OptimizationTarget, SimulatedAnnealing,
-    SimulationParameters,
+    self, DistanceMetric, IterationStatistics, OptimizationMode, OptimizationTarget,
+    SimulatedAnnealing, SimulationParameters,
 };
 use pastel::random::{self, RandomizationStrategy};
 
@@ -108,7 +108,10 @@ impl GenericCommand for DistinctCommand {
 
         annealing.run(callback.as_mut());
 
-        for color in annealing.get_colors() {
+        let mut colors = annealing.get_colors();
+        distinct::rearrange_sequence(&mut colors, distance_metric);
+
+        for color in colors {
             show_color(out, config, &color)?;
         }
 
