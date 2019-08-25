@@ -103,6 +103,25 @@ echo -n "highlighted" | pastel paint -n default --underline
 echo " word"
 ```
 
+## Installation
+
+### On Debian-based systems
+
+``` bash
+wget "https://github.com/sharkdp/pastel/releases/download/v0.4.0/pastel_0.4.0_amd64.deb"
+sudo dpkg -i pastel_0.4.0_amd64.deb
+```
+
+### On other distributions
+
+Check out the [release page](https://github.com/sharkdp/pastel/releases) for binary builds.
+
+### Via cargo
+
+If you have Rust 1.35 or higher, you can install `pastel` from source via `cargo`:
+```
+cargo install pastel
+```
 
 ## Resources
 
