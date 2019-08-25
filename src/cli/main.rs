@@ -147,18 +147,25 @@ fn run() -> Result<ExitCode> {
                     Arg::with_name("number")
                         .help("Number of distinct colors in the set")
                         .takes_value(true)
-                        .default_value("8")
+                        .default_value("10")
                         .value_name("count"),
                 )
                 .arg(
                     Arg::with_name("metric")
                         .long("metric")
                         .short("m")
-                        .help("Distance metric to compute mutual color distances")
+                        .help("Distance metric to compute mutual color distances. The CIEDE2000 is \
+                               more accurate, but also much slower.")
                         .takes_value(true)
                         .possible_values(&["CIEDE2000", "CIE76"])
                         .value_name("name")
-                        .default_value("CIEDE2000")
+                        .default_value("CIE76")
+                )
+                .arg(
+                    Arg::with_name("verbose")
+                        .long("verbose")
+                        .short("v")
+                        .help("Print simulation output to STDERR")
                 ),
         )
         .subcommand(

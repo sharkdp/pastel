@@ -60,8 +60,6 @@ fn print_colors(
 impl GenericCommand for DistinctCommand {
     fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
         let stderr = io::stderr();
-        let mut out_stderr = stderr.lock();
-
         let brush_stderr = Brush::from_environment(Stream::Stderr);
 
         let count = matches.value_of("number").expect("required argument");
@@ -92,9 +90,15 @@ impl GenericCommand for DistinctCommand {
             },
         );
 
-        annealing.run(|stats| {
-            print_iteration(&mut out_stderr, &brush_stderr, stats).ok();
-        });
+        let mut callback: Box<dyn FnMut(&IterationStatistics)> = if matches.is_present("verbose") {
+            Box::new(|stats: &IterationStatistics| {
+                print_iteration(&mut stderr.lock(), &brush_stderr, stats).ok();
+            })
+        } else {
+            Box::new(|_: &IterationStatistics| {})
+        };
+
+        annealing.run(&mut callback);
 
         annealing.parameters.initial_temperature = 0.5;
         annealing.parameters.cooling_rate = 0.98;
@@ -102,9 +106,7 @@ impl GenericCommand for DistinctCommand {
         annealing.parameters.opt_target = OptimizationTarget::Min;
         annealing.parameters.opt_mode = OptimizationMode::Local;
 
-        annealing.run(|stats| {
-            print_iteration(&mut out_stderr, &brush_stderr, stats).ok();
-        });
+        annealing.run(&mut callback);
 
         for color in annealing.get_colors() {
             show_color(out, config, &color)?;
