@@ -6,6 +6,8 @@ mod helper;
 pub mod random;
 mod types;
 
+use std::fmt;
+
 use colorspace::ColorSpace;
 pub use helper::Fraction;
 use helper::{clamp, interpolate, interpolate_angle, mod_positive};
@@ -20,7 +22,7 @@ use types::{Hue, Scalar};
 ///   RGB values. This is different from comparing the HSL values. For example,
 ///   HSL has many different representations of black (arbitrary hue and
 ///   saturation values).
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Color {
     hue: Hue,
     saturation: Scalar,
@@ -607,6 +609,12 @@ impl Color {
         C::from_color(self)
             .mix(&C::from_color(other), fraction)
             .into_color()
+    }
+}
+
+impl fmt::Debug for Color {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Color::from_{}", self.to_rgb_string(Format::NoSpaces))
     }
 }
 
