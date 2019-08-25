@@ -482,17 +482,18 @@ fn run() -> Result<ExitCode> {
                                     "Your terminal emulator does not appear to support 24-bit colors \
                                     (this means that the COLORTERM environment variable is not set to \
                                     'truecolor' or '24bit'). \
-                                    pastel will fall back to 8-bit colors, but the range of colors \
-                                    will be severely limited.\n\n\
+                                    pastel will fall back to 8-bit colors, but you will only be able \
+                                    to see rough approximations of the real colors.\n\n\
                                     To fix this, follow these steps:\n  \
-                                      1. Run 'pastel colorcheck' to test if your terminal emulator\n     \
-                                         does, in fact, support 24-bit colors. If this is the case,\n     \
-                                         set 'PASTEL_COLOR_MODE=24bit' to force 24-bit mode and to\n     \
-                                         remove this warning. Alternatively, make sure that COLORTERM\n     \
-                                         is properly set by your terminal emulator.\n  \
-                                      2. If your terminal emulator does not support 24-bit colors, set\n     \
-                                         'PASTEL_COLOR_MODE=8bit' to remove this warning or try a\n     \
-                                         different terminal emulator.\n\n\
+                                      1. Run 'pastel colorcheck' to test if your terminal\n     \
+                                         emulator does support 24-bit colors. If this is the\n     \
+                                         case, set 'PASTEL_COLOR_MODE=24bit' to force 24-bit\n     \
+                                         mode and to remove this warning. Alternatively, make\n     \
+                                         sure that COLORTERM is properly set by your terminal\n     \
+                                         emulator.\n  \
+                                      2. If your terminal emulator does not support 24-bit\n     \
+                                         colors, set 'PASTEL_COLOR_MODE=8bit' to remove this\n     \
+                                         warning or try a different terminal emulator.\n\n\
                                     \
                                     For more information, see https://gist.github.com/XVilka/8346728\n");
                                 }
