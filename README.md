@@ -1,8 +1,10 @@
 # pastel
 
 [![Build Status](https://img.shields.io/travis/sharkdp/pastel?style=flat-square)](https://travis-ci.org/sharkdp/pastel)
-[![](https://img.shields.io/crates/l/pastel.svg?colorB=1fc77e&style=flat-square)](https://crates.io/crates/pastel)
-![](https://img.shields.io/crates/v/pastel.svg?colorB=1f84c7&style=flat-square)
+[![](https://img.shields.io/github/v/release/sharkdp/pastel?colorB=d7a400&style=flat-square)](https://github.com/sharkdp/pastel/releases)
+[![](https://img.shields.io/crates/l/pastel.svg?colorB=ff7155&style=flat-square)](https://crates.io/crates/pastel)
+[![](https://img.shields.io/crates/v/pastel.svg?colorB=ff69b4&style=flat-square)](https://crates.io/crates/pastel)
+
 
 `pastel` is a command-line tool to generate, analyze, convert and manipulate colors. It supports many different color formats and color spaces like RGB, HSL, CIELAB, CIELCh as well as ANSI 8-bit and 24-bit representations.
 
