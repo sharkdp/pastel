@@ -6,18 +6,24 @@
 
 ## Tutorial
 
+### Getting help
+
 `pastel` provides a number of commands like `saturate`, `mix` or `paint`. To see a complete list, you can simply run
 ``` bash
 pastel
 ```
 To get more information about a specific subcommand (say `mix`), you can call `pastel mix -h` or `pastel help mix`.
 
+### Composition
+
 Many `pastel` commands can be composed by piping the output of one command to another, for example:
 ``` bash
 pastel random | pastel mix red | pastel lighten 0.2 | pastel format hex
 ```
 
-Colors can be specified in many different formats, for example (all of these represent the same color):
+### Specifying colors
+
+Colors can be specified in many different formats:
 ```
 lightslategray
 '#778899'
@@ -28,11 +34,11 @@ lightslategray
 'hsl(210, 14.3%, 53.3%)'
 ```
 
-Colors can be passed as arguments:
+Colors can be passed as positional arguments, for example:
 ```
 pastel lighten 0.2 orchid orange lawngreen
 ```
-The can also be read from standard input. This is equivalent:
+They can also be read from standard input. So this is equivalent:
 ```
 printf "%s\n" orchid orange lawngreen | pastel lighten 0.2
 ```
