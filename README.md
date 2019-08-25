@@ -47,6 +47,57 @@ You can also explicitly specify which colors you want to read from the input. Fo
 pastel color red | pastel mix - blue
 ```
 
+### Use cases and demo
+
+#### Converting colors from one format to another
+
+``` bash
+pastel format hsl ff8000
+```
+
+#### Show and analyze colors on the terminal
+
+``` bash
+pastel color "rgb(255,50,127)"
+
+pastel color 556270 4ecdc4 c7f484 ff6b6b c44d58
+```
+
+#### Pick a color from somewhere on the screen
+
+``` bash
+pastel pick
+```
+
+#### Get a list of all X11 / CSS color names
+
+``` bash
+pastel list
+```
+
+#### Print colorized text from a shell script
+
+``` bash
+bg="hotpink"
+fg="$(pastel textcolor "$bg")"
+
+pastel paint "$fg" --on "$bg" "well readable text"
+```
+
+``` bash
+pastel paint -n black --on red --bold "   ERROR!   "
+echo " A serious error"
+
+pastel paint -n black --on yellow --bold "  WARNING!  "
+echo " A warning message"
+
+pastel paint -n black --on limegreen --bold "    INFO    "
+echo -n " Informational message with a "
+echo -n "highlighted" | pastel paint -n default --underline
+echo " word"
+```
+
+
 ## Installation
 
 
