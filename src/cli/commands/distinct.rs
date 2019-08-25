@@ -64,28 +64,28 @@ impl GenericCommand for DistinctCommand {
             colors.push(random::strategies::UniformRGB.generate());
         }
 
-        let mut annealing = SimulatedAnnealing { colors };
+        let mut annealing = SimulatedAnnealing {
+            colors,
+            temperature: 3.0,
+            cooling_rate: 0.95,
+            num_iterations: 200_000,
+            opt_target: OptimizationTarget::Mean,
+            opt_mode: OptimizationMode::Global,
+        };
 
-        annealing.run(
-            |stats| {
-                print_iteration(out, &config.brush, stats).ok();
-            },
-            200_000,
-            3.0,
-            0.95,
-            OptimizationTarget::Mean,
-            OptimizationMode::Global,
-        );
-        annealing.run(
-            |stats| {
-                print_iteration(out, &config.brush, stats).ok();
-            },
-            1_000_000,
-            0.5,
-            0.99,
-            OptimizationTarget::Min,
-            OptimizationMode::Local,
-        );
+        annealing.run(|stats| {
+            print_iteration(out, &config.brush, stats).ok();
+        });
+
+        annealing.temperature = 0.5;
+        annealing.cooling_rate = 0.99;
+        annealing.num_iterations = 1_000_000;
+        annealing.opt_target = OptimizationTarget::Min;
+        annealing.opt_mode = OptimizationMode::Local;
+
+        annealing.run(|stats| {
+            print_iteration(out, &config.brush, stats).ok();
+        });
 
         for color in annealing.colors {
             show_color(out, config, &color)?;
