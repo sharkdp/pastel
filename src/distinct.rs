@@ -2,8 +2,9 @@ use core::f64 as scalar;
 
 use rand::prelude::*;
 
+use crate::delta_e;
 use crate::random::{self, RandomizationStrategy};
-use crate::Color;
+use crate::{Color, Lab};
 
 type Scalar = f64;
 
@@ -22,7 +23,7 @@ pub struct IterationStatistics<'a> {
     pub iteration: usize,
     pub temperature: Scalar,
     pub distance_result: &'a DistanceResult,
-    pub colors: &'a [Color],
+    pub colors: Vec<Color>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -53,13 +54,18 @@ pub struct SimulationParameters {
 }
 
 pub struct SimulatedAnnealing {
-    colors: Vec<Color>,
+    colors: Vec<(Color, Lab)>,
     temperature: Scalar,
     pub parameters: SimulationParameters,
 }
 
 impl SimulatedAnnealing {
-    pub fn new(colors: Vec<Color>, parameters: SimulationParameters) -> Self {
+    pub fn new(initial_colors: &[Color], parameters: SimulationParameters) -> Self {
+        let colors = initial_colors
+            .iter()
+            .map(|c| (c.clone(), c.to_lab()))
+            .collect();
+
         SimulatedAnnealing {
             colors,
             temperature: parameters.initial_temperature,
@@ -67,11 +73,18 @@ impl SimulatedAnnealing {
         }
     }
 
-    pub fn get_colors(&self) -> &[Color] {
-        &self.colors
+    pub fn get_colors(&self) -> Vec<Color> {
+        self.colors.iter().map(|(c, _)| c.clone()).collect()
     }
 
-    fn mutual_distance(&self, colors: &[Color]) -> DistanceResult {
+    fn distance(&self, a: &(Color, Lab), b: &(Color, Lab)) -> Scalar {
+        match self.parameters.distance_metric {
+            DistanceMetric::CIE76 => delta_e::cie76(&a.1, &b.1),
+            DistanceMetric::CIEDE2000 => delta_e::ciede2000(&a.1, &b.1),
+        }
+    }
+
+    fn mutual_distance(&self, colors: &[(Color, Lab)]) -> DistanceResult {
         let num_colors = colors.len();
 
         // The distance to the nearest neighbor for every color
@@ -85,10 +98,7 @@ impl SimulatedAnnealing {
 
         for i in 0..num_colors {
             for j in (i + 1)..num_colors {
-                let dist = match self.parameters.distance_metric {
-                    DistanceMetric::CIE76 => colors[i].distance_delta_e_cie76(&colors[j]),
-                    DistanceMetric::CIEDE2000 => colors[i].distance_delta_e_ciede2000(&colors[j]),
-                };
+                let dist = self.distance(&colors[i], &colors[j]);
 
                 if dist < min_closest_distance {
                     min_closest_distance = dist;
@@ -126,21 +136,22 @@ impl SimulatedAnnealing {
         }
     }
 
-    fn modify_color(&self, color: &mut Color) {
+    fn modify_color(&self, color: &mut (Color, Lab)) {
         const STRATEGY: random::strategies::UniformRGB = random::strategies::UniformRGB {};
 
         match self.parameters.opt_mode {
             OptimizationMode::Local => {
-                let mut rgb = color.to_rgba();
+                let mut rgb = color.0.to_rgba();
                 Self::modify_channel(&mut rgb.r);
                 Self::modify_channel(&mut rgb.g);
                 Self::modify_channel(&mut rgb.b);
-                *color = Color::from_rgb(rgb.r, rgb.g, rgb.b);
+                color.0 = Color::from_rgb(rgb.r, rgb.g, rgb.b);
             }
             OptimizationMode::Global => {
-                *color = STRATEGY.generate();
+                color.0 = STRATEGY.generate();
             }
         }
+        color.1 = color.0.to_lab();
     }
 
     pub fn run<C>(&mut self, mut callback: C)
@@ -194,7 +205,7 @@ impl SimulatedAnnealing {
                     iteration: iter,
                     temperature: self.temperature,
                     distance_result: &result,
-                    colors: &self.colors,
+                    colors: self.get_colors(),
                 };
                 callback(&statistics);
             }

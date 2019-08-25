@@ -4,7 +4,7 @@ use atty;
 pub use atty::Stream;
 use lazy_static::lazy_static;
 
-use crate::delta_e::delta_e_ciede2000;
+use crate::delta_e::ciede2000;
 use crate::{Color, Lab};
 
 lazy_static! {
@@ -88,7 +88,7 @@ impl AnsiColor for Color {
         let self_lab = self.to_lab();
         ANSI_LAB_REPRESENTATIONS
             .iter()
-            .min_by_key(|(_, lab)| delta_e_ciede2000(&self_lab, &lab) as i32)
+            .min_by_key(|(_, lab)| ciede2000(&self_lab, &lab) as i32)
             .expect("list of codes can not be empty")
             .0
     }

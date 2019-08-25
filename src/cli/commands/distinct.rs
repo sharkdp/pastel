@@ -19,7 +19,7 @@ fn print_iteration(out: &mut dyn Write, brush: &Brush, stats: &IterationStatisti
         result.min_closest_distance,
         stats.temperature
     )?;
-    print_colors(out, brush, stats.colors, Some(result.closest_pair))?;
+    print_colors(out, brush, &stats.colors, Some(result.closest_pair))?;
     Ok(())
 }
 
@@ -72,7 +72,7 @@ impl GenericCommand for DistinctCommand {
         }
 
         let mut annealing = SimulatedAnnealing::new(
-            colors,
+            &colors,
             SimulationParameters {
                 initial_temperature: 3.0,
                 cooling_rate: 0.95,

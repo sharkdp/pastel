@@ -590,10 +590,7 @@ impl Color {
     ///
     /// See: https://en.wikipedia.org/wiki/Color_difference
     pub fn distance_delta_e_cie76(&self, other: &Color) -> Scalar {
-        let c1 = self.to_lab();
-        let c2 = other.to_lab();
-
-        ((c1.l - c2.l).powi(2) + (c1.a - c2.a).powi(2) + (c1.b - c2.b).powi(2)).sqrt()
+        delta_e::cie76(&self.to_lab(), &other.to_lab())
     }
 
     /// Compute the perceived 'distance' between two colors according to the CIEDE2000 delta-E
@@ -601,7 +598,7 @@ impl Color {
     ///
     /// See: https://en.wikipedia.org/wiki/Color_difference
     pub fn distance_delta_e_ciede2000(&self, other: &Color) -> Scalar {
-        delta_e::delta_e_ciede2000(&self.to_lab(), &other.to_lab())
+        delta_e::ciede2000(&self.to_lab(), &other.to_lab())
     }
 
     /// Mix two colors by linearly interpolating between them in the specified color space.
