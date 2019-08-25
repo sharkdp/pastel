@@ -1,6 +1,9 @@
+use std::io;
+
 use crate::commands::prelude::*;
 use crate::commands::show::show_color;
 
+use pastel::ansi::Stream;
 use pastel::distinct::{
     DistanceMetric, IterationStatistics, OptimizationMode, OptimizationTarget, SimulatedAnnealing,
     SimulationParameters,
@@ -42,10 +45,11 @@ fn print_colors(
             }
         }
 
-        print!(
+        write!(
+            out,
             "{} ",
             brush.paint(format!("{}", c.to_rgb_hex_string(false)), style)
-        );
+        )?;
 
         ci += 1;
     }
@@ -55,6 +59,11 @@ fn print_colors(
 
 impl GenericCommand for DistinctCommand {
     fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
+        let stderr = io::stderr();
+        let mut out_stderr = stderr.lock();
+
+        let brush_stderr = Brush::from_environment(Stream::Stderr);
+
         let count = matches.value_of("number").expect("required argument");
         let count = count
             .parse::<usize>()
@@ -84,7 +93,7 @@ impl GenericCommand for DistinctCommand {
         );
 
         annealing.run(|stats| {
-            print_iteration(out, &config.brush, stats).ok();
+            print_iteration(&mut out_stderr, &brush_stderr, stats).ok();
         });
 
         annealing.parameters.initial_temperature = 0.5;
@@ -94,7 +103,7 @@ impl GenericCommand for DistinctCommand {
         annealing.parameters.opt_mode = OptimizationMode::Local;
 
         annealing.run(|stats| {
-            print_iteration(out, &config.brush, stats).ok();
+            print_iteration(&mut out_stderr, &brush_stderr, stats).ok();
         });
 
         for color in annealing.get_colors() {
