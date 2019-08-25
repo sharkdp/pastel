@@ -56,7 +56,7 @@ impl GenericCommand for ColorCheckCommand {
              from) the colors in the top row panels.\nThe panels in the lower row should look \
              like squares that are filled with a uniform color (no stripes or other artifacts).\n\
              \n\
-             You can also open https://github.com/sharkdp/pastel/blob/master/doc/colorcheck.md in
+             You can also open https://github.com/sharkdp/pastel/blob/master/doc/colorcheck.md in \
              a browser to compare how the output should look like."
         )?;
 
