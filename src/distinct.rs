@@ -231,7 +231,7 @@ pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
         let (left, right) = colors.split_at_mut(i);
         right.sort_unstable_by_key(|c| {
             left.iter()
-                .map(|c2| (-distance(c2, c) * 100.0) as i32)
+                .map(|c2| (-distance(c2, c) * 1000.0) as i32)
                 .max()
         });
     }
