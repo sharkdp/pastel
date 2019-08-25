@@ -77,6 +77,12 @@ pastel color 556270 4ecdc4 c7f484 ff6b6b c44d58
 pastel pick
 ```
 
+#### Generate a set of N visually distinct colors
+
+```
+pastel distinct 8
+```
+
 #### Get a list of all X11 / CSS color names
 
 ``` bash
