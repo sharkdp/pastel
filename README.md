@@ -2,6 +2,10 @@
 
 *A command-line tool to generate, analyze, convert and manipulate colors.*
 
+`pastel` provides a collection of commands to work with colors on the terminal. It supports many different color formats and color spaces like RGB, HSL, CIELAB, CIELCh as well as ANSI 8-bit and 24-bit representations.
+
+## In action
+
 ![pastel in action](doc/pastel.gif)
 
 ## Tutorial
