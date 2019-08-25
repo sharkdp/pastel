@@ -6,9 +6,11 @@ use pastel::ansi::{Brush, Mode};
 pub struct ColorCheckCommand;
 
 fn print_board(out: &mut dyn Write, config: &Config, mode: Mode) -> Result<()> {
-    let c1 = Color::from_rgb(127, 68, 32);
-    let c2 = Color::from_rgb(83, 127, 48);
-    let c3 = Color::from_rgb(7, 47, 127);
+    // These colors have been chosen/computed such that the perceived color difference (CIE delta-E
+    // 2000) to the closest ANSI 8-bit color is maximal.
+    let c1 = Color::from_rgb(73, 39, 50);
+    let c2 = Color::from_rgb(16, 51, 30);
+    let c3 = Color::from_rgb(29, 54, 90);
 
     let width = config.colorcheck_width;
 
@@ -50,8 +52,9 @@ impl GenericCommand for ColorCheckCommand {
         writeln!(
             out,
             "If your terminal emulator supports 24-bit colors, you should see three square color \
-             panels in the lower row and the colors should look similar (but different from) \
-             the colors in the top row panels."
+             panels in the lower row and the colors should look similar (but slightly different \
+             from) the colors in the top row panels.\nThe panels in the lower row should look \
+             like squares that are filled with a uniform color (no stripes or other artifacts)."
         )?;
 
         Ok(())
