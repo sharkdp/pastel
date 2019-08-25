@@ -1,7 +1,9 @@
 use crate::commands::prelude::*;
 use crate::commands::show::show_color;
 
-use pastel::distinct::{annealing, IterationStatistics, OptimizationMode, OptimizationTarget};
+use pastel::distinct::{
+    IterationStatistics, OptimizationMode, OptimizationTarget, SimulatedAnnealing,
+};
 use pastel::random::{self, RandomizationStrategy};
 
 pub struct DistinctCommand;
@@ -62,22 +64,22 @@ impl GenericCommand for DistinctCommand {
             colors.push(random::strategies::UniformRGB.generate());
         }
 
-        annealing(
+        let mut annealing = SimulatedAnnealing { colors };
+
+        annealing.run(
             |stats| {
                 print_iteration(out, &config.brush, stats).ok();
             },
-            &mut colors,
             200_000,
             3.0,
             0.95,
             OptimizationTarget::Mean,
             OptimizationMode::Global,
         );
-        annealing(
+        annealing.run(
             |stats| {
                 print_iteration(out, &config.brush, stats).ok();
             },
-            &mut colors,
             1_000_000,
             0.5,
             0.99,
@@ -85,7 +87,7 @@ impl GenericCommand for DistinctCommand {
             OptimizationMode::Local,
         );
 
-        for color in colors {
+        for color in annealing.colors {
             show_color(out, config, &color)?;
         }
 
