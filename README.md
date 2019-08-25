@@ -83,6 +83,12 @@ pastel pick
 pastel list
 ```
 
+#### Name a given color
+
+``` bash
+pastel format name 44cc11
+```
+
 #### Print colorized text from a shell script
 
 ``` bash
