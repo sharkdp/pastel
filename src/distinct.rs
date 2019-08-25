@@ -154,7 +154,7 @@ impl SimulatedAnnealing {
         color.1 = color.0.to_lab();
     }
 
-    pub fn run(&mut self, callback: &mut impl FnMut(&IterationStatistics)) {
+    pub fn run(&mut self, callback: &mut dyn FnMut(&IterationStatistics)) {
         self.temperature = self.parameters.initial_temperature;
 
         let mut result = self.mutual_distance(&self.colors);

@@ -98,7 +98,7 @@ impl GenericCommand for DistinctCommand {
             Box::new(|_: &IterationStatistics| {})
         };
 
-        annealing.run(&mut callback);
+        annealing.run(callback.as_mut());
 
         annealing.parameters.initial_temperature = 0.5;
         annealing.parameters.cooling_rate = 0.98;
@@ -106,7 +106,7 @@ impl GenericCommand for DistinctCommand {
         annealing.parameters.opt_target = OptimizationTarget::Min;
         annealing.parameters.opt_mode = OptimizationMode::Local;
 
-        annealing.run(&mut callback);
+        annealing.run(callback.as_mut());
 
         for color in annealing.get_colors() {
             show_color(out, config, &color)?;
