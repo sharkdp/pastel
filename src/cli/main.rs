@@ -147,6 +147,16 @@ fn run() -> Result<ExitCode> {
                         .takes_value(true)
                         .default_value("8")
                         .value_name("count"),
+                )
+                .arg(
+                    Arg::with_name("distance-metric")
+                        .long("distance-metric")
+                        .short("D")
+                        .help("Distance metric standard to compute mutual color distances")
+                        .takes_value(true)
+                        .possible_values(&["CIEDE2000", "CIE76"])
+                        .value_name("name")
+                        .default_value("CIEDE2000")
                 ),
         )
         .subcommand(

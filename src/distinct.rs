@@ -37,6 +37,12 @@ pub enum OptimizationMode {
     Local,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum DistanceMetric {
+    CIE76,
+    CIEDE2000,
+}
+
 pub struct SimulatedAnnealing {
     pub colors: Vec<Color>,
     pub temperature: Scalar,
@@ -44,10 +50,11 @@ pub struct SimulatedAnnealing {
     pub num_iterations: usize,
     pub opt_target: OptimizationTarget,
     pub opt_mode: OptimizationMode,
+    pub distance_metric: DistanceMetric,
 }
 
 impl SimulatedAnnealing {
-    fn mutual_distance(colors: &[Color]) -> DistanceResult {
+    fn mutual_distance(&self, colors: &[Color]) -> DistanceResult {
         let num_colors = colors.len();
 
         // The distance to the nearest neighbor for every color
@@ -61,7 +68,10 @@ impl SimulatedAnnealing {
 
         for i in 0..num_colors {
             for j in (i + 1)..num_colors {
-                let dist = colors[i].distance_delta_e_ciede2000(&colors[j]);
+                let dist = match self.distance_metric {
+                    DistanceMetric::CIE76 => colors[i].distance_delta_e_cie76(&colors[j]),
+                    DistanceMetric::CIEDE2000 => colors[i].distance_delta_e_ciede2000(&colors[j]),
+                };
 
                 if dist < min_closest_distance {
                     min_closest_distance = dist;
@@ -120,7 +130,7 @@ impl SimulatedAnnealing {
     where
         C: FnMut(&IterationStatistics),
     {
-        let mut result = Self::mutual_distance(&self.colors);
+        let mut result = self.mutual_distance(&self.colors);
 
         for iter in 0..self.num_iterations {
             let random_index = if self.opt_target == OptimizationTarget::Mean {
@@ -137,7 +147,7 @@ impl SimulatedAnnealing {
 
             self.modify_color(&mut new_colors[random_index]);
 
-            let new_result = Self::mutual_distance(&new_colors);
+            let new_result = self.mutual_distance(&new_colors);
 
             let (score, new_score) = match self.opt_target {
                 OptimizationTarget::Mean => (
