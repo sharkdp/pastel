@@ -102,12 +102,6 @@ echo " word"
 ```
 
 
-## Installation
-
-
-## Development
-
-
 ## Resources
 
 Interesting Wikipedia pages:
