@@ -67,6 +67,10 @@ impl GenericCommand for DistinctCommand {
             .parse::<usize>()
             .map_err(|_| PastelError::CouldNotParseNumber(count.into()))?;
 
+        if count < 2 {
+            return Err(PastelError::DistinctColorCountMustBeLargerThanOne);
+        }
+
         let distance_metric = match matches.value_of("metric").expect("required argument") {
             "CIE76" => DistanceMetric::CIE76,
             "CIEDE2000" => DistanceMetric::CIEDE2000,
