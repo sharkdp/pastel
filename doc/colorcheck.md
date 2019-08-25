@@ -1,7 +1,8 @@
 # colorcheck
 
-The `pastel` command can be used to test whether or not your terminal emulator
-properly supports 24-bit color mode (true color).
+The `colorcheck` command can be used to test whether or not your terminal emulator
+properly supports 24-bit true color mode (16,777,216 colors). If this is not the case, `pastel`
+can only show 8-bit approximations (256 colors):
 
 ``` bash
 pastel colorcheck
