@@ -38,6 +38,10 @@ fn run() -> Result<ExitCode> {
 
     let interactive_mode = atty::is(Stream::Stdout);
 
+    if interactive_mode {
+        output_vt100::init();
+    }
+
     let color_mode = match global_matches
         .value_of("color-mode")
         .expect("required argument")
@@ -55,6 +59,12 @@ fn run() -> Result<ExitCode> {
                     Some(value) => {
                         return Err(PastelError::UnknownColorMode(value.into()));
                     }
+                    #[cfg(windows)]
+                    None => {
+                        // Assume 24bit support on Windows
+                        Some(ansi::Mode::TrueColor)
+                    }
+                    #[cfg(not(windows))]
                     None => {
                         let env_colorterm = std::env::var("COLORTERM").ok();
                         match env_colorterm.as_ref().map(|s| s.as_str()) {
