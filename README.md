@@ -116,8 +116,8 @@ echo " word"
 ### On Debian-based systems
 
 ``` bash
-wget "https://github.com/sharkdp/pastel/releases/download/v0.4.0/pastel_0.4.0_amd64.deb"
-sudo dpkg -i pastel_0.4.0_amd64.deb
+wget "https://github.com/sharkdp/pastel/releases/download/v0.5.0/pastel_0.5.0_amd64.deb"
+sudo dpkg -i pastel_0.5.0_amd64.deb
 ```
 
 ### On other distributions
