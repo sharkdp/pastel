@@ -123,9 +123,7 @@ impl SimulatedAnnealing {
         let mut result = Self::mutual_distance(&self.colors);
 
         for iter in 0..self.num_iterations {
-            let random_index = if self.opt_target == OptimizationTarget::Mean
-                || self.opt_mode == OptimizationMode::Local
-            {
+            let random_index = if self.opt_target == OptimizationTarget::Mean {
                 random::<usize>() % self.colors.len()
             } else {
                 if random::<bool>() {

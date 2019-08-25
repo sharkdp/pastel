@@ -68,7 +68,7 @@ impl GenericCommand for DistinctCommand {
             colors,
             temperature: 3.0,
             cooling_rate: 0.95,
-            num_iterations: 200_000,
+            num_iterations: 100_000,
             opt_target: OptimizationTarget::Mean,
             opt_mode: OptimizationMode::Global,
         };
@@ -78,8 +78,8 @@ impl GenericCommand for DistinctCommand {
         });
 
         annealing.temperature = 0.5;
-        annealing.cooling_rate = 0.99;
-        annealing.num_iterations = 1_000_000;
+        annealing.cooling_rate = 0.98;
+        annealing.num_iterations = 200_000;
         annealing.opt_target = OptimizationTarget::Min;
         annealing.opt_mode = OptimizationMode::Local;
 
