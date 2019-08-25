@@ -4,9 +4,7 @@
 [![](https://img.shields.io/crates/l/pastel.svg?colorB=1fc77e)](https://crates.io/crates/pastel)
 ![](https://img.shields.io/crates/v/pastel.svg?colorB=1f84c7)
 
-*A command-line tool to generate, analyze, convert and manipulate colors.*
-
-`pastel` provides a collection of commands to work with colors on the terminal. It supports many different color formats and color spaces like RGB, HSL, CIELAB, CIELCh as well as ANSI 8-bit and 24-bit representations.
+`pastel` is a command-line tool to generate, analyze, convert and manipulate colors. It supports many different color formats and color spaces like RGB, HSL, CIELAB, CIELCh as well as ANSI 8-bit and 24-bit representations.
 
 ## In action
 
