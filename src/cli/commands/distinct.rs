@@ -3,6 +3,7 @@ use crate::commands::show::show_color;
 
 use pastel::distinct::{
     DistanceMetric, IterationStatistics, OptimizationMode, OptimizationTarget, SimulatedAnnealing,
+    SimulationParameters,
 };
 use pastel::random::{self, RandomizationStrategy};
 
@@ -70,31 +71,33 @@ impl GenericCommand for DistinctCommand {
             colors.push(random::strategies::UniformRGB.generate());
         }
 
-        let mut annealing = SimulatedAnnealing {
+        let mut annealing = SimulatedAnnealing::new(
             colors,
-            temperature: 3.0,
-            cooling_rate: 0.95,
-            num_iterations: 100_000,
-            opt_target: OptimizationTarget::Mean,
-            opt_mode: OptimizationMode::Global,
-            distance_metric,
-        };
+            SimulationParameters {
+                initial_temperature: 3.0,
+                cooling_rate: 0.95,
+                num_iterations: 100_000,
+                opt_target: OptimizationTarget::Mean,
+                opt_mode: OptimizationMode::Global,
+                distance_metric,
+            },
+        );
 
         annealing.run(|stats| {
             print_iteration(out, &config.brush, stats).ok();
         });
 
-        annealing.temperature = 0.5;
-        annealing.cooling_rate = 0.98;
-        annealing.num_iterations = 200_000;
-        annealing.opt_target = OptimizationTarget::Min;
-        annealing.opt_mode = OptimizationMode::Local;
+        annealing.parameters.initial_temperature = 0.5;
+        annealing.parameters.cooling_rate = 0.98;
+        annealing.parameters.num_iterations = 200_000;
+        annealing.parameters.opt_target = OptimizationTarget::Min;
+        annealing.parameters.opt_mode = OptimizationMode::Local;
 
         annealing.run(|stats| {
             print_iteration(out, &config.brush, stats).ok();
         });
 
-        for color in annealing.colors {
+        for color in annealing.get_colors() {
             show_color(out, config, &color)?;
         }
 

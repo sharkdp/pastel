@@ -43,9 +43,8 @@ pub enum DistanceMetric {
     CIEDE2000,
 }
 
-pub struct SimulatedAnnealing {
-    pub colors: Vec<Color>,
-    pub temperature: Scalar,
+pub struct SimulationParameters {
+    pub initial_temperature: Scalar,
     pub cooling_rate: Scalar,
     pub num_iterations: usize,
     pub opt_target: OptimizationTarget,
@@ -53,7 +52,25 @@ pub struct SimulatedAnnealing {
     pub distance_metric: DistanceMetric,
 }
 
+pub struct SimulatedAnnealing {
+    colors: Vec<Color>,
+    temperature: Scalar,
+    pub parameters: SimulationParameters,
+}
+
 impl SimulatedAnnealing {
+    pub fn new(colors: Vec<Color>, parameters: SimulationParameters) -> Self {
+        SimulatedAnnealing {
+            colors,
+            temperature: parameters.initial_temperature,
+            parameters,
+        }
+    }
+
+    pub fn get_colors(&self) -> &[Color] {
+        &self.colors
+    }
+
     fn mutual_distance(&self, colors: &[Color]) -> DistanceResult {
         let num_colors = colors.len();
 
@@ -68,7 +85,7 @@ impl SimulatedAnnealing {
 
         for i in 0..num_colors {
             for j in (i + 1)..num_colors {
-                let dist = match self.distance_metric {
+                let dist = match self.parameters.distance_metric {
                     DistanceMetric::CIE76 => colors[i].distance_delta_e_cie76(&colors[j]),
                     DistanceMetric::CIEDE2000 => colors[i].distance_delta_e_ciede2000(&colors[j]),
                 };
@@ -112,7 +129,7 @@ impl SimulatedAnnealing {
     fn modify_color(&self, color: &mut Color) {
         const STRATEGY: random::strategies::UniformRGB = random::strategies::UniformRGB {};
 
-        match self.opt_mode {
+        match self.parameters.opt_mode {
             OptimizationMode::Local => {
                 let mut rgb = color.to_rgba();
                 Self::modify_channel(&mut rgb.r);
@@ -130,10 +147,12 @@ impl SimulatedAnnealing {
     where
         C: FnMut(&IterationStatistics),
     {
+        self.temperature = self.parameters.initial_temperature;
+
         let mut result = self.mutual_distance(&self.colors);
 
-        for iter in 0..self.num_iterations {
-            let random_index = if self.opt_target == OptimizationTarget::Mean {
+        for iter in 0..self.parameters.num_iterations {
+            let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
                 random::<usize>() % self.colors.len()
             } else {
                 if random::<bool>() {
@@ -149,7 +168,7 @@ impl SimulatedAnnealing {
 
             let new_result = self.mutual_distance(&new_colors);
 
-            let (score, new_score) = match self.opt_target {
+            let (score, new_score) = match self.parameters.opt_target {
                 OptimizationTarget::Mean => (
                     result.mean_closest_distance,
                     new_result.mean_closest_distance,
@@ -181,7 +200,7 @@ impl SimulatedAnnealing {
             }
 
             if iter % 1_000 == 0 {
-                self.temperature *= self.cooling_rate;
+                self.temperature *= self.parameters.cooling_rate;
             }
         }
     }
