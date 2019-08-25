@@ -216,6 +216,11 @@ impl SimulatedAnnealing {
 
 /// Re-arrange the sequence of colors such that the minimal difference between a given color and
 /// any of its predecessors is maximized.
+///
+/// Note: this is only a heuristic and will not yield optimal results (especially at the end of
+/// the sequence).
+///
+/// See: https://en.wikipedia.org/wiki/Farthest-first_traversal
 pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
     let distance = |c1: &Color, c2: &Color| match metric {
         DistanceMetric::CIE76 => c1.distance_delta_e_cie76(c2),
@@ -224,8 +229,11 @@ pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
 
     for i in 1..colors.len() {
         let (left, right) = colors.split_at_mut(i);
-        right
-            .sort_unstable_by_key(|c| left.iter().map(|c2| (-distance(c2, c) * 100.0) as i32).max());
+        right.sort_unstable_by_key(|c| {
+            left.iter()
+                .map(|c2| (-distance(c2, c) * 100.0) as i32)
+                .max()
+        });
     }
 }
 
