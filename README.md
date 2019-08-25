@@ -2,6 +2,8 @@
 
 *A command-line tool to generate, analyze, convert and manipulate colors.*
 
+![pastel in action](doc/pastel.gif)
+
 ## Tutorial
 
 ### General remarks
