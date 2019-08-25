@@ -140,7 +140,9 @@ fn run() -> Result<ExitCode> {
             SubCommand::with_name("distinct")
                 .about("Generate a set of visually distinct colors")
                 .long_about("Generate a set of visually distinct colors by maximizing \
-                            the perceived color difference between pairs of colors.")
+                             the perceived color difference between pairs of colors.\n\n\
+                             The default parameters for the optimization procedure \
+                             (simulated annealing) should work fine for up to 10-20 colors.")
                 .arg(
                     Arg::with_name("number")
                         .help("Number of distinct colors in the set")
@@ -149,10 +151,10 @@ fn run() -> Result<ExitCode> {
                         .value_name("count"),
                 )
                 .arg(
-                    Arg::with_name("distance-metric")
-                        .long("distance-metric")
-                        .short("D")
-                        .help("Distance metric standard to compute mutual color distances")
+                    Arg::with_name("metric")
+                        .long("metric")
+                        .short("m")
+                        .help("Distance metric to compute mutual color distances")
                         .takes_value(true)
                         .possible_values(&["CIEDE2000", "CIE76"])
                         .value_name("name")
