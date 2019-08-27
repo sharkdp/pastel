@@ -59,21 +59,14 @@ fn run() -> Result<ExitCode> {
                     Some(value) => {
                         return Err(PastelError::UnknownColorMode(value.into()));
                     }
-                    #[cfg(windows)]
                     None => {
-                        // Assume 24bit support on Windows
-                        Some(ansi::Mode::TrueColor)
-                    }
-                    #[cfg(not(windows))]
-                    None => {
-                        let env_colorterm = std::env::var("COLORTERM").ok();
-                        match env_colorterm.as_ref().map(|s| s.as_str()) {
-                            Some("truecolor") | Some("24bit") => Some(ansi::Mode::TrueColor),
-                            _ => {
-                                if global_matches.subcommand_name() != Some("paint")
-                                    && global_matches.subcommand_name() != Some("colorcheck")
-                                {
-                                    write_stderr(Color::yellow(), "pastel warning",
+                        let mode = ansi::get_colormode();
+
+                        if mode == ansi::Mode::Ansi8Bit
+                            && global_matches.subcommand_name() != Some("paint")
+                            && global_matches.subcommand_name() != Some("colorcheck")
+                        {
+                            write_stderr(Color::yellow(), "pastel warning",
                                     "Your terminal emulator does not appear to support 24-bit colors \
                                     (this means that the COLORTERM environment variable is not set to \
                                     'truecolor' or '24bit'). \
@@ -91,10 +84,8 @@ fn run() -> Result<ExitCode> {
                                          warning or try a different terminal emulator.\n\n\
                                     \
                                     For more information, see https://gist.github.com/XVilka/8346728\n");
-                                }
-                                Some(ansi::Mode::Ansi8Bit)
-                            }
                         }
+                        Some(mode)
                     }
                 }
             } else {

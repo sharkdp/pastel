@@ -13,7 +13,7 @@ lazy_static! {
         .collect();
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Mode {
     Ansi8Bit,
     TrueColor,
@@ -243,6 +243,23 @@ impl ToAnsiStyle for Color {
     }
 }
 
+#[cfg(not(windows))]
+pub fn get_colormode() -> Mode {
+    use std::env;
+
+    let env_colorterm = env::var("COLORTERM").ok();
+    match env_colorterm.as_ref().map(|s| s.as_str()) {
+        Some("truecolor") | Some("24bit") => Mode::TrueColor,
+        _ => Mode::Ansi8Bit,
+    }
+}
+
+#[cfg(windows)]
+pub fn get_colormode() -> Mode {
+    // Assume 24bit support on Windows
+    Mode::TrueColor
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Brush {
     mode: Option<Mode>,
@@ -255,15 +272,10 @@ impl Brush {
 
     pub fn from_environment(stream: Stream) -> Self {
         let mode = if atty::is(stream) {
-            if std::env::var("COLORTERM") == Ok("truecolor".into()) {
-                Some(Mode::TrueColor)
-            } else {
-                Some(Mode::Ansi8Bit)
-            }
+            Some(get_colormode())
         } else {
             None
         };
-
         Brush { mode }
     }
 
