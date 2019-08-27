@@ -6,12 +6,12 @@ use crate::utility::similar_colors;
 use pastel::Format;
 
 pub fn show_color_tty(out: &mut dyn Write, config: &Config, color: &Color) -> Result<()> {
-    let checkerboard_size: usize = 20;
-    let color_panel_size: usize = 14;
+    let checkerboard_size: usize = 16;
+    let color_panel_size: usize = 12;
 
     let color_panel_position: usize = config.padding + (checkerboard_size - color_panel_size) / 2;
     let text_position_x: usize = checkerboard_size + 2 * config.padding;
-    let text_position_y: usize = config.padding + 2;
+    let text_position_y: usize = config.padding + 0;
 
     let mut canvas = Canvas::new(2 * config.padding + checkerboard_size, 55, config.brush);
     canvas.draw_checkerboard(
