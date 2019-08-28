@@ -83,8 +83,17 @@ pub fn show_color_tty(out: &mut dyn Write, config: &Config, color: &Color) -> Re
 }
 
 pub fn show_color(out: &mut dyn Write, config: &Config, color: &Color) -> Result<()> {
+    // ref: https://stackoverflow.com/questions/27791532/how-do-i-create-a-global-mutable-singleton @@ https://archive.is/5aygT
+    use std::sync::atomic::{AtomicBool, Ordering};
+    // use std::sync::atomic::{AtomicUsize, Ordering};
+    static SWATCH_FIRST: AtomicBool = AtomicBool::new(true);
+    // static SWATCH_COUNT: AtomicUsize = AtomicUsize::new(0);
+
     if config.interactive_mode {
+        if SWATCH_FIRST.fetch_and(false, Ordering::SeqCst) { writeln!(out)? };
+        // if SWATCH_COUNT.fetch_add(1, Ordering::SeqCst) < 1 { writeln!(out)? };
         show_color_tty(out, config, color)?;
+        writeln!(out)?;
     } else {
         writeln!(out, "{}", color.to_hsl_string(Format::NoSpaces))?;
     }
