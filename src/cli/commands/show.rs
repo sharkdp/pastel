@@ -9,22 +9,25 @@ pub fn show_color_tty(out: &mut dyn Write, config: &Config, color: &Color) -> Re
     let checkerboard_size: usize = 16;
     let color_panel_size: usize = 12;
 
-    let color_panel_position: usize = config.padding + (checkerboard_size - color_panel_size) / 2;
+    let checkerboard_position_y: usize = 0;
+    let checkerboard_position_x: usize = config.padding;
+    let color_panel_position_y: usize = checkerboard_position_y + (checkerboard_size - color_panel_size) / 2;
+    let color_panel_position_x: usize = config.padding + (checkerboard_size - color_panel_size) / 2;
     let text_position_x: usize = checkerboard_size + 2 * config.padding;
-    let text_position_y: usize = config.padding + 0;
+    let text_position_y: usize = 0;
 
-    let mut canvas = Canvas::new(2 * config.padding + checkerboard_size, 55, config.brush);
+    let mut canvas = Canvas::new(checkerboard_size, 51, config.brush);
     canvas.draw_checkerboard(
-        config.padding,
-        config.padding,
+        checkerboard_position_y,
+        checkerboard_position_x,
         checkerboard_size,
         checkerboard_size,
         &Color::graytone(0.94),
         &Color::graytone(0.71),
     );
     canvas.draw_rect(
-        color_panel_position,
-        color_panel_position,
+        color_panel_position_y,
+        color_panel_position_x,
         color_panel_size,
         color_panel_size,
         color,
