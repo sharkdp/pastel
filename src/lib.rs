@@ -669,8 +669,11 @@ impl ColorSpace for HSLA {
     }
 
     fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        let f1 = fraction.value() * other.s;
+        let f2 = (1.0 - fraction.value()) * self.s;
+        let angle_fraction = Fraction::from(f1 / (f1 + f2));
         Self {
-            h: interpolate_angle(self.h, other.h, fraction),
+            h: interpolate_angle(self.h, other.h, angle_fraction),
             s: interpolate(self.s, other.s, fraction),
             l: interpolate(self.l, other.l, fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
@@ -731,10 +734,13 @@ impl ColorSpace for LCh {
     }
 
     fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        let f1 = fraction.value() * other.c;
+        let f2 = (1.0 - fraction.value()) * self.c;
+        let angle_fraction = Fraction::from(f1 / (f1 + f2));
         Self {
             l: interpolate(self.l, other.l, fraction),
             c: interpolate(self.c, other.c, fraction),
-            h: interpolate_angle(self.h, other.h, fraction),
+            h: interpolate_angle(self.h, other.h, angle_fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
         }
     }
