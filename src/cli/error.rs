@@ -22,7 +22,7 @@ impl PastelError {
             }
             PastelError::ColorParseError(color) => format!("Could not parse color '{}'", color),
             PastelError::ColorInvalidUTF8 => "Color input contains invalid UTF8".into(),
-            PastelError::CouldNotReadFromStdin => "could not read color from standard input".into(),
+            PastelError::CouldNotReadFromStdin => "Could not read color from standard input".into(),
             PastelError::ColorArgRequired => {
                 "A color argument needs to be provided on the command line or via a pipe. \
                  Call this command again with '-h' or '--help' to get more information."
