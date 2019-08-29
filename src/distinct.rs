@@ -184,7 +184,7 @@ pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
 
     for i in 1..colors.len() {
         let (left, right) = colors.split_at_mut(i);
-        right.sort_unstable_by_key(|c| {
+        right.sort_by_cached_key(|c| {
             left.iter()
                 .map(|c2| (-distance(c2, c) * 1000.0) as i32)
                 .max()
