@@ -8,6 +8,7 @@ use crate::{Color, Lab};
 
 type Scalar = f64;
 
+#[derive(Clone)]
 pub struct DistanceResult {
     /// The closest distance between any two colors
     pub min_closest_distance: Scalar,
@@ -17,6 +18,11 @@ pub struct DistanceResult {
 
     /// Indices of the colors that were closest to each other
     pub closest_pair: (usize, usize),
+
+    /// The closest distance and color index for each color
+    pub closest_distances: Vec<(Scalar, usize)>,
+
+    pub distance_metric: DistanceMetric,
 }
 
 pub struct IterationStatistics<'a> {
@@ -77,57 +83,6 @@ impl SimulatedAnnealing {
         self.colors.iter().map(|(c, _)| c.clone()).collect()
     }
 
-    fn distance(&self, a: &(Color, Lab), b: &(Color, Lab)) -> Scalar {
-        match self.parameters.distance_metric {
-            DistanceMetric::CIE76 => delta_e::cie76(&a.1, &b.1),
-            DistanceMetric::CIEDE2000 => delta_e::ciede2000(&a.1, &b.1),
-        }
-    }
-
-    fn mutual_distance(&self, colors: &[(Color, Lab)]) -> DistanceResult {
-        let num_colors = colors.len();
-
-        // The distance to the nearest neighbor for every color
-        let mut closest_distances = vec![scalar::MAX; num_colors];
-
-        // The absolute closest distance
-        let mut min_closest_distance = scalar::MAX;
-
-        // The indices of the colors that were closest
-        let mut closest_pair = (std::usize::MAX, std::usize::MAX);
-
-        for i in 0..num_colors {
-            for j in (i + 1)..num_colors {
-                let dist = self.distance(&colors[i], &colors[j]);
-
-                if dist < min_closest_distance {
-                    min_closest_distance = dist;
-                    closest_pair = (i, j);
-                }
-
-                if dist < closest_distances[i] {
-                    closest_distances[i] = dist;
-                }
-
-                if dist < closest_distances[j] {
-                    closest_distances[j] = dist;
-                }
-            }
-        }
-
-        let mut mean_closest_distance = 0.0;
-        for dist in closest_distances {
-            mean_closest_distance += dist;
-        }
-        mean_closest_distance /= num_colors as Scalar;
-
-        DistanceResult {
-            min_closest_distance,
-            mean_closest_distance,
-            closest_pair,
-        }
-    }
-
     fn modify_channel(c: &mut u8) {
         if random::<bool>() {
             *c = c.saturating_add(random::<u8>() % 10);
@@ -157,7 +112,7 @@ impl SimulatedAnnealing {
     pub fn run(&mut self, callback: &mut dyn FnMut(&IterationStatistics)) {
         self.temperature = self.parameters.initial_temperature;
 
-        let mut result = self.mutual_distance(&self.colors);
+        let mut result = DistanceResult::new(&self.colors, self.parameters.distance_metric);
 
         for iter in 0..self.parameters.num_iterations {
             let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
@@ -174,7 +129,7 @@ impl SimulatedAnnealing {
 
             self.modify_color(&mut new_colors[random_index]);
 
-            let new_result = self.mutual_distance(&new_colors);
+            let new_result = result.update(&new_colors, random_index);
 
             let (score, new_score) = match self.parameters.opt_target {
                 OptimizationTarget::Mean => (
@@ -234,6 +189,83 @@ pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
                 .map(|c2| (-distance(c2, c) * 1000.0) as i32)
                 .max()
         });
+    }
+}
+
+impl DistanceResult {
+    fn new(colors: &[(Color, Lab)], distance_metric: DistanceMetric) -> Self {
+        let mut result = DistanceResult {
+            closest_distances: vec![(scalar::MAX, std::usize::MAX); colors.len()],
+            closest_pair: (std::usize::MAX, std::usize::MAX),
+            mean_closest_distance: 0.0,
+            min_closest_distance: scalar::MAX,
+            distance_metric,
+        };
+
+        for i in 0..colors.len() {
+            result.update_distances(colors, i);
+        }
+        result.update_totals();
+
+        result
+    }
+
+    fn update(&self, colors: &[(Color, Lab)], changed_color: usize) -> Self {
+        let mut result = self.clone();
+        result.update_distances(colors, changed_color);
+        result.update_totals();
+        result
+    }
+
+    fn update_distances(&mut self, colors: &[(Color, Lab)], changed_color: usize) {
+        self.closest_distances[changed_color] = (scalar::MAX, std::usize::MAX);
+
+        let mut to_recalc = Vec::with_capacity(colors.len());
+        for (i, c) in colors.iter().enumerate() {
+            if i == changed_color {
+                continue;
+            }
+
+            let dist = self.distance(c, &colors[changed_color]);
+
+            if dist < self.closest_distances[i].0 || changed_color == self.closest_distances[i].1 {
+                if self.closest_distances[i].1 == changed_color
+                    && dist > self.closest_distances[i].0
+                {
+                    to_recalc.push(i);
+                }
+
+                self.closest_distances[i] = (dist, changed_color);
+                self.closest_distances[changed_color] = (dist, i);
+            }
+        }
+
+        for i in to_recalc {
+            self.update_distances(colors, i);
+        }
+    }
+
+    fn update_totals(&mut self) {
+        self.mean_closest_distance = 0.0;
+        self.min_closest_distance = scalar::MAX;
+
+        for (i, (dist, closest_i)) in self.closest_distances.iter().enumerate() {
+            self.mean_closest_distance += *dist;
+
+            if *dist < self.min_closest_distance {
+                self.min_closest_distance = *dist;
+                self.closest_pair = (i, *closest_i);
+            }
+        }
+
+        self.mean_closest_distance /= self.closest_distances.len() as Scalar;
+    }
+
+    fn distance(&self, a: &(Color, Lab), b: &(Color, Lab)) -> Scalar {
+        match self.distance_metric {
+            DistanceMetric::CIE76 => delta_e::cie76(&a.1, &b.1),
+            DistanceMetric::CIEDE2000 => delta_e::ciede2000(&a.1, &b.1),
+        }
     }
 }
 
