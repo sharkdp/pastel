@@ -94,6 +94,12 @@ pub fn run_external_colorpicker() -> Result<String> {
             version_args: vec!["-h"],
             version_output_starts_with: b"",
         },
+        ColorPickerTool {
+            command: "kcolorchooser",
+            args: vec!["--print"],
+            version_args: vec!["-v"],
+            version_output_starts_with: b"kcolorchooser",
+        },
     ];
 
     for tool in &tools {
