@@ -223,6 +223,18 @@ impl Color {
         )
     }
 
+    /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5,  0)`).
+    pub fn to_rgb_scaled_string(&self, format: Format) -> String {
+        let rgba = self.to_rgba_scaled();
+        format!(
+            "rgb({r:.3},{space}{g:.3},{space}{b:.3})",
+            r = rgba.r,
+            g = rgba.g,
+            b = rgba.b,
+            space = if format == Format::Spaces { " " } else { "" }
+        )
+    }
+
     /// Format the color as a RGB-representation string (`#fc0070`).
     pub fn to_rgb_hex_string(&self, leading_hash: bool) -> String {
         let rgba = self.to_rgba();
@@ -1007,6 +1019,26 @@ mod tests {
     fn to_rgb_string() {
         let c = Color::from_rgb(255, 127, 4);
         assert_eq!("rgb(255, 127, 4)", c.to_rgb_string(Format::Spaces));
+    }
+
+    #[test]
+    fn to_rgb_scaled_string() {
+        assert_eq!(
+            "rgb(0.000, 0.000, 0.000)",
+            Color::black().to_rgb_scaled_string(Format::Spaces)
+        );
+
+        assert_eq!(
+            "rgb(1.000, 1.000, 1.000)",
+            Color::black().to_rgb_scaled_string(Format::Spaces)
+        );
+
+        // some minor rounding errors here, but that is to be expected:
+        let c = Color::from_rgb_scaled(0.12, 0.45, 0.78);
+        assert_eq!(
+            "rgb(0.122, 0.451, 0.780)",
+            c.to_rgb_scaled_string(Format::Spaces)
+        );
     }
 
     #[test]
