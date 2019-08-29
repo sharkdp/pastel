@@ -174,7 +174,8 @@ pub fn build_cli() -> App<'static, 'static> {
                   - xcolor (https://github.com/Soft/xcolor)\n  \
                   - grabc (https://www.muquit.com/muquit/software/grabc/grabc.html)\n  \
                   - colorpicker (https://github.com/Jack12816/colorpicker)\n  \
-                  - chameleon (https://github.com/seebye/chameleon)")
+                  - chameleon (https://github.com/seebye/chameleon)\n  \
+                  - KColorChooser (https://kde.org/applications/graphics/org.kde.kcolorchooser)")
         )
         .subcommand(
             SubCommand::with_name("format")
