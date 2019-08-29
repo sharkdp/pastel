@@ -135,6 +135,15 @@ impl Color {
         Self::from_rgba_float(r, g, b, alpha)
     }
 
+    /// Create a `Color` from LMS coordinates. This is the matrix inverse of the matrix that
+    /// appears in `to_lms`.
+    pub fn from_lms(l: Scalar, m: Scalar, s: Scalar, alpha: Scalar) -> Color {
+        let x = 1.91020 * l - 1.112120 * m + 0.201908 * s;
+        let y = 0.37095 * l + 0.629054 * m + 0.000000 * s;
+        let z = 0.00000 * l + 0.000000 * m + 1.000000 * s;
+        Color::from_xyz(x, y, z, alpha)
+    }
+
     /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
     /// space. Note: See documentation for `from_xyz`. The same restrictions apply here.
     ///
@@ -314,6 +323,19 @@ impl Color {
             z,
             alpha: self.alpha,
         }
+    }
+
+    /// Get coordinates according to the LSM color space
+    ///
+    /// See https://en.wikipedia.org/wiki/LMS_color_space for info on the color space as well as an
+    /// algorithm for converting from CIE XYZ
+    pub fn to_lms(&self) -> LMS {
+        let XYZ { x, y, z, alpha } = self.to_xyz();
+        let l = 0.38971 * x + 0.68898 * y - 0.07868 * z;
+        let m = -0.22981 * x + 1.18340 * y + 0.04641 * z;
+        let s = 0.00000 * x + 0.00000 * y + 1.00000 * z;
+
+        LMS { l, m, s, alpha }
     }
 
     /// Get L, a and b coordinates according to the Lab color space.
@@ -703,6 +725,14 @@ pub struct XYZ {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct LMS {
+    pub l: Scalar,
+    pub m: Scalar,
+    pub s: Scalar,
+    pub alpha: Scalar,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Lab {
     pub l: Scalar,
     pub a: Scalar,
@@ -892,6 +922,20 @@ mod tests {
             let color1 = Color::from_hsl(h, s, l);
             let xyz1 = color1.to_xyz();
             let color2 = Color::from_xyz(xyz1.x, xyz1.y, xyz1.z, 1.0);
+            assert_almost_equal(&color1, &color2);
+        };
+
+        for hue in 0..360 {
+            roundtrip(Scalar::from(hue), 0.2, 0.8);
+        }
+    }
+
+    #[test]
+    fn lms_conversion() {
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let lms1 = color1.to_lms();
+            let color2 = Color::from_lms(lms1.l, lms1.m, lms1.s, 1.0);
             assert_almost_equal(&color1, &color2);
         };
 
