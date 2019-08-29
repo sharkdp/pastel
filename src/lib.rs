@@ -96,7 +96,7 @@ impl Color {
 
     /// Create a `Color` from RGB and alpha values between 0.0 and 1.0. Values outside this range
     /// will be clamped.
-    pub fn from_rgba_scaled(r: Scalar, g: Scalar, b: Scalar, alpha: Scalar) -> Color {
+    pub fn from_rgba_float(r: Scalar, g: Scalar, b: Scalar, alpha: Scalar) -> Color {
         let r = Scalar::round(clamp(0.0, 255.0, 255.0 * r)) as u8;
         let g = Scalar::round(clamp(0.0, 255.0, 255.0 * g)) as u8;
         let b = Scalar::round(clamp(0.0, 255.0, 255.0 * b)) as u8;
@@ -106,8 +106,8 @@ impl Color {
 
     /// Create a `Color` from RGB values between 0.0 and 1.0. Values outside this range will be
     /// clamped.
-    pub fn from_rgb_scaled(r: Scalar, g: Scalar, b: Scalar) -> Color {
-        Self::from_rgba_scaled(r, g, b, 1.0)
+    pub fn from_rgb_float(r: Scalar, g: Scalar, b: Scalar) -> Color {
+        Self::from_rgba_float(r, g, b, 1.0)
     }
 
     /// Create a `Color` from XYZ coordinates in the CIE 1931 color space. Note that a `Color`
@@ -132,7 +132,7 @@ impl Color {
         let g = f(-0.9689 * x + 1.8758 * y + 0.0415 * z);
         let b = f(0.0557 * x - 0.2040 * y + 1.0570 * z);
 
-        Self::from_rgba_scaled(r, g, b, alpha)
+        Self::from_rgba_float(r, g, b, alpha)
     }
 
     /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
@@ -198,7 +198,7 @@ impl Color {
     /// Convert a `Color` to its red, green, blue and alpha values. The RGB values are integers in
     /// the range from 0 to 255. The alpha channel is a number between 0.0 and 1.0.
     pub fn to_rgba(&self) -> RGBA<u8> {
-        let c = self.to_rgba_scaled();
+        let c = self.to_rgba_float();
         let r = Scalar::round(255.0 * c.r) as u8;
         let g = Scalar::round(255.0 * c.g) as u8;
         let b = Scalar::round(255.0 * c.b) as u8;
@@ -224,8 +224,8 @@ impl Color {
     }
 
     /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5,  0)`).
-    pub fn to_rgb_scaled_string(&self, format: Format) -> String {
-        let rgba = self.to_rgba_scaled();
+    pub fn to_rgb_float_string(&self, format: Format) -> String {
+        let rgba = self.to_rgba_float();
         format!(
             "rgb({r:.3},{space}{g:.3},{space}{b:.3})",
             r = rgba.r,
@@ -249,7 +249,7 @@ impl Color {
 
     /// Convert a `Color` to its red, green, blue and alpha values. All numbers are from the range
     /// between 0.0 and 1.0.
-    pub fn to_rgba_scaled(&self) -> RGBA<Scalar> {
+    pub fn to_rgba_float(&self) -> RGBA<Scalar> {
         let h_s = self.hue.value() / 60.0;
         let chr = (1.0 - Scalar::abs(2.0 * self.lightness - 1.0)) * self.saturation;
         let m = self.lightness - chr / 2.0;
@@ -299,7 +299,7 @@ impl Color {
             }
         };
 
-        let rec = self.to_rgba_scaled();
+        let rec = self.to_rgba_float();
         let r = finv(rec.r);
         let g = finv(rec.g);
         let b = finv(rec.b);
@@ -536,7 +536,7 @@ impl Color {
     ///
     /// See: https://www.w3.org/TR/AERT#color-contrast
     pub fn brightness(&self) -> Scalar {
-        let c = self.to_rgba_scaled();
+        let c = self.to_rgba_float();
         (299.0 * c.r + 587.0 * c.g + 114.0 * c.b) / 1000.0
     }
 
@@ -558,7 +558,7 @@ impl Color {
                 Scalar::powf((s + 0.055) / 1.055, 2.4)
             }
         };
-        let c = self.to_rgba_scaled();
+        let c = self.to_rgba_float();
         let r = f(c.r);
         let g = f(c.g);
         let b = f(c.b);
@@ -646,11 +646,11 @@ pub struct RGBA<T> {
 
 impl ColorSpace for RGBA<f64> {
     fn from_color(c: &Color) -> Self {
-        c.to_rgba_scaled()
+        c.to_rgba_float()
     }
 
     fn into_color(&self) -> Color {
-        Color::from_rgba_scaled(self.r, self.g, self.b, self.alpha)
+        Color::from_rgba_float(self.r, self.g, self.b, self.alpha)
     }
 
     fn mix(&self, other: &Self, fraction: Fraction) -> Self {
@@ -817,26 +817,26 @@ mod tests {
 
     #[test]
     fn rgb_to_hsl_conversion() {
-        assert_eq!(Color::white(), Color::from_rgb_scaled(1.0, 1.0, 1.0));
-        assert_eq!(Color::gray(), Color::from_rgb_scaled(0.5, 0.5, 0.5));
-        assert_eq!(Color::black(), Color::from_rgb_scaled(0.0, 0.0, 0.0));
-        assert_eq!(Color::red(), Color::from_rgb_scaled(1.0, 0.0, 0.0));
+        assert_eq!(Color::white(), Color::from_rgb_float(1.0, 1.0, 1.0));
+        assert_eq!(Color::gray(), Color::from_rgb_float(0.5, 0.5, 0.5));
+        assert_eq!(Color::black(), Color::from_rgb_float(0.0, 0.0, 0.0));
+        assert_eq!(Color::red(), Color::from_rgb_float(1.0, 0.0, 0.0));
         assert_eq!(
             Color::from_hsl(60.0, 1.0, 0.375),
-            Color::from_rgb_scaled(0.75, 0.75, 0.0)
+            Color::from_rgb_float(0.75, 0.75, 0.0)
         ); //yellow-green
-        assert_eq!(Color::green(), Color::from_rgb_scaled(0.0, 0.5, 0.0));
+        assert_eq!(Color::green(), Color::from_rgb_float(0.0, 0.5, 0.0));
         assert_eq!(
             Color::from_hsl(240.0, 1.0, 0.75),
-            Color::from_rgb_scaled(0.5, 0.5, 1.0)
+            Color::from_rgb_float(0.5, 0.5, 1.0)
         ); // blue-ish
         assert_eq!(
             Color::from_hsl(49.5, 0.893, 0.497),
-            Color::from_rgb_scaled(0.941, 0.785, 0.053)
+            Color::from_rgb_float(0.941, 0.785, 0.053)
         ); // yellow
         assert_eq!(
             Color::from_hsl(162.4, 0.779, 0.447),
-            Color::from_rgb_scaled(0.099, 0.795, 0.591)
+            Color::from_rgb_float(0.099, 0.795, 0.591)
         ); // cyan 2
     }
 
@@ -1022,22 +1022,22 @@ mod tests {
     }
 
     #[test]
-    fn to_rgb_scaled_string() {
+    fn to_rgb_float_string() {
         assert_eq!(
             "rgb(0.000, 0.000, 0.000)",
-            Color::black().to_rgb_scaled_string(Format::Spaces)
+            Color::black().to_rgb_float_string(Format::Spaces)
         );
 
         assert_eq!(
             "rgb(1.000, 1.000, 1.000)",
-            Color::black().to_rgb_scaled_string(Format::Spaces)
+            Color::white().to_rgb_float_string(Format::Spaces)
         );
 
         // some minor rounding errors here, but that is to be expected:
-        let c = Color::from_rgb_scaled(0.12, 0.45, 0.78);
+        let c = Color::from_rgb_float(0.12, 0.45, 0.78);
         assert_eq!(
             "rgb(0.122, 0.451, 0.780)",
-            c.to_rgb_scaled_string(Format::Spaces)
+            c.to_rgb_float_string(Format::Spaces)
         );
     }
 
