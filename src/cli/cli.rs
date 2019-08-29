@@ -310,13 +310,13 @@ pub fn build_cli() -> App<'static, 'static> {
             SubCommand::with_name("saturate")
                 .long_about(
                     "Increase the saturation of a color by adding a certain amount to the HSL \
-                     saturation channel (a number between 0.0 and 1.0). If the amount is negative, \
-                     the color will be desaturated instead.",
+                     saturation channel. If the amount is negative, the color will be desaturated \
+                     instead.",
                 )
                 .about("Increase color saturation by a specified amount")
                 .arg(
                     Arg::with_name("amount")
-                        .help("amount of saturation to add")
+                        .help("Amount of saturation to add (number between 0.0 and 1.0)")
                         .required(true),
                 )
                 .arg(color_arg.clone()),
@@ -325,13 +325,13 @@ pub fn build_cli() -> App<'static, 'static> {
             SubCommand::with_name("desaturate")
                 .long_about(
                     "Decrease the saturation of a color by subtracting a certain amount from the \
-                     HSL saturation channel (a number between 0.0 and 1.0). If the amount is \
-                     negative, the color will be saturated instead.",
+                     HSL saturation channel. If the amount is negative, the color will be saturated \
+                     instead.",
                 )
                 .about("Decrease color saturation by a specified amount")
                 .arg(
                     Arg::with_name("amount")
-                        .help("amount of saturation to subtract")
+                        .help("Amount of saturation to subtract (number between 0.0 and 1.0)")
                         .required(true),
                 )
                 .arg(color_arg.clone()),
@@ -339,14 +339,13 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("lighten")
                 .long_about(
-                    "Lighten a color by adding a certain amount to the HSL lightness channel (a \
-                     number between 0.0 and 1.0). If the amount is negative, the color will be \
-                     darkened.",
+                    "Lighten a color by adding a certain amount to the HSL lightness channel. \
+                     If the amount is negative, the color will be darkened.",
                 )
                 .about("Lighten color by a specified amount")
                 .arg(
                     Arg::with_name("amount")
-                        .help("amount of lightness to add")
+                        .help("Amount of lightness to add (number between 0.0 and 1.0)")
                         .required(true),
                 )
                 .arg(color_arg.clone()),
@@ -354,14 +353,13 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("darken")
                 .long_about(
-                    "Darken a color by subtracting a certain amount from the lightness channel (a \
-                     number between 0.0 and 1.0). If the amount is negative, the color will be \
-                     lightened.",
+                    "Darken a color by subtracting a certain amount from the lightness channel. \
+                     If the amount is negative, the color will be lightened.",
                 )
                 .about("Darken color by a specified amount")
                 .arg(
                     Arg::with_name("amount")
-                        .help("amount of lightness to subtract")
+                        .help("Amount of lightness to subtract (number between 0.0 and 1.0)")
                         .required(true),
                 )
                 .arg(color_arg.clone()),
@@ -376,7 +374,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 )
                 .arg(
                     Arg::with_name("degrees")
-                        .help("angle by which to rotate (in degrees)")
+                        .help("angle by which to rotate (in degrees, can be negative)")
                         .required(true),
                 )
                 .arg(color_arg.clone()),
@@ -392,10 +390,10 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("gray")
                 .about("Create a gray tone from a given lightness")
-                .long_about("Create a gray tone from a given lightness value between 0.0 and 1.0.")
+                .long_about("Create a gray tone from a given lightness value.")
                 .arg(
                     Arg::with_name("lightness")
-                        .help("Lightness of the created gray tone")
+                        .help("Lightness of the created gray tone (number between 0.0 and 1.0)")
                         .required(true),
                 ),
         )
