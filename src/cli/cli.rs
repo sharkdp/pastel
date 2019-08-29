@@ -307,6 +307,24 @@ pub fn build_cli() -> App<'static, 'static> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("colorblind")
+                .about("Simulate a color under a certain colorblindness profile")
+                .long_about(
+                    "Convert the given color to how it would look to a person with protanopia, \
+                    deuteranopia, or tritanopia \n\n\
+                     Example:\n  \
+                       pastel random | pastel colorblind deut")
+                .arg(
+                    Arg::with_name("type")
+                        .help("The type of colorblindness that should be simulated (protanopia, \
+                               deuteranopia, tritanopia)")
+                        .possible_values(&["pro", "deut", "tri"])
+                        .case_insensitive(true)
+                        .required(true),
+                )
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("set")
                 .about("Set a color property to a specific value")
                 .long_about("Set the given property to a specific value\n\
