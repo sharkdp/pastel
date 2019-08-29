@@ -123,8 +123,8 @@ echo " word"
 
 You can download the latest Debian package from the [release page](https://github.com/sharkdp/pastel/releases) and install it via `dpkg`:
 ``` bash
-wget "https://github.com/sharkdp/pastel/releases/download/v0.5.2/pastel_0.5.2_amd64.deb"
-sudo dpkg -i pastel_0.5.2_amd64.deb
+wget "https://github.com/sharkdp/pastel/releases/download/v0.5.3/pastel_0.5.3_amd64.deb"
+sudo dpkg -i pastel_0.5.3_amd64.deb
 ```
 
 ### On Arch Linux
