@@ -33,10 +33,10 @@ impl PastelError {
             }
             PastelError::StdoutClosed => "Output pipe has been closed".into(),
             PastelError::GradientNumberMustBeLargerThanOne => {
-                "The number of colors must be larger one".into()
+                "The number of colors must be larger than one".into()
             }
             PastelError::DistinctColorCountMustBeLargerThanOne => {
-                "The number of colors must be larger one".into()
+                "The number of colors must be larger than one".into()
             }
             PastelError::ColorPickerExecutionError(name) => {
                 format!("Error while running color picker '{}", name)
