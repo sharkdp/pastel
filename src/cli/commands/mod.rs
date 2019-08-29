@@ -47,6 +47,7 @@ impl Command {
             "lighten" => Command::WithColor(Box::new(color_commands::LightenCommand)),
             "darken" => Command::WithColor(Box::new(color_commands::DarkenCommand)),
             "rotate" => Command::WithColor(Box::new(color_commands::RotateCommand)),
+            "colorblind" => Command::WithColor(Box::new(color_commands::ColorblindCommand)),
             "set" => Command::WithColor(Box::new(color_commands::SetCommand)),
             "complement" => Command::WithColor(Box::new(color_commands::ComplementCommand)),
             "mix" => Command::WithColor(Box::new(color_commands::MixCommand)),
