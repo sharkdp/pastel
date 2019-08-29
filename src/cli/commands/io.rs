@@ -10,7 +10,7 @@ use crate::{PastelError, Result};
 use pastel::Color;
 
 pub fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
-    let value_str = matches.value_of(name).unwrap();
+    let value_str = matches.value_of(name).expect("required argument");
     value_str
         .parse::<f64>()
         .map_err(|_| PastelError::CouldNotParseNumber(value_str.into()))

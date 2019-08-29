@@ -307,6 +307,29 @@ pub fn build_cli() -> App<'static, 'static> {
                 .arg(color_arg.clone()),
         )
         .subcommand(
+            SubCommand::with_name("set")
+                .about("Set a color property to a specific value")
+                .long_about("Set the given property to a specific value\n\
+                Example:\n  \
+                  pastel random | pastel set luminance 0.9")
+                .arg(
+                    Arg::with_name("property")
+                        .help("The property that should be changed")
+                        .possible_values(&["lightness", "hue", "chroma",
+                                           "lab-a", "lab-b",
+                                           "red", "green", "blue",
+                                           "hsl-hue", "hsl-saturation", "hsl-lightness"])
+                        .case_insensitive(true)
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("value")
+                        .help("The new numerical value of the property")
+                        .required(true),
+                )
+                .arg(color_arg.clone()),
+        )
+        .subcommand(
             SubCommand::with_name("saturate")
                 .long_about(
                     "Increase the saturation of a color by adding a certain amount to the HSL \

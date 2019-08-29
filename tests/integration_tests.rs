@@ -107,3 +107,33 @@ fn sort_by_basic() {
         .success()
         .stdout("hsl(0,0.0%,0.0%)\nhsl(0,0.0%,50.2%)\nhsl(0,0.0%,100.0%)\n");
 }
+
+#[test]
+fn set_basic() {
+    pastel()
+        .arg("set")
+        .arg("hsl-hue")
+        .arg("120")
+        .arg("red")
+        .assert()
+        .success()
+        .stdout("hsl(120,100.0%,50.0%)\n");
+
+    pastel()
+        .arg("set")
+        .arg("hsl-saturation")
+        .arg("0.1")
+        .arg("red")
+        .assert()
+        .success()
+        .stdout("hsl(0,10.0%,50.0%)\n");
+
+    pastel()
+        .arg("set")
+        .arg("hsl-lightness")
+        .arg("0.5")
+        .arg("white")
+        .assert()
+        .success()
+        .stdout("hsl(0,0.0%,50.0%)\n");
+}

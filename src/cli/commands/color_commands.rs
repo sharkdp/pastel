@@ -2,6 +2,10 @@ use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
 use pastel::Fraction;
 
+fn clamp(lower: f64, upper: f64, x: f64) -> f64 {
+    f64::max(f64::min(upper, x), lower)
+}
+
 use super::show::show_color;
 
 macro_rules! color_command {
@@ -71,4 +75,80 @@ color_command!(MixCommand, config, matches, color, {
     let mix = get_mixing_function(matches.value_of("colorspace").expect("required argument"));
 
     mix(&base, &color, fraction)
+});
+
+color_command!(SetCommand, config, matches, color, {
+    let property = matches.value_of("property").expect("required argument");
+    let property = property.to_lowercase();
+    let property = property.as_ref();
+
+    let value = number_arg(matches, "value")?;
+
+    match property {
+        "red" | "green" | "blue" => {
+            let mut rgba = color.to_rgba();
+            let value = clamp(0.0, 255.0, value) as u8;
+            match property {
+                "red" => {
+                    rgba.r = value;
+                }
+                "green" => {
+                    rgba.g = value;
+                }
+                "blue" => {
+                    rgba.b = value;
+                }
+                _ => unreachable!(),
+            }
+            Color::from_rgba(rgba.r, rgba.g, rgba.b, rgba.alpha)
+        }
+        "hsl-hue" | "hsl-saturation" | "hsl-lightness" => {
+            let mut hsla = color.to_hsla();
+            match property {
+                "hsl-hue" => {
+                    hsla.h = value;
+                }
+                "hsl-saturation" => {
+                    hsla.s = value;
+                }
+                "hsl-lightness" => {
+                    hsla.l = value;
+                }
+                _ => unreachable!(),
+            }
+            Color::from_hsla(hsla.h, hsla.s, hsla.l, hsla.alpha)
+        }
+        "lightness" | "lab-a" | "lab-b" => {
+            let mut lab = color.to_lab();
+            match property {
+                "lightness" => {
+                    lab.l = value;
+                }
+                "lab-a" => {
+                    lab.a = value;
+                }
+                "lab-b" => {
+                    lab.b = value;
+                }
+                _ => unreachable!(),
+            }
+            Color::from_lab(lab.l, lab.a, lab.b, lab.alpha)
+        }
+        "hue" | "chroma" => {
+            let mut lch = color.to_lch();
+            match property {
+                "hue" => {
+                    lch.h = value;
+                }
+                "chroma" => {
+                    lch.c = value;
+                }
+                _ => unreachable!(),
+            }
+            Color::from_lch(lch.l, lch.c, lch.h, lch.alpha)
+        }
+        &_ => {
+            unreachable!("Unknown property");
+        }
+    }
 });
