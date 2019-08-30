@@ -220,7 +220,10 @@ impl DistanceResult {
     fn update_distances(&mut self, colors: &[(Color, Lab)], changed_color: usize) {
         self.closest_distances[changed_color] = (scalar::MAX, std::usize::MAX);
 
+        // we need to recalculate distances for nodes where the previous min dist was with
+        // changed_color but they're potentially not anymore.
         let mut to_recalc = Vec::with_capacity(colors.len());
+
         for (i, c) in colors.iter().enumerate() {
             if i == changed_color {
                 continue;
@@ -228,15 +231,14 @@ impl DistanceResult {
 
             let dist = self.distance(c, &colors[changed_color]);
 
-            if dist < self.closest_distances[i].0 || changed_color == self.closest_distances[i].1 {
-                if self.closest_distances[i].1 == changed_color
-                    && dist > self.closest_distances[i].0
-                {
-                    to_recalc.push(i);
-                }
-
+            if dist < self.closest_distances[i].0 {
                 self.closest_distances[i] = (dist, changed_color);
                 self.closest_distances[changed_color] = (dist, i);
+            } else if self.closest_distances[i].1 == changed_color {
+                // changed_color was the best before, but unfortunately we cannot say it now for
+                // sure because the distance between the two increased. Play it safe and just
+                // recalculate its distances.
+                to_recalc.push(i);
             }
         }
 
