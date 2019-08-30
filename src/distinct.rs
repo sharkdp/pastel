@@ -182,13 +182,25 @@ pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
         DistanceMetric::CIEDE2000 => c1.distance_delta_e_ciede2000(c2),
     };
 
+    // vector where the i-th element contains the minimum distance to the colors from 0 to i-1.
+    let mut min_distances = vec![i32::max_value(); colors.len()];
+
     for i in 1..colors.len() {
-        let (left, right) = colors.split_at_mut(i);
-        right.sort_by_cached_key(|c| {
-            left.iter()
-                .map(|c2| (-distance(c2, c) * 1000.0) as i32)
-                .max()
-        });
+        let mut max_i = colors.len();
+        let mut max_d = i32::min_value();
+
+        for j in i..colors.len() {
+            min_distances[j] =
+                min_distances[j].min((distance(&colors[j], &colors[i - 1]) * 1000.0) as i32);
+
+            if min_distances[j] > max_d {
+                max_i = j;
+                max_d = min_distances[j];
+            }
+        }
+
+        colors.swap(i, max_i);
+        min_distances.swap(i, max_i);
     }
 }
 
