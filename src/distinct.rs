@@ -215,7 +215,7 @@ impl DistanceResult {
         };
 
         for i in 0..colors.len() {
-            result.update_distances(colors, i);
+            result.update_distances(colors, i, false);
         }
         result.update_totals();
 
@@ -224,29 +224,29 @@ impl DistanceResult {
 
     fn update(&self, colors: &[(Color, Lab)], changed_color: usize) -> Self {
         let mut result = self.clone();
-        result.update_distances(colors, changed_color);
+        result.update_distances(colors, changed_color, true);
         result.update_totals();
         result
     }
 
-    fn update_distances(&mut self, colors: &[(Color, Lab)], changed_color: usize) {
-        self.closest_distances[changed_color] = (scalar::MAX, std::usize::MAX);
+    fn update_distances(&mut self, colors: &[(Color, Lab)], color: usize, changed: bool) {
+        self.closest_distances[color] = (scalar::MAX, std::usize::MAX);
 
         // we need to recalculate distances for nodes where the previous min dist was with
-        // changed_color but they're potentially not anymore.
+        // changed_color but it's not anymore (potentially).
         let mut to_recalc = Vec::with_capacity(colors.len());
 
         for (i, c) in colors.iter().enumerate() {
-            if i == changed_color {
+            if i == color {
                 continue;
             }
 
-            let dist = self.distance(c, &colors[changed_color]);
+            let dist = self.distance(c, &colors[color]);
 
             if dist < self.closest_distances[i].0 {
-                self.closest_distances[i] = (dist, changed_color);
-                self.closest_distances[changed_color] = (dist, i);
-            } else if self.closest_distances[i].1 == changed_color {
+                self.closest_distances[i] = (dist, color);
+                self.closest_distances[color] = (dist, i);
+            } else if changed && self.closest_distances[i].1 == color {
                 // changed_color was the best before, but unfortunately we cannot say it now for
                 // sure because the distance between the two increased. Play it safe and just
                 // recalculate its distances.
@@ -255,7 +255,7 @@ impl DistanceResult {
         }
 
         for i in to_recalc {
-            self.update_distances(colors, i);
+            self.update_distances(colors, i, false);
         }
     }
 
