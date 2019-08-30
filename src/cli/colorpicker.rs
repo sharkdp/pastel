@@ -61,9 +61,27 @@ struct ColorPickerTool {
     version_output_starts_with: &'static [u8],
 }
 
-/// Run an external X11 color picker tool (e.g. gpick or xcolor) and get the output as a string.
+/// Run an external color picker tool (e.g. gpick or xcolor) and get the output as a string.
 pub fn run_external_colorpicker() -> Result<String> {
     let tools = [
+        #[cfg(target_os = "macos")]
+        ColorPickerTool {
+            command: "osascript",
+            // NOTE: This does not use `console.log` to print the value as you might expect,
+            // because that gets written to stderr instead of stdout regardless of the `-s o` flag.
+            // (This is accurate as of macOS Mojave/10.14.6).
+            // See related: https://apple.stackexchange.com/a/278395
+            args: vec!["-l", "JavaScript", "-s", "o", "-e", "
+                const app = Application.currentApplication();\n
+                app.includeStandardAdditions = true;\n
+                const rgb = app.chooseColor({defaultColor: [0.5, 0.5, 0.5]})\n
+                  .map(n => Math.round(n * 255))\n
+                  .join(', ');\n
+                `rgb(${rgb})`;\n
+            "],
+            version_args: vec!["-l", "JavaScript", "-s", "o", "-e", "'ok';"],
+            version_output_starts_with: b"ok",
+        },
         ColorPickerTool {
             command: "gpick",
             args: vec!["--pick", "--single", "--output"],

@@ -175,7 +175,8 @@ pub fn build_cli() -> App<'static, 'static> {
                   - grabc (https://www.muquit.com/muquit/software/grabc/grabc.html)\n  \
                   - colorpicker (https://github.com/Jack12816/colorpicker)\n  \
                   - chameleon (https://github.com/seebye/chameleon)\n  \
-                  - KColorChooser (https://kde.org/applications/graphics/org.kde.kcolorchooser)")
+                  - KColorChooser (https://kde.org/applications/graphics/org.kde.kcolorchooser)\n  \
+                  - macOS built-in color picker")
         )
         .subcommand(
             SubCommand::with_name("format")
