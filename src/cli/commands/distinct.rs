@@ -1,7 +1,7 @@
 use std::io;
 
 use crate::commands::prelude::*;
-use crate::commands::show::show_color;
+use crate::output::Output;
 
 use pastel::ansi::Stream;
 use pastel::distinct::{
@@ -59,6 +59,7 @@ fn print_colors(
 
 impl GenericCommand for DistinctCommand {
     fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
+        let mut o = Output::new(out);
         let stderr = io::stderr();
         let brush_stderr = Brush::from_environment(Stream::Stderr);
 
@@ -119,7 +120,7 @@ impl GenericCommand for DistinctCommand {
             distinct::rearrange_sequence(&mut colors, distance_metric);
 
             for color in colors {
-                show_color(out, config, &color)?;
+                o.show_color(config, &color)?;
             }
         }
 
