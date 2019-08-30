@@ -1,13 +1,15 @@
+use std::io::Write;
+
 use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
+use crate::output::Output;
+
 use pastel::ColorblindnessType;
 use pastel::Fraction;
 
 fn clamp(lower: f64, upper: f64, x: f64) -> f64 {
     f64::max(f64::min(upper, x), lower)
 }
-
-use super::show::show_color;
 
 macro_rules! color_command {
     ($cmd_name:ident, $config:ident, $matches:ident, $color:ident, $body:block) => {
@@ -22,7 +24,7 @@ macro_rules! color_command {
                 $color: &Color,
             ) -> Result<()> {
                 let output = $body;
-                show_color(out, $config, &output)
+                (Output::new(out)).show_color($config, &output)
             }
         }
     };
