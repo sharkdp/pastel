@@ -39,10 +39,6 @@ fn run() -> Result<ExitCode> {
 
     let interactive_mode = atty::is(Stream::Stdout);
 
-    if interactive_mode {
-        output_vt100::init();
-    }
-
     let color_mode = if global_matches.is_present("force-color") {
         Some(ansi::Mode::TrueColor)
     } else {
