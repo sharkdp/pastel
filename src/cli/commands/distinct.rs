@@ -110,13 +110,17 @@ impl GenericCommand for DistinctCommand {
         annealing.parameters.opt_target = OptimizationTarget::Min;
         annealing.parameters.opt_mode = OptimizationMode::Local;
 
-        annealing.run(callback.as_mut());
+        let result = annealing.run(callback.as_mut());
 
-        let mut colors = annealing.get_colors();
-        distinct::rearrange_sequence(&mut colors, distance_metric);
+        if matches.is_present("print-minimal-distance") {
+            writeln!(out, "{:.3}", result.min_closest_distance)?;
+        } else {
+            let mut colors = annealing.get_colors();
+            distinct::rearrange_sequence(&mut colors, distance_metric);
 
-        for color in colors {
-            show_color(out, config, &color)?;
+            for color in colors {
+                show_color(out, config, &color)?;
+            }
         }
 
         Ok(())

@@ -130,6 +130,12 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("CIE76")
                 )
                 .arg(
+                    Arg::with_name("print-minimal-distance")
+                        .long("print-minimal-distance")
+                        .help("Only show the optimized minimal distance")
+                        .hidden(true)
+                )
+                .arg(
                     Arg::with_name("verbose")
                         .long("verbose")
                         .short("v")
