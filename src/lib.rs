@@ -823,7 +823,7 @@ impl ColorSpace for LCh {
 /// A representation of the different kinds of colorblindness. More info
 /// [here](https://en.wikipedia.org/wiki/Color_blindness).
 pub enum ColorblindnessType {
-    /// Protonopic people lack red cones
+    /// Protanopic people lack red cones
     Protanopia,
     /// Deuteranopic people lack green cones
     Deuteranopia,
