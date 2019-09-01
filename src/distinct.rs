@@ -19,7 +19,7 @@ pub struct DistanceResult {
     /// Indices of the colors that were closest to each other
     pub closest_pair: (usize, usize),
 
-    /// The closest distance and color index for each color
+    /// The closest distance and the index of the nearest neighbor
     pub closest_distances: Vec<(Scalar, usize)>,
 
     pub distance_metric: DistanceMetric,
@@ -245,12 +245,15 @@ impl DistanceResult {
 
             if dist < self.closest_distances[i].0 {
                 self.closest_distances[i] = (dist, color);
-                self.closest_distances[color] = (dist, i);
             } else if changed && self.closest_distances[i].1 == color {
                 // changed_color was the best before, but unfortunately we cannot say it now for
                 // sure because the distance between the two increased. Play it safe and just
                 // recalculate its distances.
                 to_recalc.push(i);
+            }
+
+            if dist < self.closest_distances[color].0 {
+                self.closest_distances[color] = (dist, i);
             }
         }
 
