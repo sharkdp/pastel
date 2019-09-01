@@ -485,7 +485,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .value_name("mode")
                 .help("Specify the terminal color mode: 24bit, 8bit, off, *auto*")
                 .possible_values(&["24bit", "8bit", "off", "auto"])
-                .default_value("auto")
+                .default_value(if output_vt100::try_init().is_ok() {"auto"} else {"off"})
                 .hide_possible_values(true)
                 .hide_default_value(true)
         )
