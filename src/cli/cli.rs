@@ -314,7 +314,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     "Convert the given color to how it would look to a person with protanopia, \
                     deuteranopia, or tritanopia \n\n\
                      Example:\n  \
-                       pastel random | pastel colorblind deut")
+                       pastel distinct 3 | pastel colorblind deut")
                 .arg(
                     Arg::with_name("type")
                         .help("The type of colorblindness that should be simulated (protanopia, \
