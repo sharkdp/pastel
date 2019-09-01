@@ -681,8 +681,12 @@ impl ColorSpace for HSLA {
     }
 
     fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        // make sure that the hue is preserved when mixing with gray colors
+        let self_hue = if self.s < 0.0001 { other.h } else { self.h };
+        let other_hue = if other.s < 0.0001 { self.h } else { other.h };
+
         Self {
-            h: interpolate_angle(self.h, other.h, fraction),
+            h: interpolate_angle(self_hue, other_hue, fraction),
             s: interpolate(self.s, other.s, fraction),
             l: interpolate(self.l, other.l, fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
@@ -743,10 +747,14 @@ impl ColorSpace for LCh {
     }
 
     fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        // make sure that the hue is preserved when mixing with gray colors
+        let self_hue = if self.c < 0.1 { other.h } else { self.h };
+        let other_hue = if other.c < 0.1 { self.h } else { other.h };
+
         Self {
             l: interpolate(self.l, other.l, fraction),
             c: interpolate(self.c, other.c, fraction),
-            h: interpolate_angle(self.h, other.h, fraction),
+            h: interpolate_angle(self_hue, other_hue, fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
         }
     }
@@ -1070,5 +1078,19 @@ mod tests {
             Color::fuchsia(),
             Color::red().mix::<HSLA>(&Color::blue(), Fraction::from(0.5))
         );
+    }
+
+    #[test]
+    fn mixing_with_gray_preserves_hue() {
+        let hue = 123.0;
+
+        let input = Color::from_hsla(hue, 0.5, 0.5, 1.0);
+
+        let hue_after_mixing = |other| input.mix::<HSLA>(&other, Fraction::from(0.5)).to_hsla().h;
+
+        assert_eq!(hue, hue_after_mixing(Color::black()));
+        assert_eq!(hue, hue_after_mixing(Color::graytone(0.2)));
+        assert_eq!(hue, hue_after_mixing(Color::graytone(0.7)));
+        assert_eq!(hue, hue_after_mixing(Color::white()));
     }
 }
