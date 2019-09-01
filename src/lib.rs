@@ -539,6 +539,33 @@ impl Color {
         self.saturate(-f)
     }
 
+    /// Adjust the long-, medium-, and short-wavelength cone perception of a color to simulate what
+    /// a colorblind person sees. Since there are multiple kinds of colorblindness, the desired
+    /// kind must be specified in `cb_ty`.
+    pub fn simulate_colorblindness(&self, cb_ty: ColorblindnessType) -> Color {
+        // Coefficients here are taken from
+        // https://ixora.io/projects/colorblindness/color-blindness-simulation-research/
+        let (l, m, s, alpha) = match cb_ty {
+            ColorblindnessType::Protanopia => {
+                let LMS { m, s, alpha, .. } = self.to_lms();
+                let l = 1.05118294 * m - 0.05116099 * s;
+                (l, m, s, alpha)
+            }
+            ColorblindnessType::Deuteranopia => {
+                let LMS { l, s, alpha, .. } = self.to_lms();
+                let m = 0.9513092 * l + 0.04866992 * s;
+                (l, m, s, alpha)
+            }
+            ColorblindnessType::Tritanopia => {
+                let LMS { l, m, alpha, .. } = self.to_lms();
+                let s = -0.86744736 * l + 1.86727089 * m;
+                (l, m, s, alpha)
+            }
+        };
+
+        Color::from_lms(l, m, s, alpha)
+    }
+
     /// Convert a color to a gray tone with the same perceived luminance (see `luminance`).
     pub fn to_gray(&self) -> Color {
         let hue = self.hue;
@@ -720,6 +747,9 @@ pub struct XYZ {
     pub alpha: Scalar,
 }
 
+/// A color space whose axes correspond to the responsivity spectra of the long-, medium-, and
+/// short-wavelength cone cells in the human eye. More info
+/// [here](https://en.wikipedia.org/wiki/LMS_color_space).
 #[derive(Debug, Clone, PartialEq)]
 pub struct LMS {
     pub l: Scalar,
@@ -780,6 +810,17 @@ impl ColorSpace for LCh {
             alpha: interpolate(self.alpha, other.alpha, fraction),
         }
     }
+}
+
+/// A representation of the different kinds of colorblindness. More info
+/// [here](https://en.wikipedia.org/wiki/Color_blindness).
+pub enum ColorblindnessType {
+    /// Protonopic people lack red cones
+    Protanopia,
+    /// Deuteranopic people lack green cones
+    Deuteranopia,
+    /// Tritanopic people lack blue cones
+    Tritanopia,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

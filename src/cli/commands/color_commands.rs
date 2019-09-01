@@ -1,7 +1,7 @@
 use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
+use pastel::ColorblindnessType;
 use pastel::Fraction;
-use pastel::LMS;
 
 fn clamp(lower: f64, upper: f64, x: f64) -> f64 {
     f64::max(f64::min(upper, x), lower)
@@ -83,30 +83,17 @@ color_command!(ColorblindCommand, config, matches, color, {
     let cb_ty = matches.value_of("type").expect("required argument");
     let cb_ty = cb_ty.to_lowercase();
 
-    // Coefficients here are taken from
-    // https://ixora.io/projects/colorblindness/color-blindness-simulation-research/
-    let (l, m, s, alpha) = match cb_ty.as_ref() {
-        "pro" => {
-            let LMS { m, s, alpha, .. } = color.to_lms();
-            let l = 1.05118294 * m - 0.05116099 * s;
-            (l, m, s, alpha)
-        }
-        "deut" => {
-            let LMS { l, s, alpha, .. } = color.to_lms();
-            let m = 0.9513092 * l + 0.04866992 * s;
-            (l, m, s, alpha)
-        }
-        "tri" => {
-            let LMS { l, m, alpha, .. } = color.to_lms();
-            let s = -0.86744736 * l + 1.86727089 * m;
-            (l, m, s, alpha)
-        }
+    // Convert the string to the corresponding enum variant
+    let cb_ty = match cb_ty.as_ref() {
+        "prot" => ColorblindnessType::Protanopia,
+        "deuter" => ColorblindnessType::Deuteranopia,
+        "trit" => ColorblindnessType::Tritanopia,
         &_ => {
             unreachable!("Unknown property");
         }
     };
 
-    Color::from_lms(l, m, s, alpha)
+    color.simulate_colorblindness(cb_ty)
 });
 
 color_command!(SetCommand, config, matches, color, {
