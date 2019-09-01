@@ -314,12 +314,12 @@ pub fn build_cli() -> App<'static, 'static> {
                     "Convert the given color to how it would look to a person with protanopia, \
                     deuteranopia, or tritanopia \n\n\
                      Example:\n  \
-                       pastel distinct 3 | pastel colorblind deut")
+                       pastel distinct 3 | pastel colorblind deuter")
                 .arg(
                     Arg::with_name("type")
                         .help("The type of colorblindness that should be simulated (protanopia, \
                                deuteranopia, tritanopia)")
-                        .possible_values(&["pro", "deut", "tri"])
+                        .possible_values(&["prot", "deuter", "trit"])
                         .case_insensitive(true)
                         .required(true),
                 )
