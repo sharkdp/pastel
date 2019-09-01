@@ -71,14 +71,21 @@ pub fn run_external_colorpicker() -> Result<String> {
             // because that gets written to stderr instead of stdout regardless of the `-s o` flag.
             // (This is accurate as of macOS Mojave/10.14.6).
             // See related: https://apple.stackexchange.com/a/278395
-            args: vec!["-l", "JavaScript", "-s", "o", "-e", "
+            args: vec![
+                "-l",
+                "JavaScript",
+                "-s",
+                "o",
+                "-e",
+                "
                 const app = Application.currentApplication();\n
                 app.includeStandardAdditions = true;\n
                 const rgb = app.chooseColor({defaultColor: [0.5, 0.5, 0.5]})\n
                   .map(n => Math.round(n * 255))\n
                   .join(', ');\n
                 `rgb(${rgb})`;\n
-            "],
+            ",
+            ],
             version_args: vec!["-l", "JavaScript", "-s", "o", "-e", "'ok';"],
             version_output_starts_with: b"ok",
         },
