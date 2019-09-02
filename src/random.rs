@@ -24,9 +24,15 @@ pub mod strategies {
 
     pub struct UniformRGB;
 
+    impl UniformRGB {
+        pub fn generate_with(&self, rng: &mut impl Rng) -> Color {
+            Color::from_rgb(rng.gen::<u8>(), rng.gen::<u8>(), rng.gen::<u8>())
+        }
+    }
+
     impl RandomizationStrategy for UniformRGB {
         fn generate(&mut self) -> Color {
-            Color::from_rgb(random::<u8>(), random::<u8>(), random::<u8>())
+            self.generate_with(&mut thread_rng())
         }
     }
 
