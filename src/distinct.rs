@@ -136,10 +136,18 @@ impl<R: Rng> SimulatedAnnealing<R> {
                 self.rng
                     .gen_range(self.parameters.fixed_colors, self.colors.len())
             } else {
-                if self.rng.gen::<bool>() {
+                // first check if any of the colors cannot change, if that's the case just return
+                // the other color. Note that the closest_pair cannot contain only fixed colors.
+                if result.closest_pair.0 < self.parameters.fixed_colors {
+                    result.closest_pair.1
+                } else if result.closest_pair.1 < self.parameters.fixed_colors {
                     result.closest_pair.0
                 } else {
-                    result.closest_pair.1
+                    if self.rng.gen() {
+                        result.closest_pair.0
+                    } else {
+                        result.closest_pair.1
+                    }
                 }
             };
 
@@ -297,8 +305,10 @@ impl DistanceResult {
         for (i, (dist, closest_i)) in self.closest_distances.iter().enumerate() {
             self.mean_closest_distance += *dist;
 
-            // the closest pair must ignore the fixed_colors because we cannot change them
-            if (i >= self.fixed_colors && *closest_i >= self.fixed_colors)
+            // the closest pair must ignore pairs of fixed_colors because we cannot change them. On
+            // the other hand we can consider pairs with at least one non fixed color because we
+            // can change that.
+            if (i >= self.fixed_colors || *closest_i >= self.fixed_colors)
                 && (*dist < self.min_closest_distance || !closest_pair_set)
             {
                 self.closest_pair = (i, *closest_i);
