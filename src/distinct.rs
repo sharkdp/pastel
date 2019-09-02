@@ -3,7 +3,7 @@ use core::f64 as scalar;
 use rand::prelude::*;
 
 use crate::delta_e;
-use crate::random::{self, RandomizationStrategy};
+use crate::random;
 use crate::{Color, Lab};
 
 type Scalar = f64;
@@ -64,13 +64,14 @@ pub struct SimulationParameters {
     pub fixed_colors: usize,
 }
 
-pub struct SimulatedAnnealing {
+pub struct SimulatedAnnealing<R: Rng> {
     colors: Vec<(Color, Lab)>,
     temperature: Scalar,
     pub parameters: SimulationParameters,
+    rng: R,
 }
 
-impl SimulatedAnnealing {
+impl SimulatedAnnealing<ThreadRng> {
     pub fn new(initial_colors: &[Color], parameters: SimulationParameters) -> Self {
         let colors = initial_colors
             .iter()
@@ -81,34 +82,37 @@ impl SimulatedAnnealing {
             colors,
             temperature: parameters.initial_temperature,
             parameters,
+            rng: thread_rng(),
         }
     }
+}
 
+impl<R: Rng> SimulatedAnnealing<R> {
     pub fn get_colors(&self) -> Vec<Color> {
         self.colors.iter().map(|(c, _)| c.clone()).collect()
     }
 
-    fn modify_channel(c: &mut u8) {
-        if random::<bool>() {
-            *c = c.saturating_add(random::<u8>() % 10);
+    fn modify_channel(&mut self, c: &mut u8) {
+        if self.rng.gen::<bool>() {
+            *c = c.saturating_add(self.rng.gen::<u8>() % 10);
         } else {
-            *c = c.saturating_sub(random::<u8>() % 10);
+            *c = c.saturating_sub(self.rng.gen::<u8>() % 10);
         }
     }
 
-    fn modify_color(&self, color: &mut (Color, Lab)) {
+    fn modify_color(&mut self, color: &mut (Color, Lab)) {
         const STRATEGY: random::strategies::UniformRGB = random::strategies::UniformRGB {};
 
         match self.parameters.opt_mode {
             OptimizationMode::Local => {
                 let mut rgb = color.0.to_rgba();
-                Self::modify_channel(&mut rgb.r);
-                Self::modify_channel(&mut rgb.g);
-                Self::modify_channel(&mut rgb.b);
+                self.modify_channel(&mut rgb.r);
+                self.modify_channel(&mut rgb.g);
+                self.modify_channel(&mut rgb.b);
                 color.0 = Color::from_rgb(rgb.r, rgb.g, rgb.b);
             }
             OptimizationMode::Global => {
-                color.0 = STRATEGY.generate();
+                color.0 = STRATEGY.generate_with(&mut self.rng);
             }
         }
         color.1 = color.0.to_lab();
@@ -129,9 +133,10 @@ impl SimulatedAnnealing {
 
         for iter in 0..self.parameters.num_iterations {
             let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
-                thread_rng().gen_range(self.parameters.fixed_colors, self.colors.len())
+                self.rng
+                    .gen_range(self.parameters.fixed_colors, self.colors.len())
             } else {
-                if random::<bool>() {
+                if self.rng.gen::<bool>() {
                     result.closest_pair.0
                 } else {
                     result.closest_pair.1
@@ -164,7 +169,7 @@ impl SimulatedAnnealing {
                 self.colors = new_colors;
             } else {
                 let bolzmann = Scalar::exp(-(score - new_score) / self.temperature);
-                if random::<Scalar>() <= bolzmann {
+                if self.rng.gen::<Scalar>() <= bolzmann {
                     result = new_result;
                     self.colors = new_colors;
                 }
