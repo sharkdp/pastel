@@ -3,7 +3,7 @@ use core::f64 as scalar;
 use rand::prelude::*;
 
 use crate::delta_e;
-use crate::random;
+use crate::random::{self, RandomizationStrategy};
 use crate::{Color, Lab};
 
 type Scalar = f64;
