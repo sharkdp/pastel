@@ -157,8 +157,20 @@ impl GenericCommand for DistinctCommand {
             _ => unreachable!("Unknown distance metric"),
         };
 
-        let mut colors = Vec::new();
-        for _ in 0..count {
+        let mut colors = match matches.values_of("color") {
+            None => vec![],
+            Some(positionals) => {
+                ColorArgIterator::FromPositionalArguments(config, positionals, PrintSpectrum::Yes)
+                    .collect::<Result<Vec<_>>>()?
+            }
+        };
+
+        let fixed_colors = colors.len();
+        if fixed_colors > count {
+            return Err(PastelError::DistinctColorFixedColorsCannotBeMoreThanCount);
+        }
+
+        for _ in fixed_colors..count {
             colors.push(random::strategies::UniformRGB.generate());
         }
 
@@ -171,6 +183,7 @@ impl GenericCommand for DistinctCommand {
                 opt_target: OptimizationTarget::Mean,
                 opt_mode: OptimizationMode::Global,
                 distance_metric,
+                fixed_colors,
             },
         );
 

@@ -9,6 +9,7 @@ pub enum PastelError {
     StdoutClosed,
     GradientNumberMustBeLargerThanOne,
     DistinctColorCountMustBeLargerThanOne,
+    DistinctColorFixedColorsCannotBeMoreThanCount,
     ColorPickerExecutionError(String),
     NoColorPickerFound,
     IoError(std::io::Error),
@@ -37,6 +38,9 @@ impl PastelError {
             }
             PastelError::DistinctColorCountMustBeLargerThanOne => {
                 "The number of colors must be larger than one".into()
+            }
+            PastelError::DistinctColorFixedColorsCannotBeMoreThanCount => {
+                "The number of fixed colors must be smaller than the total number of colors".into()
             }
             PastelError::ColorPickerExecutionError(name) => {
                 format!("Error while running color picker '{}", name)
