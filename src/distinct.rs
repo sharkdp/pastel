@@ -23,6 +23,10 @@ pub struct DistanceResult {
     pub closest_distances: Vec<(Scalar, usize)>,
 
     pub distance_metric: DistanceMetric,
+
+    /// The number of colors that are fixed and cannot be changed. The actual colors are the first
+    /// `fixed_colors` elements in the `colors` array.
+    pub fixed_colors: usize,
 }
 
 pub struct IterationStatistics<'a> {
@@ -57,6 +61,7 @@ pub struct SimulationParameters {
     pub opt_target: OptimizationTarget,
     pub opt_mode: OptimizationMode,
     pub distance_metric: DistanceMetric,
+    pub fixed_colors: usize,
 }
 
 pub struct SimulatedAnnealing {
@@ -112,11 +117,19 @@ impl SimulatedAnnealing {
     pub fn run(&mut self, callback: &mut dyn FnMut(&IterationStatistics)) -> DistanceResult {
         self.temperature = self.parameters.initial_temperature;
 
-        let mut result = DistanceResult::new(&self.colors, self.parameters.distance_metric);
+        let mut result = DistanceResult::new(
+            &self.colors,
+            self.parameters.distance_metric,
+            self.parameters.fixed_colors,
+        );
+
+        if self.parameters.fixed_colors == self.colors.len() {
+            return result;
+        }
 
         for iter in 0..self.parameters.num_iterations {
             let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
-                random::<usize>() % self.colors.len()
+                thread_rng().gen_range(self.parameters.fixed_colors, self.colors.len())
             } else {
                 if random::<bool>() {
                     result.closest_pair.0
@@ -124,6 +137,11 @@ impl SimulatedAnnealing {
                     result.closest_pair.1
                 }
             };
+
+            debug_assert!(
+                random_index >= self.parameters.fixed_colors,
+                "cannot change fixed color"
+            );
 
             let mut new_colors = self.colors.clone();
 
@@ -207,13 +225,14 @@ pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
 }
 
 impl DistanceResult {
-    fn new(colors: &[(Color, Lab)], distance_metric: DistanceMetric) -> Self {
+    fn new(colors: &[(Color, Lab)], distance_metric: DistanceMetric, fixed_colors: usize) -> Self {
         let mut result = DistanceResult {
             closest_distances: vec![(scalar::MAX, std::usize::MAX); colors.len()],
             closest_pair: (std::usize::MAX, std::usize::MAX),
             mean_closest_distance: 0.0,
             min_closest_distance: scalar::MAX,
             distance_metric,
+            fixed_colors,
         };
 
         for i in 0..colors.len() {
@@ -268,13 +287,20 @@ impl DistanceResult {
         self.mean_closest_distance = 0.0;
         self.min_closest_distance = scalar::MAX;
 
+        let mut closest_pair_set = false;
+
         for (i, (dist, closest_i)) in self.closest_distances.iter().enumerate() {
             self.mean_closest_distance += *dist;
 
-            if *dist < self.min_closest_distance {
-                self.min_closest_distance = *dist;
+            // the closest pair must ignore the fixed_colors because we cannot change them
+            if (i >= self.fixed_colors && *closest_i >= self.fixed_colors)
+                && (*dist < self.min_closest_distance || !closest_pair_set)
+            {
                 self.closest_pair = (i, *closest_i);
+                closest_pair_set = true;
             }
+
+            self.min_closest_distance = self.min_closest_distance.min(*dist);
         }
 
         self.mean_closest_distance /= self.closest_distances.len() as Scalar;

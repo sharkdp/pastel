@@ -141,7 +141,8 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("verbose")
                         .short("v")
                         .help("Print simulation output to STDERR")
-                ),
+                ).
+                arg(color_arg.clone()),
         )
         .subcommand(
             SubCommand::with_name("sort-by")
