@@ -73,6 +73,12 @@ pub struct SimulatedAnnealing<R: Rng> {
 
 impl SimulatedAnnealing<ThreadRng> {
     pub fn new(initial_colors: &[Color], parameters: SimulationParameters) -> Self {
+        Self::with_rng(initial_colors, parameters, thread_rng())
+    }
+}
+
+impl<R: Rng> SimulatedAnnealing<R> {
+    pub fn with_rng(initial_colors: &[Color], parameters: SimulationParameters, rng: R) -> Self {
         let colors = initial_colors
             .iter()
             .map(|c| (c.clone(), c.to_lab()))
@@ -82,7 +88,7 @@ impl SimulatedAnnealing<ThreadRng> {
             colors,
             temperature: parameters.initial_temperature,
             parameters,
-            rng: thread_rng(),
+            rng,
         }
     }
 }
@@ -331,8 +337,14 @@ impl DistanceResult {
 
 #[cfg(test)]
 mod tests {
-    use super::{rearrange_sequence, DistanceMetric};
+    use super::{
+        rearrange_sequence, DistanceMetric, OptimizationMode, OptimizationTarget,
+        SimulatedAnnealing, SimulationParameters,
+    };
     use crate::Color;
+
+    use rand::prelude::*;
+    use rand_xoshiro::Xoshiro256StarStar;
 
     #[test]
     fn test_rearrange_sequence() {
@@ -354,6 +366,100 @@ mod tests {
                 Color::graytone(0.5),
                 Color::graytone(0.25),
                 Color::graytone(0.8),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_distinct_all_fixed_colors() {
+        let colors = [Color::red(), Color::olive(), Color::yellow()];
+
+        let mut sim = SimulatedAnnealing::with_rng(
+            &colors,
+            SimulationParameters {
+                initial_temperature: 3.0,
+                cooling_rate: 0.95,
+                num_iterations: 100,
+                opt_target: OptimizationTarget::Min,
+                opt_mode: OptimizationMode::Local,
+                distance_metric: DistanceMetric::CIE76,
+                fixed_colors: 3,
+            },
+            Xoshiro256StarStar::seed_from_u64(21),
+        );
+        sim.run(&mut |_| {});
+
+        assert_eq!(
+            sim.get_colors(),
+            vec![Color::red(), Color::olive(), Color::yellow()]
+        );
+    }
+
+    #[test]
+    fn test_distinct_2_fixed_colors() {
+        let colors = [Color::red(), Color::yellow()];
+
+        let mut sim = SimulatedAnnealing::with_rng(
+            &colors,
+            SimulationParameters {
+                initial_temperature: 3.0,
+                cooling_rate: 0.95,
+                num_iterations: 100,
+                opt_target: OptimizationTarget::Min,
+                opt_mode: OptimizationMode::Local,
+                distance_metric: DistanceMetric::CIE76,
+                fixed_colors: 1,
+            },
+            Xoshiro256StarStar::seed_from_u64(42),
+        );
+        let distance_result = sim.run(&mut |_| {});
+
+        assert_eq!(distance_result.min_closest_distance, 156.82164555246146);
+        assert_eq!(
+            sim.get_colors(),
+            vec![Color::red(), Color::from_rgb(113, 255, 17)]
+        );
+    }
+
+    #[test]
+    fn test_distinct_fixed_colors() {
+        let colors = [
+            Color::red(),
+            Color::black(),
+            Color::blue(),
+            Color::gray(),
+            Color::maroon(),
+            Color::white(),
+            Color::silver(),
+        ];
+
+        let mut sim = SimulatedAnnealing::with_rng(
+            &colors,
+            SimulationParameters {
+                initial_temperature: 3.0,
+                cooling_rate: 0.95,
+                num_iterations: 100,
+                opt_target: OptimizationTarget::Mean,
+                opt_mode: OptimizationMode::Local,
+                distance_metric: DistanceMetric::CIE76,
+                fixed_colors: 3,
+            },
+            Xoshiro256StarStar::seed_from_u64(73),
+        );
+
+        let distance_result = sim.run(&mut |_| {});
+
+        assert_eq!(distance_result.mean_closest_distance, 62.96559472296262);
+        assert_eq!(
+            sim.get_colors(),
+            vec![
+                Color::from_rgb(255, 0, 0),
+                Color::from_rgb(0, 0, 0),
+                Color::from_rgb(0, 0, 255),
+                Color::from_rgb(166, 140, 61),
+                Color::from_rgb(130, 0, 19),
+                Color::from_rgb(234, 255, 227),
+                Color::from_rgb(212, 140, 250)
             ]
         );
     }
