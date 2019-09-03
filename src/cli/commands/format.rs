@@ -1,4 +1,5 @@
 use crate::commands::prelude::*;
+use crate::output::Output;
 use crate::utility::similar_colors;
 
 use pastel::ansi::Mode;
@@ -9,7 +10,7 @@ pub struct FormatCommand;
 impl ColorCommand for FormatCommand {
     fn run(
         &self,
-        out: &mut dyn Write,
+        out: &mut Output,
         matches: &ArgMatches,
         config: &Config,
         color: &Color,
@@ -49,14 +50,14 @@ impl ColorCommand for FormatCommand {
 
         if write_colored_line {
             writeln!(
-                out,
+                out.handle,
                 "{}",
                 config
                     .brush
                     .paint(output, color.text_color().ansi_style().on(color))
             )?;
         } else {
-            write!(out, "{}", output)?;
+            write!(out.handle, "{}", output)?;
         }
 
         Ok(())

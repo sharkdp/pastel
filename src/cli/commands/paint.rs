@@ -1,6 +1,7 @@
 use std::io::{self, Read};
 
 use crate::commands::prelude::*;
+use crate::output::Output;
 use crate::parser::parse_color;
 
 use super::io::ColorArgIterator;
@@ -10,7 +11,7 @@ use pastel::ansi::Style;
 pub struct PaintCommand;
 
 impl GenericCommand for PaintCommand {
-    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
+    fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let fg = matches.value_of("color").expect("required argument");
         let fg = if fg.trim() == "default" {
             None
@@ -53,7 +54,7 @@ impl GenericCommand for PaintCommand {
         style.underline(matches.is_present("underline"));
 
         write!(
-            out,
+            out.handle,
             "{}{}",
             config.brush.paint(text, style),
             if matches.is_present("no-newline") {

@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use crate::commands::prelude::*;
 use crate::output::Output;
 
@@ -9,8 +7,7 @@ use pastel::random::RandomizationStrategy;
 pub struct RandomCommand;
 
 impl GenericCommand for RandomCommand {
-    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let mut o = Output::new(out);
+    fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let strategy_arg = matches.value_of("strategy").expect("required argument");
 
         let count = matches.value_of("number").expect("required argument");
@@ -27,7 +24,7 @@ impl GenericCommand for RandomCommand {
         };
 
         for _ in 0..count {
-            o.show_color(&config, &strategy.generate())?;
+            out.show_color(&config, &strategy.generate())?;
         }
 
         Ok(())
