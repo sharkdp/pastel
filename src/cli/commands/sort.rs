@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use rand::prelude::*;
 
 use crate::commands::prelude::*;
@@ -19,8 +17,7 @@ pub fn key_function(sort_order: &str, color: &Color) -> i32 {
 }
 
 impl GenericCommand for SortCommand {
-    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let mut o = Output::new(out);
+    fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let sort_order = matches.value_of("sort-order").expect("required argument");
 
         let mut colors: Vec<Color> = vec![];
@@ -40,7 +37,7 @@ impl GenericCommand for SortCommand {
         }
 
         for color in colors {
-            o.show_color(config, &color)?;
+            out.show_color(config, &color)?;
         }
 
         Ok(())

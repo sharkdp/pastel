@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
 use crate::output::Output;
@@ -9,8 +7,7 @@ use pastel::Fraction;
 pub struct GradientCommand;
 
 impl GenericCommand for GradientCommand {
-    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let mut o = Output::new(out);
+    fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let count = matches.value_of("number").expect("required argument");
         let count = count
             .parse::<usize>()
@@ -38,7 +35,7 @@ impl GenericCommand for GradientCommand {
             let fraction = Fraction::from(i as f64 / (count as f64 - 1.0));
             let color = mix(&start, &stop, fraction);
 
-            o.show_color(&config, &color)?;
+            out.show_color(&config, &color)?;
         }
 
         Ok(())

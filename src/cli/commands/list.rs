@@ -1,15 +1,14 @@
-use std::io::{self, Write};
-
 use crate::commands::prelude::*;
 use crate::commands::sort::key_function;
 use crate::named::{NamedColor, NAMED_COLORS};
+use crate::output::Output;
 
 use pastel::ansi::ToAnsiStyle;
 
 pub struct ListCommand;
 
 impl GenericCommand for ListCommand {
-    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
+    fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let sort_order = matches.value_of("sort-order").expect("required argument");
 
         let mut colors: Vec<&NamedColor> = NAMED_COLORS.iter().map(|r| r).collect();
@@ -21,7 +20,7 @@ impl GenericCommand for ListCommand {
                 let bg = &nc.color;
                 let fg = bg.text_color();
                 writeln!(
-                    out,
+                    out.handle,
                     "{}",
                     config
                         .brush
@@ -29,10 +28,8 @@ impl GenericCommand for ListCommand {
                 )?;
             }
         } else {
-            let stdout = io::stdout();
-            let mut out = stdout.lock();
             for nc in colors {
-                let res = writeln!(out, "{}", nc.name);
+                let res = writeln!(out.handle, "{}", nc.name);
                 if res.is_err() {
                     break;
                 }

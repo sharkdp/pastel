@@ -6,11 +6,11 @@ pub struct ShowCommand;
 impl ColorCommand for ShowCommand {
     fn run(
         &self,
-        out: &mut dyn Write,
+        out: &mut Output,
         _: &ArgMatches,
         config: &Config,
         color: &Color,
     ) -> Result<()> {
-        (Output::new(out)).show_color(config, color)
+        out.show_color(config, color)
     }
 }

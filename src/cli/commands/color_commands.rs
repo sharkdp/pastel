@@ -1,5 +1,3 @@
-use std::io::Write;
-
 use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
 use crate::output::Output;
@@ -18,13 +16,13 @@ macro_rules! color_command {
         impl ColorCommand for $cmd_name {
             fn run(
                 &self,
-                out: &mut dyn Write,
+                out: &mut Output,
                 $matches: &ArgMatches,
                 $config: &Config,
                 $color: &Color,
             ) -> Result<()> {
                 let output = $body;
-                (Output::new(out)).show_color($config, &output)
+                out.show_color($config, &output)
             }
         }
     };

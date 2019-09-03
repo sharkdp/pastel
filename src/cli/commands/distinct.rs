@@ -12,10 +12,10 @@ use pastel::random::{self, RandomizationStrategy};
 
 pub struct DistinctCommand;
 
-fn print_iteration(out: &mut dyn Write, brush: &Brush, stats: &IterationStatistics) -> Result<()> {
+fn print_iteration(out: &mut Output, brush: &Brush, stats: &IterationStatistics) -> Result<()> {
     let result = stats.distance_result;
     write!(
-        out,
+        out.handle,
         "[{:10.}] D_mean = {:<6.2}; D_min = {:<6.2}; T = {:.6} ",
         stats.iteration,
         result.mean_closest_distance,
@@ -27,7 +27,7 @@ fn print_iteration(out: &mut dyn Write, brush: &Brush, stats: &IterationStatisti
 }
 
 fn print_colors(
-    out: &mut dyn Write,
+    out: &mut Output,
     brush: &Brush,
     colors: &[Color],
     closest_pair: Option<(usize, usize)>,
@@ -46,20 +46,19 @@ fn print_colors(
         }
 
         write!(
-            out,
+            out.handle,
             "{} ",
             brush.paint(format!("{}", c.to_rgb_hex_string(false)), style)
         )?;
 
         ci += 1;
     }
-    writeln!(out, "")?;
+    writeln!(out.handle, "")?;
     Ok(())
 }
 
 impl GenericCommand for DistinctCommand {
-    fn run(&self, out: &mut dyn Write, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let mut o = Output::new(out);
+    fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let stderr = io::stderr();
         let brush_stderr = Brush::from_environment(Stream::Stderr);
 
@@ -97,7 +96,7 @@ impl GenericCommand for DistinctCommand {
 
         let mut callback: Box<dyn FnMut(&IterationStatistics)> = if matches.is_present("verbose") {
             Box::new(|stats: &IterationStatistics| {
-                print_iteration(&mut stderr.lock(), &brush_stderr, stats).ok();
+                print_iteration(&mut Output::new(&mut stderr.lock()), &brush_stderr, stats).ok();
             })
         } else {
             Box::new(|_: &IterationStatistics| {})
@@ -114,13 +113,13 @@ impl GenericCommand for DistinctCommand {
         let result = annealing.run(callback.as_mut());
 
         if matches.is_present("print-minimal-distance") {
-            writeln!(out, "{:.3}", result.min_closest_distance)?;
+            writeln!(out.handle, "{:.3}", result.min_closest_distance)?;
         } else {
             let mut colors = annealing.get_colors();
             distinct::rearrange_sequence(&mut colors, distance_metric);
 
             for color in colors {
-                o.show_color(config, &color)?;
+                out.show_color(config, &color)?;
             }
         }
 

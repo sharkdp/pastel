@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::error::Result;
+use crate::output::Output;
 use clap::ArgMatches;
 
 mod color_commands;
@@ -69,7 +70,8 @@ impl Command {
 
     pub fn execute(&self, matches: &ArgMatches, config: &Config) -> Result<()> {
         let stdout = std::io::stdout();
-        let mut out = stdout.lock();
+        let mut stdout_lock = stdout.lock();
+        let mut out = Output::new(&mut stdout_lock);
 
         match self {
             Command::Generic(cmd) => cmd.run(&mut out, matches, config),
