@@ -18,7 +18,7 @@ impl Output<'_> {
     pub fn new(handle: &mut dyn Write) -> Output {
         Output {
             handle: handle,
-            colors_shown: 0
+            colors_shown: 0,
         }
     }
 
@@ -28,8 +28,10 @@ impl Output<'_> {
 
         let checkerboard_position_y: usize = 0;
         let checkerboard_position_x: usize = config.padding;
-        let color_panel_position_y: usize = checkerboard_position_y + (checkerboard_size - color_panel_size) / 2;
-        let color_panel_position_x: usize = config.padding + (checkerboard_size - color_panel_size) / 2;
+        let color_panel_position_y: usize =
+            checkerboard_position_y + (checkerboard_size - color_panel_size) / 2;
+        let color_panel_position_x: usize =
+            config.padding + (checkerboard_size - color_panel_size) / 2;
         let text_position_x: usize = checkerboard_size + 2 * config.padding;
         let text_position_y: usize = 0;
 
@@ -84,7 +86,9 @@ impl Output<'_> {
 
     pub fn show_color(&mut self, config: &Config, color: &Color) -> Result<()> {
         if config.interactive_mode {
-            if self.colors_shown < 1 { writeln!(self.handle)? };
+            if self.colors_shown < 1 {
+                writeln!(self.handle)?
+            };
             self.show_color_tty(config, color)?;
             writeln!(self.handle)?;
         } else {
