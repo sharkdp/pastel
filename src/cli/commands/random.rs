@@ -1,5 +1,4 @@
 use crate::commands::prelude::*;
-use crate::output::Output;
 
 use pastel::random::strategies;
 use pastel::random::RandomizationStrategy;

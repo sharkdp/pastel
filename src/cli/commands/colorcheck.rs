@@ -1,6 +1,5 @@
 use crate::commands::prelude::*;
 use crate::hdcanvas::Canvas;
-use crate::output::Output;
 
 use pastel::ansi::{Brush, Mode};
 

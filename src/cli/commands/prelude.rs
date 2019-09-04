@@ -1,5 +1,6 @@
 pub use crate::config::Config;
 pub use crate::error::{PastelError, Result};
+pub use crate::output::Output;
 
 pub use clap::ArgMatches;
 
