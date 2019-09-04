@@ -1,7 +1,6 @@
 use std::io::{self, Read};
 
 use crate::commands::prelude::*;
-use crate::output::Output;
 use crate::parser::parse_color;
 
 use super::io::ColorArgIterator;

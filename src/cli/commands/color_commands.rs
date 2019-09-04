@@ -1,6 +1,5 @@
 use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
-use crate::output::Output;
 
 use pastel::ColorblindnessType;
 use pastel::Fraction;

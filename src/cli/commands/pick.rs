@@ -1,5 +1,4 @@
 use crate::commands::prelude::*;
-use crate::output::Output;
 
 use crate::colorpicker::{print_colorspectrum, run_external_colorpicker};
 

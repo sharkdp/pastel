@@ -1,5 +1,4 @@
 use crate::commands::prelude::*;
-use crate::output::Output;
 use crate::utility::similar_colors;
 
 use pastel::ansi::Mode;

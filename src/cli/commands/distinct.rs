@@ -1,7 +1,6 @@
 use std::io;
 
 use crate::commands::prelude::*;
-use crate::output::Output;
 
 use pastel::ansi::Stream;
 use pastel::distinct::{
