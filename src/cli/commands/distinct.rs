@@ -1,4 +1,4 @@
-use std::io;
+use std::io::{self, Write};
 
 use crate::commands::prelude::*;
 
@@ -11,10 +11,10 @@ use pastel::random::{self, RandomizationStrategy};
 
 pub struct DistinctCommand;
 
-fn print_iteration(out: &mut Output, brush: &Brush, stats: &IterationStatistics) -> Result<()> {
+fn print_iteration(out: &mut dyn Write, brush: &Brush, stats: &IterationStatistics) -> Result<()> {
     let result = stats.distance_result;
     write!(
-        out.handle,
+        out,
         "[{:10.}] D_mean = {:<6.2}; D_min = {:<6.2}; T = {:.6} ",
         stats.iteration,
         result.mean_closest_distance,
@@ -26,7 +26,7 @@ fn print_iteration(out: &mut Output, brush: &Brush, stats: &IterationStatistics)
 }
 
 fn print_colors(
-    out: &mut Output,
+    out: &mut dyn Write,
     brush: &Brush,
     colors: &[Color],
     closest_pair: Option<(usize, usize)>,
@@ -45,14 +45,14 @@ fn print_colors(
         }
 
         write!(
-            out.handle,
+            out,
             "{} ",
             brush.paint(format!("{}", c.to_rgb_hex_string(false)), style)
         )?;
 
         ci += 1;
     }
-    writeln!(out.handle, "")?;
+    writeln!(out, "")?;
     Ok(())
 }
 
@@ -95,7 +95,7 @@ impl GenericCommand for DistinctCommand {
 
         let mut callback: Box<dyn FnMut(&IterationStatistics)> = if matches.is_present("verbose") {
             Box::new(|stats: &IterationStatistics| {
-                print_iteration(&mut Output::new(&mut stderr.lock()), &brush_stderr, stats).ok();
+                print_iteration(&mut stderr.lock(), &brush_stderr, stats).ok();
             })
         } else {
             Box::new(|_: &IterationStatistics| {})
