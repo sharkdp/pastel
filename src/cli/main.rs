@@ -7,7 +7,6 @@ mod colorpicker;
 mod colorspace;
 mod commands;
 mod config;
-mod error;
 mod hdcanvas;
 mod named;
 mod output;
@@ -19,6 +18,7 @@ use config::Config;
 use error::{PastelError, Result};
 
 use pastel::ansi::{self, Brush};
+use pastel::error;
 use pastel::Color;
 
 type ExitCode = i32;

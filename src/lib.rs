@@ -2,6 +2,7 @@ pub mod ansi;
 pub mod colorspace;
 pub mod delta_e;
 pub mod distinct;
+pub mod error;
 mod helper;
 pub mod random;
 mod types;
