@@ -309,6 +309,10 @@ impl DistanceResult {
         let mut closest_pair_set = false;
 
         for (i, (dist, closest_i)) in self.closest_distances.iter().enumerate() {
+            if i < self.fixed_colors && *closest_i < self.fixed_colors {
+                continue;
+            }
+
             self.mean_closest_distance += *dist;
 
             // the closest pair must ignore pairs of fixed_colors because we cannot change them. On
@@ -324,7 +328,7 @@ impl DistanceResult {
             self.min_closest_distance = self.min_closest_distance.min(*dist);
         }
 
-        self.mean_closest_distance /= self.closest_distances.len() as Scalar;
+        self.mean_closest_distance /= (self.closest_distances.len() - self.fixed_colors) as Scalar;
     }
 
     fn distance(&self, a: &(Color, Lab), b: &(Color, Lab)) -> Scalar {
@@ -449,17 +453,17 @@ mod tests {
 
         let distance_result = sim.run(&mut |_| {});
 
-        assert_eq!(distance_result.mean_closest_distance, 62.96559472296262);
+        assert_eq!(distance_result.mean_closest_distance, 109.44885365121317);
         assert_eq!(
             sim.get_colors(),
             vec![
                 Color::from_rgb(255, 0, 0),
                 Color::from_rgb(0, 0, 0),
                 Color::from_rgb(0, 0, 255),
-                Color::from_rgb(166, 140, 61),
-                Color::from_rgb(130, 0, 19),
+                Color::from_rgb(160, 143, 53),
+                Color::from_rgb(134, 0, 16),
                 Color::from_rgb(234, 255, 227),
-                Color::from_rgb(212, 140, 250)
+                Color::from_rgb(214, 139, 252),
             ]
         );
     }
