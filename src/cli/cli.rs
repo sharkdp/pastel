@@ -185,6 +185,12 @@ pub fn build_cli() -> App<'static, 'static> {
                   - chameleon (https://github.com/seebye/chameleon)\n  \
                   - KColorChooser (https://kde.org/applications/graphics/org.kde.kcolorchooser)\n  \
                   - macOS built-in color picker")
+                .arg(
+                    Arg::with_name("count")
+                        .help("Number of colors to pick")
+                        .default_value("1")
+                        .required(true)
+                )
         )
         .subcommand(
             SubCommand::with_name("format")
