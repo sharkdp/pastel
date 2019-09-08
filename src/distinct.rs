@@ -25,8 +25,8 @@ pub struct DistanceResult {
     pub distance_metric: DistanceMetric,
 
     /// The number of colors that are fixed and cannot be changed. The actual colors are the first
-    /// `fixed_colors` elements in the `colors` array.
-    pub fixed_colors: usize,
+    /// `num_fixed_colors` elements in the `colors` array.
+    pub num_fixed_colors: usize,
 }
 
 pub struct IterationStatistics<'a> {
@@ -61,7 +61,7 @@ pub struct SimulationParameters {
     pub opt_target: OptimizationTarget,
     pub opt_mode: OptimizationMode,
     pub distance_metric: DistanceMetric,
-    pub fixed_colors: usize,
+    pub num_fixed_colors: usize,
 }
 
 pub struct SimulatedAnnealing<R: Rng> {
@@ -130,23 +130,23 @@ impl<R: Rng> SimulatedAnnealing<R> {
         let mut result = DistanceResult::new(
             &self.colors,
             self.parameters.distance_metric,
-            self.parameters.fixed_colors,
+            self.parameters.num_fixed_colors,
         );
 
-        if self.parameters.fixed_colors == self.colors.len() {
+        if self.parameters.num_fixed_colors == self.colors.len() {
             return result;
         }
 
         for iter in 0..self.parameters.num_iterations {
             let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
                 self.rng
-                    .gen_range(self.parameters.fixed_colors, self.colors.len())
+                    .gen_range(self.parameters.num_fixed_colors, self.colors.len())
             } else {
                 // first check if any of the colors cannot change, if that's the case just return
                 // the other color. Note that the closest_pair cannot contain only fixed colors.
-                if result.closest_pair.0 < self.parameters.fixed_colors {
+                if result.closest_pair.0 < self.parameters.num_fixed_colors {
                     result.closest_pair.1
-                } else if result.closest_pair.1 < self.parameters.fixed_colors {
+                } else if result.closest_pair.1 < self.parameters.num_fixed_colors {
                     result.closest_pair.0
                 } else {
                     if self.rng.gen() {
@@ -158,7 +158,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
             };
 
             debug_assert!(
-                random_index >= self.parameters.fixed_colors,
+                random_index >= self.parameters.num_fixed_colors,
                 "cannot change fixed color"
             );
 
@@ -243,15 +243,61 @@ pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
     }
 }
 
+pub fn distinct_colors(
+    count: usize,
+    distance_metric: DistanceMetric,
+    fixed_colors: Vec<Color>,
+    mut callback: Box<dyn FnMut(&IterationStatistics)>,
+) -> (Vec<Color>, DistanceResult) {
+    assert!(count > 1);
+    assert!(fixed_colors.len() <= count);
+
+    let num_fixed_colors = fixed_colors.len();
+    let mut colors = fixed_colors;
+
+    for _ in num_fixed_colors..count {
+        colors.push(random::strategies::UniformRGB.generate());
+    }
+
+    let mut annealing = SimulatedAnnealing::new(
+        &colors,
+        SimulationParameters {
+            initial_temperature: 3.0,
+            cooling_rate: 0.95,
+            num_iterations: 100_000,
+            opt_target: OptimizationTarget::Mean,
+            opt_mode: OptimizationMode::Global,
+            distance_metric,
+            num_fixed_colors,
+        },
+    );
+
+    annealing.run(callback.as_mut());
+
+    annealing.parameters.initial_temperature = 0.5;
+    annealing.parameters.cooling_rate = 0.98;
+    annealing.parameters.num_iterations = 200_000;
+    annealing.parameters.opt_target = OptimizationTarget::Min;
+    annealing.parameters.opt_mode = OptimizationMode::Local;
+
+    let result = annealing.run(callback.as_mut());
+
+    (annealing.get_colors(), result)
+}
+
 impl DistanceResult {
-    fn new(colors: &[(Color, Lab)], distance_metric: DistanceMetric, fixed_colors: usize) -> Self {
+    fn new(
+        colors: &[(Color, Lab)],
+        distance_metric: DistanceMetric,
+        num_fixed_colors: usize,
+    ) -> Self {
         let mut result = DistanceResult {
             closest_distances: vec![(scalar::MAX, std::usize::MAX); colors.len()],
             closest_pair: (std::usize::MAX, std::usize::MAX),
             mean_closest_distance: 0.0,
             min_closest_distance: scalar::MAX,
             distance_metric,
-            fixed_colors,
+            num_fixed_colors,
         };
 
         for i in 0..colors.len() {
@@ -309,16 +355,16 @@ impl DistanceResult {
         let mut closest_pair_set = false;
 
         for (i, (dist, closest_i)) in self.closest_distances.iter().enumerate() {
-            if i < self.fixed_colors && *closest_i < self.fixed_colors {
+            if i < self.num_fixed_colors && *closest_i < self.num_fixed_colors {
                 continue;
             }
 
             self.mean_closest_distance += *dist;
 
-            // the closest pair must ignore pairs of fixed_colors because we cannot change them. On
+            // the closest pair must ignore pairs of fixed colors because we cannot change them. On
             // the other hand we can consider pairs with at least one non fixed color because we
             // can change that.
-            if (i >= self.fixed_colors || *closest_i >= self.fixed_colors)
+            if (i >= self.num_fixed_colors || *closest_i >= self.num_fixed_colors)
                 && (*dist < self.min_closest_distance || !closest_pair_set)
             {
                 self.closest_pair = (i, *closest_i);
@@ -328,7 +374,8 @@ impl DistanceResult {
             self.min_closest_distance = self.min_closest_distance.min(*dist);
         }
 
-        self.mean_closest_distance /= (self.closest_distances.len() - self.fixed_colors) as Scalar;
+        self.mean_closest_distance /=
+            (self.closest_distances.len() - self.num_fixed_colors) as Scalar;
     }
 
     fn distance(&self, a: &(Color, Lab), b: &(Color, Lab)) -> Scalar {
@@ -387,7 +434,7 @@ mod tests {
                 opt_target: OptimizationTarget::Min,
                 opt_mode: OptimizationMode::Local,
                 distance_metric: DistanceMetric::CIE76,
-                fixed_colors: 3,
+                num_fixed_colors: 3,
             },
             Xoshiro256StarStar::seed_from_u64(21),
         );
@@ -412,7 +459,7 @@ mod tests {
                 opt_target: OptimizationTarget::Min,
                 opt_mode: OptimizationMode::Local,
                 distance_metric: DistanceMetric::CIE76,
-                fixed_colors: 1,
+                num_fixed_colors: 1,
             },
             Xoshiro256StarStar::seed_from_u64(42),
         );
