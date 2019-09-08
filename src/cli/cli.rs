@@ -116,6 +116,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Number of distinct colors in the set")
                         .takes_value(true)
                         .default_value("10")
+                        .required(true)
                         .value_name("count"),
                 )
                 .arg(
@@ -153,7 +154,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("sort-order")
                         .help("Sort order")
                         .possible_values(SORT_OPTIONS)
-                        .default_value(DEFAULT_SORT_ORDER),
+                        .default_value(DEFAULT_SORT_ORDER)
+                        .required(true),
                 )
                 .arg(
                     Arg::with_name("reverse")
