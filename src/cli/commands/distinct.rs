@@ -8,6 +8,7 @@ use pastel::distinct::{
     SimulatedAnnealing, SimulationParameters,
 };
 use pastel::random::{self, RandomizationStrategy};
+use pastel::{Fraction, HSLA};
 
 pub struct DistinctCommand;
 
@@ -56,10 +57,90 @@ fn print_colors(
     Ok(())
 }
 
+fn blue_red_yellow(f: f64) -> Color {
+    let blue = Color::from_rgb(0, 0, 120);
+    let red = Color::from_rgb(224, 0, 119);
+    let yellow = Color::from_rgb(255, 255, 0);
+
+    if f < 0.5 {
+        blue.mix::<HSLA>(&red, Fraction::from(2.0 * f))
+    } else {
+        red.mix::<HSLA>(&yellow, Fraction::from(2.0 * (f - 0.5)))
+    }
+}
+
+fn print_distance_matrix(
+    out: &mut dyn Write,
+    brush: Brush,
+    colors: &[Color],
+    metric: DistanceMetric,
+) -> Result<()> {
+    let count = colors.len();
+
+    let distance = |c1: &Color, c2: &Color| match metric {
+        DistanceMetric::CIE76 => c1.distance_delta_e_cie76(c2),
+        DistanceMetric::CIEDE2000 => c1.distance_delta_e_ciede2000(c2),
+    };
+
+    let mut min = std::f64::MAX;
+    let mut max = 0.0;
+    for i in 0..count {
+        for j in 0..count {
+            if i != j {
+                let dist = distance(&colors[i], &colors[j]);
+                if dist < min {
+                    min = dist;
+                }
+                if dist > max {
+                    max = dist;
+                }
+            }
+        }
+    }
+
+    let color_to_string = |c: &Color| -> String {
+        let tc = c.text_color();
+        let mut style = tc.ansi_style();
+        style.on(c);
+        format!("{}", brush.paint(c.to_rgb_hex_string(false), style))
+    };
+
+    write!(out, "\n\n{:6}  ", "")?;
+    for c in colors {
+        write!(out, "{} ", color_to_string(c))?;
+    }
+    writeln!(out, "\n")?;
+
+    for c1 in colors {
+        write!(out, "{}  ", color_to_string(c1))?;
+        for c2 in colors {
+            if c1 == c2 {
+                write!(out, "{:6} ", "")?;
+            } else {
+                let dist = distance(c1, c2);
+
+                let magnitude = (dist - min) / (max - min);
+                let magnitude = 1.0 - magnitude.powf(0.3);
+
+                let bg = blue_red_yellow(magnitude);
+                let mut style = bg.text_color().ansi_style();
+                style.on(bg);
+
+                write!(out, "{} ", brush.paint(format!("{:6.2}", dist), style))?;
+            }
+        }
+        writeln!(out, "")?;
+    }
+    writeln!(out, "\n")?;
+
+    Ok(())
+}
+
 impl GenericCommand for DistinctCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let stderr = io::stderr();
         let brush_stderr = Brush::from_environment(Stream::Stderr);
+        let verbose_output = matches.is_present("verbose");
 
         let count = matches.value_of("number").expect("required argument");
         let count = count
@@ -93,7 +174,7 @@ impl GenericCommand for DistinctCommand {
             },
         );
 
-        let mut callback: Box<dyn FnMut(&IterationStatistics)> = if matches.is_present("verbose") {
+        let mut callback: Box<dyn FnMut(&IterationStatistics)> = if verbose_output {
             Box::new(|stats: &IterationStatistics| {
                 print_iteration(&mut stderr.lock(), &brush_stderr, stats).ok();
             })
@@ -116,6 +197,10 @@ impl GenericCommand for DistinctCommand {
         } else {
             let mut colors = annealing.get_colors();
             distinct::rearrange_sequence(&mut colors, distance_metric);
+
+            if verbose_output {
+                print_distance_matrix(&mut stderr.lock(), brush_stderr, &colors, distance_metric)?;
+            }
 
             for color in colors {
                 out.show_color(config, &color)?;
