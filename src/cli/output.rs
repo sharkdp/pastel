@@ -52,25 +52,20 @@ impl Output<'_> {
             color,
         );
 
-        canvas.draw_text(
-            text_position_y + 0,
-            text_position_x,
-            &format!("Hex: {}", color.to_rgb_hex_string(true)),
-        );
-        canvas.draw_text(
-            text_position_y + 2,
-            text_position_x,
-            &format!("RGB: {}", color.to_rgb_string(Format::Spaces)),
-        );
-        canvas.draw_text(
-            text_position_y + 4,
-            text_position_x,
-            &format!("HSL: {}", color.to_hsl_string(Format::Spaces)),
-        );
-
-        canvas.draw_text(text_position_y + 8, text_position_x, "Most similar:");
+        let mut text_y_offset = 0;
         let similar = similar_colors(&color);
+
         for (i, nc) in similar.iter().enumerate().take(3) {
+            if nc.color == *color {
+                canvas.draw_text(
+                    text_position_y,
+                    text_position_x,
+                    &format!("Name: {}", nc.name),
+                );
+                text_y_offset = 2;
+                continue;
+            }
+
             canvas.draw_text(text_position_y + 10 + 2 * i, text_position_x + 7, nc.name);
             canvas.draw_rect(
                 text_position_y + 10 + 2 * i,
@@ -80,6 +75,28 @@ impl Output<'_> {
                 &nc.color,
             );
         }
+
+        canvas.draw_text(
+            text_position_y + 0 + text_y_offset,
+            text_position_x,
+            &format!("Hex: {}", color.to_rgb_hex_string(true)),
+        );
+        canvas.draw_text(
+            text_position_y + 2 + text_y_offset,
+            text_position_x,
+            &format!("RGB: {}", color.to_rgb_string(Format::Spaces)),
+        );
+        canvas.draw_text(
+            text_position_y + 4 + text_y_offset,
+            text_position_x,
+            &format!("HSL: {}", color.to_hsl_string(Format::Spaces)),
+        );
+
+        canvas.draw_text(
+            text_position_y + 8 + text_y_offset,
+            text_position_x,
+            "Most similar:",
+        );
 
         canvas.print(self.handle)
     }
