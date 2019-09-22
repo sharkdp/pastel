@@ -10,5 +10,5 @@ if [[ $TARGET != arm-unknown-linux-gnueabihf ]] && [[ $TARGET != aarch64-unknown
     cargo test --target "$TARGET" --verbose
 
     # Run 'pastel'
-    cargo run --target "$TARGET" -- --color-mode 8bit random
+    cargo run --target "$TARGET" -- random | cargo run --target "$TARGET" -- format hex
 fi
