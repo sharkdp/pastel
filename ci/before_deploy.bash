@@ -11,10 +11,19 @@ pack() {
     local tempdir
     local out_dir
     local package_name
+    local gcc_prefix
 
     tempdir=$(mktemp -d 2>/dev/null || mktemp -d -t tmp)
     out_dir=$(pwd)
     package_name="$PROJECT_NAME-$TRAVIS_TAG-$TARGET"
+
+    if [[ $TARGET == "arm-unknown-linux-gnueabihf" ]]; then
+        gcc_prefix="arm-linux-gnueabihf-"
+    elif [[ $TARGET == "aarch64-unknown-linux-gnu" ]]; then
+        gcc_prefix="aarch64-linux-gnu-"
+    else
+        gcc_prefix=""
+    fi
 
     # create a "staging" directory
     mkdir "$tempdir/$package_name"
@@ -22,7 +31,7 @@ pack() {
 
     # copying the main binary
     cp "target/$TARGET/release/$PROJECT_NAME" "$tempdir/$package_name/"
-    strip "$tempdir/$package_name/$PROJECT_NAME"
+    "${gcc_prefix}"strip "$tempdir/$package_name/$PROJECT_NAME"
 
     # readme and license
     cp README.md "$tempdir/$package_name"
@@ -47,18 +56,29 @@ make_deb() {
     local version
     local dpkgname
     local conflictname
+    local gcc_prefix
     local homepage
     local maintainer
 
-    homepage="https://github.com/sharkdp/fd"
+    homepage="https://github.com/sharkdp/pastel"
     maintainer="David Peter <mail@david-peter.de>"
 
     case $TARGET in
         x86_64*)
             architecture=amd64
+            gcc_prefix=""
             ;;
         i686*)
             architecture=i386
+            gcc_prefix=""
+            ;;
+        aarch64*)
+            architecture=arm64
+            gcc_prefix="aarch64-linux-gnu-"
+            ;;
+        arm*hf) 
+            architecture=armhf  
+            gcc_prefix="arm-linux-gnueabihf-"   
             ;;
         *)
             echo "make_deb: skipping target '${TARGET}'" >&2
@@ -78,7 +98,12 @@ make_deb() {
 
     # copy the main binary
     install -Dm755 "target/$TARGET/release/$PROJECT_NAME" "$tempdir/usr/bin/$PROJECT_NAME"
-    strip "$tempdir/usr/bin/$PROJECT_NAME"
+    "${gcc_prefix}"strip "$tempdir/usr/bin/$PROJECT_NAME"
+
+    # completions
+    install -Dm644 target/$TARGET/release/build/$PROJECT_NAME-*/out/$PROJECT_NAME.bash "$tempdir/usr/share/bash-completion/completions/${PROJECT_NAME}"
+    install -Dm644 target/$TARGET/release/build/$PROJECT_NAME-*/out/$PROJECT_NAME.fish "$tempdir/usr/share/fish/completions/$PROJECT_NAME.fish"
+    install -Dm644 target/$TARGET/release/build/$PROJECT_NAME-*/out/_$PROJECT_NAME "$tempdir/usr/share/zsh/vendor-completions/_$PROJECT_NAME"
 
     # readme and license
     install -Dm644 README.md "$tempdir/usr/share/doc/$PROJECT_NAME/README.md"
@@ -122,11 +147,6 @@ License: MIT
  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  DEALINGS IN THE SOFTWARE.
 EOF
-
-    # completions
-    install -Dm644 target/$TARGET/release/build/$PROJECT_NAME-*/out/$PROJECT_NAME.bash "$tempdir/usr/share/bash-completion/completions/${PROJECT_NAME}"
-    install -Dm644 target/$TARGET/release/build/$PROJECT_NAME-*/out/$PROJECT_NAME.fish "$tempdir/usr/share/fish/completions/$PROJECT_NAME.fish"
-    install -Dm644 target/$TARGET/release/build/$PROJECT_NAME-*/out/_$PROJECT_NAME "$tempdir/usr/share/zsh/vendor-completions/_$PROJECT_NAME"
 
     # Control file
     mkdir "$tempdir/DEBIAN"
