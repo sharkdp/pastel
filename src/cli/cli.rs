@@ -489,4 +489,10 @@ pub fn build_cli() -> App<'static, 'static> {
                 .hide_possible_values(true)
                 .hide_default_value(true)
         )
+        .arg(
+            Arg::with_name("force-color")
+                .short("f")
+                .long("force-color")
+                .help("Alias for --mode=24bit")
+        )
 }

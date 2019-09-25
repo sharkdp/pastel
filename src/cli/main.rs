@@ -43,31 +43,34 @@ fn run() -> Result<ExitCode> {
         output_vt100::init();
     }
 
-    let color_mode = match global_matches
-        .value_of("color-mode")
-        .expect("required argument")
-    {
-        "24bit" => Some(ansi::Mode::TrueColor),
-        "8bit" => Some(ansi::Mode::Ansi8Bit),
-        "off" => None,
-        "auto" => {
-            if interactive_mode {
-                let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
-                match env_color_mode.as_ref().map(|s| s.as_str()) {
-                    Some("8bit") => Some(ansi::Mode::Ansi8Bit),
-                    Some("24bit") => Some(ansi::Mode::TrueColor),
-                    Some("off") => None,
-                    Some(value) => {
-                        return Err(PastelError::UnknownColorMode(value.into()));
-                    }
-                    None => {
-                        let mode = ansi::get_colormode();
+    let color_mode = if global_matches.is_present("force-color") {
+        Some(ansi::Mode::TrueColor)
+    } else {
+        match global_matches
+            .value_of("color-mode")
+            .expect("required argument")
+        {
+            "24bit" => Some(ansi::Mode::TrueColor),
+            "8bit" => Some(ansi::Mode::Ansi8Bit),
+            "off" => None,
+            "auto" => {
+                if interactive_mode {
+                    let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
+                    match env_color_mode.as_ref().map(|s| s.as_str()) {
+                        Some("8bit") => Some(ansi::Mode::Ansi8Bit),
+                        Some("24bit") => Some(ansi::Mode::TrueColor),
+                        Some("off") => None,
+                        Some(value) => {
+                            return Err(PastelError::UnknownColorMode(value.into()));
+                        }
+                        None => {
+                            let mode = ansi::get_colormode();
 
-                        if mode == ansi::Mode::Ansi8Bit
-                            && global_matches.subcommand_name() != Some("paint")
-                            && global_matches.subcommand_name() != Some("colorcheck")
-                        {
-                            write_stderr(Color::yellow(), "pastel warning",
+                            if mode == ansi::Mode::Ansi8Bit
+                                && global_matches.subcommand_name() != Some("paint")
+                                && global_matches.subcommand_name() != Some("colorcheck")
+                            {
+                                write_stderr(Color::yellow(), "pastel warning",
                                     "Your terminal emulator does not appear to support 24-bit colors \
                                     (this means that the COLORTERM environment variable is not set to \
                                     'truecolor' or '24bit'). \
@@ -85,15 +88,16 @@ fn run() -> Result<ExitCode> {
                                          warning or try a different terminal emulator.\n\n\
                                     \
                                     For more information, see https://gist.github.com/XVilka/8346728\n");
+                            }
+                            Some(mode)
                         }
-                        Some(mode)
                     }
+                } else {
+                    None
                 }
-            } else {
-                None
             }
+            _ => unreachable!("Unknown --color-mode argument"),
         }
-        _ => unreachable!("Unknown --color-mode argument"),
     };
 
     let config = Config {
