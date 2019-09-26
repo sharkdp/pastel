@@ -134,6 +134,13 @@ You can install `pastel` from the [AUR package](https://aur.archlinux.org/packag
 yay -S pastel
 ```
 
+### On Nix
+
+You can install `pastel` from the [Nix package](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/misc/pastel/default.nix):
+```
+nix-env --install pastel
+```
+
 ### On MacOS
 
 You can install `pastel` via [Homebrew](https://formulae.brew.sh/formula/pastel)
