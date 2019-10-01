@@ -128,6 +128,32 @@ lazy_static! {
         ",
     )
     .unwrap();
+
+    // Lab(53.2,-35.4,-68.12,0.5)
+    pub static ref RE_LAB: Regex = Regex::new(
+    r"(?ix)
+        ^
+        (?:cie)?lab\(
+            \s*
+            (\d+(?:\.\d+)?) # L value
+            \s*
+            ,
+            \s*
+            (-?\d+(?:\.\d+)?) # A value
+            \s*
+            ,
+            \s*
+            (-?\d+(?:\.\d+)?) # B value
+            \s*
+            (?:
+            ,
+            \s*
+            (\d+(?:\.\d+)?)
+            \s*
+            )?
+        \)$
+    ")
+    .unwrap();
 }
 
 pub fn parse_color(color: &str) -> Option<Color> {
@@ -194,6 +220,28 @@ pub fn parse_color(color: &str) -> Option<Color> {
     if let Some(caps) = RE_GRAY.captures(color) {
         if let Some(lightness) = float_to_f64(caps.get(1).unwrap().as_str()) {
             return Some(Color::graytone(lightness));
+        }
+    }
+
+    if let Some(caps) = RE_LAB.captures(color) {
+        let ml = float_to_f64(caps.get(1).unwrap().as_str());
+        let ma = float_to_f64(caps.get(2).unwrap().as_str());
+        let mb = float_to_f64(caps.get(3).unwrap().as_str());
+        let malpha = match caps.get(4) {
+            Some(a) => float_to_f64(a.as_str()),
+            _ => Some(1.0),
+        };
+
+        match (ml, ma, mb, malpha) {
+            (Some(l), Some(a), Some(b), Some(alpha)) => {
+                let l = f64::from(l);
+                let a = f64::from(a);
+                let b = f64::from(b);
+                let alpha = f64::from(alpha);
+
+                return Some(Color::from_lab(l, a, b, alpha));
+            }
+            _ => {}
         }
     }
 
@@ -298,6 +346,34 @@ fn parse_gray() {
 
     assert_eq!(None, parse_color("gray(1.)"));
     assert_eq!(None, parse_color("gray(-1)"));
+}
+
+#[test]
+fn parse_lab() {
+    assert_eq!(
+        Some(Color::from_lab(12.43, -35.5, 43.4, 1.0)),
+        parse_color("Lab(12.43,-35.5,43.4)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(15.0, -23.0, 43.0, 0.5)),
+        parse_color("Lab(15,-23,43,0.5)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(15.0, 23.0, -43.0, 1.0)),
+        parse_color("Lab(15,23,-43)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(15.0, 35.5, -43.4, 1.0)),
+        parse_color("Lab(15,35.5,-43.4)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(15.0, -35.5, -43.4, 0.4)),
+        parse_color("Lab(15,-35.5,-43.4,0.4)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(15.0, 23.0, -43.0, 1.0)),
+        parse_color("Lab(        15,  23,-43   )")
+    );
 }
 
 #[test]
