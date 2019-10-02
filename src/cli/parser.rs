@@ -69,6 +69,28 @@ lazy_static! {
     )
     .unwrap();
 
+    // rgb(100%,0%,46.7%)
+    pub static ref RE_RGB_PERCENT: Regex = Regex::new(
+        r"(?x)
+            ^
+            rgb\(
+                \s*
+                (\d+(?:\.\d+)?)%
+                \s*
+                ,
+                \s*
+                (\d+(?:\.\d+)?)%
+                \s*
+                ,
+                \s*
+                (\d+(?:\.\d+)?)%
+                \s*
+            \)
+            $
+        ",
+    )
+    .unwrap();
+
     // RRRGGGBBB without the `rgb(...)` function: 255,0,119
     pub static ref RE_RGB_NOFUNCTION: Regex = Regex::new(
         r"(?x)
@@ -190,6 +212,22 @@ pub fn parse_color(color: &str) -> Option<Color> {
         };
     }
 
+    if let Some(caps) = RE_RGB_PERCENT.captures(color) {
+        let pr = float_to_f64(caps.get(1).unwrap().as_str());
+        let pg = float_to_f64(caps.get(2).unwrap().as_str());
+        let pb = float_to_f64(caps.get(3).unwrap().as_str());
+
+        match (pr, pg, pb) {
+            (Some(pr), Some(pg), Some(pb)) => {
+                let r = pr / 100.0;
+                let g = pg / 100.0;
+                let b = pb / 100.0;
+                return Some(Color::from_rgb_float(r, g, b));
+            }
+            _ => {}
+        };
+    }
+
     if let Some(caps) = RE_RGB_NOFUNCTION.captures(color) {
         let mr = dec_to_u8(caps.get(1).unwrap().as_str());
         let mg = dec_to_u8(caps.get(2).unwrap().as_str());
@@ -287,11 +325,17 @@ fn parse_rgb() {
     assert_eq!(Some(rgb(255, 0, 119)), parse_color("255,0,119"));
     assert_eq!(Some(rgb(255, 0, 119)), parse_color("  255  ,  0  ,  119  "));
     assert_eq!(Some(rgb(1, 2, 3)), parse_color("1,2,3"));
+    assert_eq!(Some(rgb(255, 0, 127)), parse_color("rgb(100%,0%,49.8%)"));
+    assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb(100%,0%,60%)"));
+    assert_eq!(Some(rgb(255, 0, 119)), parse_color("rgb(100%,0%,46.7%)"));
+    assert_eq!(Some(rgb(3, 54, 119)), parse_color("rgb(1%,21.2%,46.7%)"));
 
     assert_eq!(None, parse_color("rgb(256,0,0)"));
     assert_eq!(None, parse_color("rgb(255,0)"));
     assert_eq!(None, parse_color("rgb(255,0,0"));
     assert_eq!(None, parse_color("rgb (256,0,0)"));
+    assert_eq!(None, parse_color("rgb(100%,0,0)"));
+    assert_eq!(None, parse_color("rgb(100%,100%,-45%)"));
 }
 
 #[test]
