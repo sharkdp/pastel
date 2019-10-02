@@ -151,6 +151,19 @@ lazy_static! {
     )
     .unwrap();
 
+    // gray(20%)
+    pub static ref RE_GRAY_PERCENT: Regex = Regex::new(
+        r"(?x)
+            ^
+            gray\(
+            \s*
+            (\d+(?:\.\d+)?)%
+            \s*
+            \)
+        ",
+    )
+    .unwrap();
+
     // Lab(53.2,-35.4,-68.12,0.5)
     pub static ref RE_LAB: Regex = Regex::new(
     r"(?ix)
@@ -268,6 +281,12 @@ pub fn parse_color(color: &str) -> Option<Color> {
     if let Some(caps) = RE_GRAY.captures(color) {
         if let Some(lightness) = float_to_f64(caps.get(1).unwrap().as_str()) {
             return Some(Color::graytone(lightness));
+        }
+    }
+
+    if let Some(caps) = RE_GRAY_PERCENT.captures(color) {
+        if let Some(lightness_percentage) = float_to_f64(caps.get(1).unwrap().as_str()) {
+            return Some(Color::graytone(lightness_percentage / 100.0));
         }
     }
 
@@ -423,8 +442,16 @@ fn parse_gray() {
         parse_color("  gray(  0.41   ) ")
     );
 
+    assert_eq!(Some(Color::graytone(0.2)), parse_color("gray(20%)"));
+    assert_eq!(Some(Color::black()), parse_color("gray(0%)"));
+    assert_eq!(Some(Color::black()), parse_color("gray(0.0%)"));
+    assert_eq!(Some(Color::white()), parse_color("gray(100%)"));
+    assert_eq!(Some(Color::graytone(0.5)), parse_color("gray(50%)"));
+
     assert_eq!(None, parse_color("gray(1.)"));
     assert_eq!(None, parse_color("gray(-1)"));
+    assert_eq!(None, parse_color("gray(-1%)"));
+    assert_eq!(None, parse_color("gray(-4.%)"));
 }
 
 #[test]
