@@ -69,6 +69,24 @@ lazy_static! {
     )
     .unwrap();
 
+    // rgb(255 0 119)
+    pub static ref RE_RGB_SPACE: Regex = Regex::new(
+        r"(?x)
+            ^
+            rgb\(
+                \s*
+                (\d{1,3})
+                \s+
+                (\d{1,3})
+                \s+
+                (\d{1,3})
+                \s*
+            \)
+            $
+        ",
+    )
+    .unwrap();
+
     // rgb(100%,0%,46.7%)
     pub static ref RE_RGB_PERCENT: Regex = Regex::new(
         r"(?x)
@@ -225,6 +243,17 @@ pub fn parse_color(color: &str) -> Option<Color> {
         };
     }
 
+    if let Some(caps) = RE_RGB_SPACE.captures(color) {
+        let mr = dec_to_u8(caps.get(1).unwrap().as_str());
+        let mg = dec_to_u8(caps.get(2).unwrap().as_str());
+        let mb = dec_to_u8(caps.get(3).unwrap().as_str());
+
+        match (mr, mg, mb) {
+            (Some(r), Some(g), Some(b)) => return Some(rgb(r, g, b)),
+            _ => {}
+        };
+    }
+
     if let Some(caps) = RE_RGB_PERCENT.captures(color) {
         let pr = float_to_f64(caps.get(1).unwrap().as_str());
         let pg = float_to_f64(caps.get(2).unwrap().as_str());
@@ -358,6 +387,8 @@ fn parse_rgb() {
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb(100%,0%,60%)"));
     assert_eq!(Some(rgb(255, 0, 119)), parse_color("rgb(100%,0%,46.7%)"));
     assert_eq!(Some(rgb(3, 54, 119)), parse_color("rgb(1%,21.2%,46.7%)"));
+    assert_eq!(Some(rgb(255, 0, 119)), parse_color("rgb(255 0 119)"));
+    assert_eq!(Some(rgb(255, 0, 119)), parse_color("rgb(    255      0      119)"));
 
     assert_eq!(None, parse_color("rgb(256,0,0)"));
     assert_eq!(None, parse_color("rgb(255,0)"));
@@ -365,6 +396,7 @@ fn parse_rgb() {
     assert_eq!(None, parse_color("rgb (256,0,0)"));
     assert_eq!(None, parse_color("rgb(100%,0,0)"));
     assert_eq!(None, parse_color("rgb(100%,100%,-45%)"));
+    assert_eq!(None, parse_color("rgb(2550119)"));
 }
 
 #[test]
