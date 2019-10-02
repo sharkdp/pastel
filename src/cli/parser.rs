@@ -116,7 +116,7 @@ lazy_static! {
             hsl\(
                 \s*
                 (-?\d+(?:\.\d+)?)
-                (?:deg|°)?
+                (deg|°|grad|rad|turn)?
                 \s*
                 ,
                 \s*
@@ -241,12 +241,22 @@ pub fn parse_color(color: &str) -> Option<Color> {
 
     if let Some(caps) = RE_HSL.captures(color) {
         let mh = float_to_f64(caps.get(1).unwrap().as_str());
-        let ms = float_to_f64(caps.get(2).unwrap().as_str());
-        let ml = float_to_f64(caps.get(3).unwrap().as_str());
+        let unit = match caps.get(2) {
+            Some(s) => s.as_str(),
+            None => "deg",
+        };
+        let ms = float_to_f64(caps.get(3).unwrap().as_str());
+        let ml = float_to_f64(caps.get(4).unwrap().as_str());
 
         match (mh, ms, ml) {
             (Some(h), Some(s), Some(l)) => {
-                let h = f64::from(h);
+                let h = match unit {
+                    "°" | "deg" => h,
+                    "grad" => h * (18.0 / 20.0),
+                    "rad" => h.to_degrees(),
+                    "turn" => h * 360.0,
+                    _ => unimplemented!(),
+                };
                 let s = f64::from(s) / 100.0;
                 let l = f64::from(l) / 100.0;
                 return Some(Color::from_hsl(h, s, l));
@@ -364,6 +374,31 @@ fn parse_hsl() {
     assert_eq!(
         Some(Color::from_hsl(-140.0, 0.2, 0.5)),
         parse_color("hsl(-140°,20%,50%)")
+    );
+    
+    assert_eq!(
+        Some(Color::from_hsl(90.0, 0.2, 0.5)),
+        parse_color("hsl(100grad,20%,50%)")
+    );
+    assert_eq!(
+        Some(Color::from_hsl(90.05, 0.2, 0.5)),
+        parse_color("hsl(1.5708rad,20%,50%)")
+    );
+    assert_eq!(
+        Some(Color::from_hsl(90.0, 0.2, 0.5)),
+        parse_color("hsl(0.25turn,20%,50%)")
+    );
+    assert_eq!(
+        Some(Color::from_hsl(45.0, 0.2, 0.5)),
+        parse_color("hsl(50grad,20%,50%)")
+    );
+    assert_eq!(
+        Some(Color::from_hsl(45.0, 0.2, 0.5)),
+        parse_color("hsl(0.7854rad,20%,50%)")
+    );
+    assert_eq!(
+        Some(Color::from_hsl(45.0, 0.2, 0.5)),
+        parse_color("hsl(0.125turn,20%,50%)")
     );
 
     assert_eq!(None, parse_color("hsl(280,20%,50)"));
