@@ -356,23 +356,31 @@ fn parse_lab() {
     );
     assert_eq!(
         Some(Color::from_lab(15.0, -23.0, 43.0, 0.5)),
-        parse_color("Lab(15,-23,43,0.5)")
+        parse_color("lab(15,-23,43,0.5)")
     );
     assert_eq!(
         Some(Color::from_lab(15.0, 23.0, -43.0, 1.0)),
-        parse_color("Lab(15,23,-43)")
+        parse_color("CIELab(15,23,-43)")
     );
     assert_eq!(
         Some(Color::from_lab(15.0, 35.5, -43.4, 1.0)),
-        parse_color("Lab(15,35.5,-43.4)")
+        parse_color("CIELab(15,35.5,-43.4)")
     );
     assert_eq!(
         Some(Color::from_lab(15.0, -35.5, -43.4, 0.4)),
-        parse_color("Lab(15,-35.5,-43.4,0.4)")
+        parse_color("cieLab(15,-35.5,-43.4,0.4)")
     );
     assert_eq!(
         Some(Color::from_lab(15.0, 23.0, -43.0, 1.0)),
         parse_color("Lab(        15,  23,-43   )")
+    );
+    assert_eq!(
+        Some(Color::from_lab(15.0, -35.5, -43.4, 0.4)),
+        parse_color("CieLab(15,-35.5,-43.4,0.4)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(15.0, 23.0, -43.0, 1.0)),
+        parse_color("CIELab(        15,  23,-43   )")
     );
 }
 
