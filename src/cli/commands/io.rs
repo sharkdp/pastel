@@ -23,7 +23,7 @@ pub enum PrintSpectrum {
 }
 
 pub enum ColorArgIterator<'a> {
-    FromPositionalArguments(&'a Config, Values<'a>, PrintSpectrum),
+    FromPositionalArguments(&'a Config<'a>, Values<'a>, PrintSpectrum),
     FromStdin,
 }
 
@@ -75,7 +75,7 @@ impl<'a> ColorArgIterator<'a> {
                     print_colorspectrum(config)?;
                     *print_spectrum = PrintSpectrum::No;
                 }
-                let color_str = run_external_colorpicker()?;
+                let color_str = run_external_colorpicker(config.colorpicker)?;
                 ColorArgIterator::from_color_arg(config, &color_str, print_spectrum)
             }
             color_str => {

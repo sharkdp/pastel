@@ -15,7 +15,7 @@ impl GenericCommand for PickCommand {
 
         let mut color_strings = Vec::new();
         for _ in 0..count {
-            color_strings.push(run_external_colorpicker()?);
+            color_strings.push(run_external_colorpicker(config.colorpicker)?);
         }
 
         let mut print_spectrum = PrintSpectrum::No;
