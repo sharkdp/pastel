@@ -102,6 +102,7 @@ fn run() -> Result<ExitCode> {
         colorcheck_width: 8,
         interactive_mode,
         brush: Brush::from_mode(color_mode),
+        colorpicker: global_matches.value_of("color-picker"),
     };
 
     if let (subcommand, Some(matches)) = global_matches.subcommand() {

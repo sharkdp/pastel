@@ -62,7 +62,7 @@ struct ColorPickerTool {
 }
 
 /// Run an external color picker tool (e.g. gpick or xcolor) and get the output as a string.
-pub fn run_external_colorpicker() -> Result<String> {
+pub fn run_external_colorpicker(picker: Option<&str>) -> Result<String> {
     let tools = [
         #[cfg(target_os = "macos")]
         ColorPickerTool {
@@ -127,7 +127,10 @@ pub fn run_external_colorpicker() -> Result<String> {
         },
     ];
 
-    for tool in &tools {
+    for tool in tools
+        .iter()
+        .filter(|t| picker.map_or(true, |p| t.command.eq_ignore_ascii_case(p)))
+    {
         let result = Command::new(tool.command).args(&tool.version_args).output();
 
         let tool_is_available = match result {

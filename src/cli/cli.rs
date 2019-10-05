@@ -495,4 +495,22 @@ pub fn build_cli() -> App<'static, 'static> {
                 .long("force-color")
                 .help("Alias for --mode=24bit")
         )
+        .arg(
+            Arg::with_name("color-picker")
+                .long("color-picker")
+                .takes_value(true)
+                .possible_values(&[
+                    "gpick",
+                    "xcolor",
+                    "grabc",
+                    "colorpicker",
+                    "chameleon",
+                    "kcolorchooser",
+
+                    #[cfg(target_os = "macos")]
+                    "osascript"
+                ])
+                .case_insensitive(true)
+                .help("Use a specific tool to pick the colors")
+        )
 }
