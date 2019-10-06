@@ -270,20 +270,16 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("gradient")
                 .about("Generate an interpolating sequence of colors")
-                .long_about("Generate a sequence of colors that interpolates between 'start' and \
-                            'stop'. The interpolation is performed in the specified color space.\n\n\
+                .long_about("Generate a sequence of colors that interpolates between the specified colors.\n\
+                            The interpolation is performed in the specified color space.\n\n\
                             Example:\n  \
-                              pastel gradient --colorspace=HSL ffffcc fd8d3c")
+                              pastel gradient --colorspace=HSL ffffcc fd8d3c\n  \
+                              pastel gradient 555ee4 white d84341 -n 15")
                 .arg(
-                    Arg::with_name("color-start")
-                        .value_name("start")
-                        .help("The first color in the color gradient")
-                        .required(true),
-                )
-                .arg(
-                    Arg::with_name("color-stop")
-                        .value_name("stop")
-                        .help("The last color in the color gradient")
+                    Arg::with_name("color")
+                        .value_name("color")
+                        .help("Color stops in the color gradient")
+                        .multiple(true)
                         .required(true),
                 )
                 .arg(
