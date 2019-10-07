@@ -169,7 +169,6 @@ impl GenericCommand for DistinctCommand {
 
         let mut callback: Box<dyn FnMut(&IterationStatistics)> = if verbose_output {
             Box::new(|stats: &IterationStatistics| {
-                let brush_stderr = Brush::from_environment(Stream::Stderr);
                 print_iteration(&mut stderr_lock, &brush_stderr, stats).ok();
             })
         } else {
