@@ -135,6 +135,7 @@ fn print_distance_matrix(
 impl GenericCommand for DistinctCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let stderr = io::stderr();
+        let mut stderr_lock = stderr.lock();
         let brush_stderr = Brush::from_environment(Stream::Stderr);
         let verbose_output = matches.is_present("verbose");
 
@@ -166,18 +167,17 @@ impl GenericCommand for DistinctCommand {
             return Err(PastelError::DistinctColorFixedColorsCannotBeMoreThanCount);
         }
 
-        let callback: Box<dyn FnMut(&IterationStatistics)> = if verbose_output {
+        let mut callback: Box<dyn FnMut(&IterationStatistics)> = if verbose_output {
             Box::new(|stats: &IterationStatistics| {
-                let stderr = io::stderr();
                 let brush_stderr = Brush::from_environment(Stream::Stderr);
-                print_iteration(&mut stderr.lock(), &brush_stderr, stats).ok();
+                print_iteration(&mut stderr_lock, &brush_stderr, stats).ok();
             })
         } else {
             Box::new(|_: &IterationStatistics| {})
         };
 
         let (mut colors, distance_result) =
-            distinct::distinct_colors(count, distance_metric, fixed_colors, callback);
+            distinct::distinct_colors(count, distance_metric, fixed_colors, callback.as_mut());
 
         if matches.is_present("print-minimal-distance") {
             writeln!(out.handle, "{:.3}", distance_result.min_closest_distance)?;

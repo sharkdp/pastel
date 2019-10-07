@@ -247,7 +247,7 @@ pub fn distinct_colors(
     count: usize,
     distance_metric: DistanceMetric,
     fixed_colors: Vec<Color>,
-    mut callback: Box<dyn FnMut(&IterationStatistics)>,
+    callback: &mut dyn FnMut(&IterationStatistics),
 ) -> (Vec<Color>, DistanceResult) {
     assert!(count > 1);
     assert!(fixed_colors.len() <= count);
@@ -272,7 +272,7 @@ pub fn distinct_colors(
         },
     );
 
-    annealing.run(callback.as_mut());
+    annealing.run(callback);
 
     annealing.parameters.initial_temperature = 0.5;
     annealing.parameters.cooling_rate = 0.98;
@@ -280,7 +280,7 @@ pub fn distinct_colors(
     annealing.parameters.opt_target = OptimizationTarget::Min;
     annealing.parameters.opt_mode = OptimizationMode::Local;
 
-    let result = annealing.run(callback.as_mut());
+    let result = annealing.run(callback);
 
     (annealing.get_colors(), result)
 }
