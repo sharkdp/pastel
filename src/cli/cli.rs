@@ -1,5 +1,10 @@
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, SubCommand};
 
+// Only include `colorpicker_tools` for normal builds (not when compiling `build.rs` where
+// the module machinery does not work)
+#[cfg(pastel_normal_build)]
+use crate::colorpicker_tools::COLOR_PICKER_TOOLS;
+
 const SORT_OPTIONS: &[&'static str] = &["brightness", "luminance", "hue", "chroma", "random"];
 const DEFAULT_SORT_ORDER: &'static str = "hue";
 
@@ -499,17 +504,7 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("color-picker")
                 .long("color-picker")
                 .takes_value(true)
-                .possible_values(&[
-                    "gpick",
-                    "xcolor",
-                    "grabc",
-                    "colorpicker",
-                    "chameleon",
-                    "kcolorchooser",
-
-                    #[cfg(target_os = "macos")]
-                    "osascript"
-                ])
+                .possible_values(&COLOR_PICKER_TOOLS.iter().map(|t| t.command).collect::<Vec<_>>())
                 .case_insensitive(true)
                 .help("Use a specific tool to pick the colors")
         )

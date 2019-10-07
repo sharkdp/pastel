@@ -4,6 +4,7 @@ use atty::Stream;
 
 mod cli;
 mod colorpicker;
+mod colorpicker_tools;
 mod colorspace;
 mod commands;
 mod config;

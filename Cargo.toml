@@ -28,6 +28,7 @@ features = ["suggestions", "color", "wrap_help"]
 
 [build-dependencies]
 clap = "2"
+lazy_static = "1.3.0"
 output_vt100 = "0.1"
 
 [[bin]]
