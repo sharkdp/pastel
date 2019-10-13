@@ -154,7 +154,7 @@ Check out the [release page](https://github.com/sharkdp/pastel/releases) for bin
 
 ### Via cargo
 
-If you have Rust 1.34 or higher, you can install `pastel` from source via `cargo`:
+If you have Rust 1.35 or higher, you can install `pastel` from source via `cargo`:
 ```
 cargo install pastel
 ```
