@@ -351,7 +351,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("property")
                         .help("The property that should be changed")
                         .possible_values(&["lightness", "hue", "chroma",
-                                           "lab-a", "lab-b",
+                                           "lab-a", "lab-b", "luminance",
                                            "red", "green", "blue",
                                            "hsl-hue", "hsl-saturation", "hsl-lightness"])
                         .case_insensitive(true)
