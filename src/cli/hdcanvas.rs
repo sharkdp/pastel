@@ -71,6 +71,12 @@ impl Canvas {
         }
     }
 
+    pub fn draw_colored_text(&mut self, row: usize, col: usize, text: &str, fg: &Color, bg: &Color) {
+        self.draw_text(row, col, text);
+        self.draw_rect(row, col, 1, text.len(), fg);
+        self.draw_rect(row + 1, col, 1, text.len(), bg);
+    }
+
     pub fn print(&self, out: &mut dyn Write) -> Result<()> {
         for i_div_2 in 0..self.height / 2 {
             for j in 0..self.width {
