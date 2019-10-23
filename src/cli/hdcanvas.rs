@@ -78,13 +78,14 @@ impl Canvas {
                     let p_top = self.pixel(2 * i_div_2, j);
                     let p_bottom = self.pixel(2 * i_div_2 + 1, j);
 
-                    let mut style;
+                    let mut style = Style::default();
 
-                    if let (Some(fg), Some(bg)) = (p_top, p_bottom) {
-                        style = fg.ansi_style();
+                    if let Some(fg) = p_top {
+                        style.foreground(fg);
+                    }
+
+                    if let Some(bg) = p_bottom {
                         style.on(bg);
-                    } else {
-                        style = Style::default();
                     }
 
                     write!(out, "{}", self.brush.paint(c, style))?;
