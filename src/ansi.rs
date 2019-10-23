@@ -281,17 +281,17 @@ impl Brush {
 
     pub fn paint<S>(self, text: S, style: impl Into<Style>) -> String
     where
-        S: AsRef<str>,
+        S: std::fmt::Display,
     {
         if let Some(ansi_mode) = self.mode {
             format!(
                 "{begin}{text}{end}",
                 begin = style.into().escape_sequence(ansi_mode),
-                text = text.as_ref(),
+                text = text,
                 end = "\x1b[0m"
             )
         } else {
-            text.as_ref().into()
+            format!("{}", text)
         }
     }
 }

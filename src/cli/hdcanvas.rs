@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use pastel::ansi::{Brush, ToAnsiStyle};
+use pastel::ansi::{Brush, Style, ToAnsiStyle};
 use pastel::Color;
 
 use crate::Result;
@@ -75,7 +75,19 @@ impl Canvas {
         for i_div_2 in 0..self.height / 2 {
             for j in 0..self.width {
                 if let Some(c) = self.char(i_div_2, j) {
-                    write!(out, "{}", c)?;
+                    let p_top = self.pixel(2 * i_div_2, j);
+                    let p_bottom = self.pixel(2 * i_div_2 + 1, j);
+
+                    let mut style;
+
+                    if let (Some(fg), Some(bg)) = (p_top, p_bottom) {
+                        style = fg.ansi_style();
+                        style.on(bg);
+                    } else {
+                        style = Style::default();
+                    }
+
+                    write!(out, "{}", self.brush.paint(c, style))?;
                 } else {
                     let p_top = self.pixel(2 * i_div_2, j);
                     let p_bottom = self.pixel(2 * i_div_2 + 1, j);
