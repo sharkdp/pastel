@@ -152,11 +152,19 @@ brew install pastel
 
 Check out the [release page](https://github.com/sharkdp/pastel/releases) for binary builds.
 
-### Via cargo
+### Via cargo (source)
+
+If you do not have cargo, install using [rust's installation documentation](https://doc.rust-lang.org/book/ch01-01-installation.html).
 
 If you have Rust 1.35 or higher, you can install `pastel` from source via `cargo`:
 ```
 cargo install pastel
+```
+
+If you have Rust 1.35 or higher, you can install `pastel` from source via `cargo` using this repository:
+```
+git clone https://github.com/sharkdp/pastel
+cargo install --path ./pastel
 ```
 
 ## Resources
