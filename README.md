@@ -161,7 +161,7 @@ If you have Rust 1.35 or higher, you can install `pastel` from source via `cargo
 cargo install pastel
 ```
 
-If you have Rust 1.35 or higher, you can install `pastel` from source via `cargo` using this repository:
+Alternatively, you can install `pastel` directly from this repository by using
 ```
 git clone https://github.com/sharkdp/pastel
 cargo install --path ./pastel
