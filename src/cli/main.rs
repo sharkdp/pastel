@@ -10,9 +10,7 @@ mod commands;
 mod config;
 mod error;
 mod hdcanvas;
-mod named;
 mod output;
-mod parser;
 mod utility;
 
 use commands::Command;

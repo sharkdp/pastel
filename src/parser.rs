@@ -6,8 +6,8 @@ use nom::error::ErrorKind;
 use nom::number::complete::double;
 use nom::Err;
 use nom::IResult;
-use pastel::Color;
 
+use crate::Color;
 use crate::named::NAMED_COLORS;
 
 fn hex_to_u8_unsafe(num: &str) -> u8 {
