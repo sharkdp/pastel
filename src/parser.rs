@@ -313,6 +313,10 @@ fn parse_hsl_syntax() {
         Some(Color::from_hsl(280.0, 0.2, 0.5)),
         parse_color("hsl(  280 , 20% , 50%)")
     );
+    assert_eq!(
+        Some(Color::from_hsl(270.0, 0.6, 0.7)),
+        parse_color("hsl(270 60% 70%)")
+    );
 
     assert_eq!(
         Some(Color::from_hsl(-140.0, 0.2, 0.5)),
