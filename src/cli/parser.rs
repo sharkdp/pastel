@@ -202,21 +202,26 @@ pub fn parse_color(input: &str) -> Option<Color> {
         all_consuming(parse_gray),
         all_consuming(parse_lab),
         all_consuming(parse_named),
-    ))(input)
+    ))(input.trim())
     .ok()
     .map(|(_, c)| c)
 }
 
 #[test]
 fn parse_rgb_hex_syntax() {
+    assert_eq!(Some(rgb(255, 0, 153)), parse_color("f09"));
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("#f09"));
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("#F09"));
+
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("#ff0099"));
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("#FF0099"));
+    assert_eq!(Some(rgb(255, 0, 153)), parse_color("ff0099"));
 
     assert_eq!(Some(rgb(87, 166, 206)), parse_color("57A6CE"));
+    assert_eq!(Some(rgb(255, 0, 119)), parse_color("  #ff0077  "));
 
     assert_eq!(None, parse_color("#1"));
+    assert_eq!(None, parse_color("#12"));
     assert_eq!(None, parse_color("#12345"));
     assert_eq!(None, parse_color("#1234567"));
     assert_eq!(None, parse_color("#hh0033"));
@@ -230,6 +235,21 @@ fn parse_rgb_functional_syntax() {
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb( 255 , 0 , 153 )"));
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb(255, 0, 153.0)"));
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb(255 0 153)"));
+
+    assert_eq!(
+        Some(rgb(255, 8, 119)),
+        parse_color("  rgb( 255  ,  8  ,  119 )  ")
+    );
+
+    assert_eq!(Some(rgb(255, 0, 127)), parse_color("rgb(100%,0%,49.8%)"));
+    assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb(100%,0%,60%)"));
+    assert_eq!(Some(rgb(255, 0, 119)), parse_color("rgb(100%,0%,46.7%)"));
+    assert_eq!(Some(rgb(3, 54, 119)), parse_color("rgb(1%,21.2%,46.7%)"));
+    assert_eq!(Some(rgb(255, 0, 119)), parse_color("rgb(255 0 119)"));
+    assert_eq!(
+        Some(rgb(255, 0, 119)),
+        parse_color("rgb(    255      0      119)")
+    );
 
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb(100%,0%,60%)"));
     assert_eq!(Some(rgb(255, 0, 153)), parse_color("rgb(100%, 0%, 60%)"));
@@ -254,10 +274,21 @@ fn parse_rgb_functional_syntax() {
 
 #[test]
 fn parse_rgb_standalone_syntax() {
+    assert_eq!(
+        Some(rgb(255, 8, 119)),
+        parse_color("  rgb( 255  ,  8  ,  119 )  ")
+    );
+
     assert_eq!(rgb(255, 0, 153), parse_color("255,0,153").unwrap());
     assert_eq!(rgb(255, 0, 153), parse_color("255, 0, 153").unwrap());
+    assert_eq!(
+        rgb(255, 0, 153),
+        parse_color("  255  ,  0  ,  153   ").unwrap()
+    );
     assert_eq!(rgb(255, 0, 153), parse_color("255 0 153").unwrap());
     assert_eq!(rgb(255, 0, 153), parse_color("255 0 153.0").unwrap());
+
+    assert_eq!(Some(rgb(1, 2, 3)), parse_color("1,2,3"));
 }
 
 #[test]
@@ -330,7 +361,7 @@ fn parse_gray_syntax() {
 
     assert_eq!(Some(Color::graytone(0.32)), parse_color("gray(.32)"));
 
-    assert_eq!(Some(Color::graytone(0.41)), parse_color("gray(  0.41   )"));
+    assert_eq!(Some(Color::graytone(0.41)), parse_color("  gray(  0.41   ) "));
 
     assert_eq!(Some(Color::graytone(0.2)), parse_color("gray(20%)"));
     assert_eq!(Some(Color::black()), parse_color("gray(0%)"));
