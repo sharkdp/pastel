@@ -1,8 +1,8 @@
 use crate::commands::prelude::*;
 use crate::commands::sort::key_function;
-use crate::named::{NamedColor, NAMED_COLORS};
 
 use pastel::ansi::ToAnsiStyle;
+use pastel::named::{NamedColor, NAMED_COLORS};
 
 pub struct ListCommand;
 

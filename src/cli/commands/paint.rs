@@ -1,11 +1,11 @@
 use std::io::{self, Read};
 
 use crate::commands::prelude::*;
-use crate::parser::parse_color;
 
 use super::io::ColorArgIterator;
 
 use pastel::ansi::Style;
+use pastel::parser::parse_color;
 
 pub struct PaintCommand;
 

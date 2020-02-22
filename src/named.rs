@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 
-use pastel::Color;
+use crate::Color;
 
 #[derive(Debug, Clone)]
 pub struct NamedColor {

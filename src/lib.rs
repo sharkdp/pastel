@@ -3,6 +3,8 @@ pub mod colorspace;
 pub mod delta_e;
 pub mod distinct;
 mod helper;
+pub mod named;
+pub mod parser;
 pub mod random;
 mod types;
 
