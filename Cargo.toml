@@ -42,3 +42,8 @@ approx = "0.3"
 assert_cmd = "0.11.1"
 escargot = "0.5.0"
 rand_xoshiro = "0.4.0"
+criterion = "0.3"
+
+[[bench]]
+name = "parse_color"
+harness = false
