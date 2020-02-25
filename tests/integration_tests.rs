@@ -1,18 +1,7 @@
-use assert_cmd::prelude::*;
-use escargot::CargoRun;
-use lazy_static::lazy_static;
-use std::process::Command;
-
-lazy_static! {
-    static ref CARGO_RUN: CargoRun = escargot::CargoBuild::new()
-        .bin("pastel")
-        .current_release()
-        .run()
-        .unwrap();
-}
+use assert_cmd::Command;
 
 fn pastel() -> Command {
-    let mut cmd = CARGO_RUN.command();
+    let mut cmd = Command::cargo_bin("pastel").unwrap();
     cmd.env_remove("PASTEL_COLOR_MODE");
     cmd
 }
@@ -41,16 +30,14 @@ fn color_reads_colors_from_args() {
 fn color_reads_colors_from_stdin() {
     pastel()
         .arg("color")
-        .with_stdin()
-        .buffer("red\nblue\n")
+        .write_stdin("red\nblue\n")
         .assert()
         .success()
         .stdout("hsl(0,100.0%,50.0%)\nhsl(240,100.0%,50.0%)\n");
 
     pastel()
         .arg("color")
-        .with_stdin()
-        .buffer("no color")
+        .write_stdin("no color")
         .assert()
         .failure();
 }
@@ -88,8 +75,7 @@ fn pipe_into_format_command() {
     pastel()
         .arg("format")
         .arg("name")
-        .with_stdin()
-        .buffer(String::from_utf8(first.get_output().stdout.clone()).unwrap())
+        .write_stdin(String::from_utf8(first.get_output().stdout.clone()).unwrap())
         .assert()
         .success()
         .stdout("red\nteal\nhotpink\n");
