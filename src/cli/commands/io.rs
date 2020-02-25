@@ -6,8 +6,8 @@ use crate::colorpicker::{print_colorspectrum, run_external_colorpicker};
 use crate::config::Config;
 use crate::{PastelError, Result};
 
-use pastel::Color;
 use pastel::parser::parse_color;
+use pastel::Color;
 
 pub fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
     let value_str = matches.value_of(name).expect("required argument");

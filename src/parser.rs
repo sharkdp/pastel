@@ -7,8 +7,8 @@ use nom::number::complete::double;
 use nom::Err;
 use nom::IResult;
 
-use crate::Color;
 use crate::named::NAMED_COLORS;
+use crate::Color;
 
 fn hex_to_u8_unsafe(num: &str) -> u8 {
     u8::from_str_radix(num, 16).unwrap()
@@ -365,7 +365,10 @@ fn parse_gray_syntax() {
 
     assert_eq!(Some(Color::graytone(0.32)), parse_color("gray(.32)"));
 
-    assert_eq!(Some(Color::graytone(0.41)), parse_color("  gray(  0.41   ) "));
+    assert_eq!(
+        Some(Color::graytone(0.41)),
+        parse_color("  gray(  0.41   ) ")
+    );
 
     assert_eq!(Some(Color::graytone(0.2)), parse_color("gray(20%)"));
     assert_eq!(Some(Color::black()), parse_color("gray(0%)"));
