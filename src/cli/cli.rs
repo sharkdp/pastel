@@ -206,13 +206,16 @@ pub fn build_cli() -> App<'static, 'static> {
                   pastel random -n 20 | pastel format rgb")
                 .arg(
                     Arg::with_name("type")
-                        .help("Output format type")
+                        .help("Output format type. Note that the 'ansi-*-escaped' formats print \
+                               ansi escape sequences to the terminal that will not be visible \
+                               unless something else is printed in addition.")
                         .possible_values(&["rgb", "rgb-float", "hex",
                                            "hsl", "hsl-hue", "hsl-saturation", "hsl-lightness",
                                            "lch", "lch-lightness", "lch-chroma", "lch-hue",
                                            "lab", "lab-a", "lab-b",
                                            "luminance", "brightness",
                                            "ansi-8bit", "ansi-24bit",
+                                           "ansi-8bit-escaped", "ansi-24bit-escaped",
                                            "name"])
                         .case_insensitive(true)
                         .default_value("hex")
