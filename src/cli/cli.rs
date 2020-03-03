@@ -206,7 +206,7 @@ pub fn build_cli() -> App<'static, 'static> {
                   pastel random -n 20 | pastel format rgb")
                 .arg(
                     Arg::with_name("type")
-                        .help("Output format type. Note that the 'ansi-*-escaped' formats print \
+                        .help("Output format type. Note that the 'ansi-*-escapecode' formats print \
                                ansi escape sequences to the terminal that will not be visible \
                                unless something else is printed in addition.")
                         .possible_values(&["rgb", "rgb-float", "hex",
