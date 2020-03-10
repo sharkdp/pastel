@@ -17,7 +17,7 @@ pub struct Output<'a> {
 impl Output<'_> {
     pub fn new(handle: &mut dyn Write) -> Output {
         Output {
-            handle: handle,
+            handle,
             colors_shown: 0,
         }
     }
