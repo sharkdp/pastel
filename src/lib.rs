@@ -33,9 +33,9 @@ pub struct Color {
 }
 
 // Illuminant D65 constants used for Lab color space conversions.
-const D65_XN: Scalar = 0.950470;
+const D65_XN: Scalar = 0.950_470;
 const D65_YN: Scalar = 1.0;
-const D65_ZN: Scalar = 1.088830;
+const D65_ZN: Scalar = 1.088_830;
 
 impl Color {
     pub fn from_hsla(hue: Scalar, saturation: Scalar, lightness: Scalar, alpha: Scalar) -> Color {
@@ -123,7 +123,7 @@ impl Color {
     /// - https://en.wikipedia.org/wiki/SRGB
     pub fn from_xyz(x: Scalar, y: Scalar, z: Scalar, alpha: Scalar) -> Color {
         let f = |c| {
-            if c <= 0.0031308 {
+            if c <= 0.003_130_8 {
                 12.92 * c
             } else {
                 1.055 * Scalar::powf(c, 1.0 / 2.4) - 0.055
@@ -140,9 +140,9 @@ impl Color {
     /// Create a `Color` from LMS coordinates. This is the matrix inverse of the matrix that
     /// appears in `to_lms`.
     pub fn from_lms(l: Scalar, m: Scalar, s: Scalar, alpha: Scalar) -> Color {
-        let x = 1.91020 * l - 1.112120 * m + 0.201908 * s;
-        let y = 0.37095 * l + 0.629054 * m + 0.000000 * s;
-        let z = 0.00000 * l + 0.000000 * m + 1.000000 * s;
+        let x = 1.91020 * l - 1.112_120 * m + 0.201_908 * s;
+        let y = 0.37095 * l + 0.629_054 * m + 0.000_000 * s;
+        let z = 0.00000 * l + 0.000_000 * m + 1.000_000 * s;
         Color::from_xyz(x, y, z, alpha)
     }
 
@@ -550,17 +550,17 @@ impl Color {
         let (l, m, s, alpha) = match cb_ty {
             ColorblindnessType::Protanopia => {
                 let LMS { m, s, alpha, .. } = self.to_lms();
-                let l = 1.05118294 * m - 0.05116099 * s;
+                let l = 1.051_182_94 * m - 0.051_160_99 * s;
                 (l, m, s, alpha)
             }
             ColorblindnessType::Deuteranopia => {
                 let LMS { l, s, alpha, .. } = self.to_lms();
-                let m = 0.9513092 * l + 0.04866992 * s;
+                let m = 0.951_309_2 * l + 0.048_669_92 * s;
                 (l, m, s, alpha)
             }
             ColorblindnessType::Tritanopia => {
                 let LMS { l, m, alpha, .. } = self.to_lms();
-                let s = -0.86744736 * l + 1.86727089 * m;
+                let s = -0.867_447_36 * l + 1.867_270_89 * m;
                 (l, m, s, alpha)
             }
         };
