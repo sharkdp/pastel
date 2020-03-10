@@ -47,7 +47,7 @@ fn parse_degrees(input: &str) -> IResult<&str, f64> {
 fn parse_rads(input: &str) -> IResult<&str, f64> {
     let (input, rads) = double(input)?;
     let (input, _) = tag("rad")(input)?;
-    Ok((input, rads * 180. / 3.14159))
+    Ok((input, rads * 180. / std::f64::consts::PI))
 }
 
 fn parse_grads(input: &str) -> IResult<&str, f64> {
