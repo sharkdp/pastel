@@ -71,14 +71,12 @@ impl Color {
         let hue = 60.0
             * (if chroma == 0 {
                 0.0
+            } else if r == max_chroma {
+                mod_positive((g_s - b_s) / chroma_s, 6.0)
+            } else if g == max_chroma {
+                (b_s - r_s) / chroma_s + 2.0
             } else {
-                if r == max_chroma {
-                    mod_positive((g_s - b_s) / chroma_s, 6.0)
-                } else if g == max_chroma {
-                    (b_s - r_s) / chroma_s + 2.0
-                } else {
-                    (r_s - g_s) / chroma_s + 4.0
-                }
+                (r_s - g_s) / chroma_s + 4.0
             });
 
         let lightness = (Scalar::from(max_chroma) + Scalar::from(min_chroma)) / (255.0 * 2.0);

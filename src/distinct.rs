@@ -148,12 +148,10 @@ impl<R: Rng> SimulatedAnnealing<R> {
                     result.closest_pair.1
                 } else if result.closest_pair.1 < self.parameters.num_fixed_colors {
                     result.closest_pair.0
+                } else if self.rng.gen() {
+                    result.closest_pair.0
                 } else {
-                    if self.rng.gen() {
-                        result.closest_pair.0
-                    } else {
-                        result.closest_pair.1
-                    }
+                    result.closest_pair.1
                 }
             };
 
