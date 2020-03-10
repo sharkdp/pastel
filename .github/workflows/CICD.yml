@@ -4,7 +4,7 @@ name: CICD
 # spell-checker:ignore (names) CodeCOV MacOS MinGW Peltoche rivy sharkdp
 # spell-checker:ignore (jargon) SHAs softprops toolchain
 # spell-checker:ignore (shell/tools) choco clippy dmake dpkg esac fakeroot gmake halium libssl mkdir nullglob popd printf pushd rustc rustfmt rustup shopt
-# spell-checker:ignore (misc) gnueabihf issuecomment maint onexitbegin onexitend uutils
+# spell-checker:ignore (misc) aarch gnueabihf issuecomment maint onexitbegin onexitend uutils
 
 env:
   PROJECT_NAME: pastel
@@ -87,6 +87,8 @@ jobs:
         job:
           # { os, target, cargo-options, features, use-cross, toolchain }
           - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: i586-unknown-linux-gnu      , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
@@ -106,6 +108,7 @@ jobs:
       run: |
         case ${{ matrix.job.target }} in
           arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
+          aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
         esac
     - name: Initialize workflow variables
       id: vars
@@ -197,13 +200,13 @@ jobs:
         case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
         echo set-output name=JOB_DO_TESTING::${JOB_DO_TESTING:-<empty>/false}
         echo ::set-output name=JOB_DO_TESTING::${JOB_DO_TESTING}
-        # # * test only binary for arm-type targets
+        # # * test only library units tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
-        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-*) CARGO_TEST_OPTIONS="--bin ${PROJECT_NAME}" ;; esac;
+        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
         echo set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
         echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
-        # * strip executable?
-        STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
+        # * executable for `strip`?
+        STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
         echo set-output name=STRIP::${STRIP}
         echo ::set-output name=STRIP::${STRIP}
     - name: Create all needed build/work directories
