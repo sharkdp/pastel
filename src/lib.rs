@@ -878,7 +878,7 @@ impl ColorScale {
                     .iter()
                     .position(|c| position.value() < c.position.value());
 
-                let index = next_index.unwrap_or(self.color_stops.len());
+                let index = next_index.unwrap_or_else(|| self.color_stops.len());
 
                 let color_stop = ColorStop { color, position };
 
