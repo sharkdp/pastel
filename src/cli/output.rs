@@ -76,6 +76,7 @@ impl Output<'_> {
             );
         }
 
+        #[allow(clippy::identity_op)]
         canvas.draw_text(
             text_position_y + 0 + text_y_offset,
             text_position_x,
