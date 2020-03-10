@@ -8,7 +8,7 @@ use pastel::{Fraction, HSLA};
 
 pub struct DistinctCommand;
 
-fn print_iteration(out: &mut dyn Write, brush: &Brush, stats: &IterationStatistics) -> Result<()> {
+fn print_iteration(out: &mut dyn Write, brush: Brush, stats: &IterationStatistics) -> Result<()> {
     let result = stats.distance_result;
     write!(
         out,
@@ -24,7 +24,7 @@ fn print_iteration(out: &mut dyn Write, brush: &Brush, stats: &IterationStatisti
 
 fn print_colors(
     out: &mut dyn Write,
-    brush: &Brush,
+    brush: Brush,
     colors: &[Color],
     closest_pair: Option<(usize, usize)>,
 ) -> Result<()> {
@@ -169,7 +169,7 @@ impl GenericCommand for DistinctCommand {
 
         let mut callback: Box<dyn FnMut(&IterationStatistics)> = if verbose_output {
             Box::new(|stats: &IterationStatistics| {
-                print_iteration(&mut stderr_lock, &brush_stderr, stats).ok();
+                print_iteration(&mut stderr_lock, brush_stderr, stats).ok();
             })
         } else {
             Box::new(|_: &IterationStatistics| {})
