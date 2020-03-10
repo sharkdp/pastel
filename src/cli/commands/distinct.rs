@@ -28,8 +28,7 @@ fn print_colors(
     colors: &[Color],
     closest_pair: Option<(usize, usize)>,
 ) -> Result<()> {
-    let mut ci = 0;
-    for c in colors.iter() {
+    for (ci, c) in colors.iter().enumerate() {
         let tc = c.text_color();
         let mut style = tc.ansi_style();
         style.on(c);
@@ -46,8 +45,6 @@ fn print_colors(
             "{} ",
             brush.paint(format!("{}", c.to_rgb_hex_string(false)), style)
         )?;
-
-        ci += 1;
     }
     writeln!(out)?;
     Ok(())
