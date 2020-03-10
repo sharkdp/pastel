@@ -43,7 +43,7 @@ fn print_colors(
         write!(
             out,
             "{} ",
-            brush.paint(format!("{}", c.to_rgb_hex_string(false)), style)
+            brush.paint(c.to_rgb_hex_string(false).to_string(), style)
         )?;
     }
     writeln!(out)?;
@@ -95,7 +95,7 @@ fn print_distance_matrix(
         let tc = c.text_color();
         let mut style = tc.ansi_style();
         style.on(c);
-        format!("{}", brush.paint(c.to_rgb_hex_string(false), style))
+        brush.paint(c.to_rgb_hex_string(false), style)
     };
 
     write!(out, "\n\n{:6}  ", "")?;
