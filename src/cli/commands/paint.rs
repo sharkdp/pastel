@@ -24,7 +24,7 @@ impl GenericCommand for PaintCommand {
         };
 
         let bg = if let Some(bg) = matches.value_of("on") {
-            Some(parse_color(bg).ok_or(PastelError::ColorParseError(bg.into()))?)
+            Some(parse_color(bg).ok_or_else(|| PastelError::ColorParseError(bg.into()))?)
         } else {
             None
         };
