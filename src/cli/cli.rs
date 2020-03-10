@@ -5,8 +5,8 @@ use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg, 
 #[cfg(pastel_normal_build)]
 use crate::colorpicker_tools::COLOR_PICKER_TOOLS;
 
-const SORT_OPTIONS: &[&'static str] = &["brightness", "luminance", "hue", "chroma", "random"];
-const DEFAULT_SORT_ORDER: &'static str = "hue";
+const SORT_OPTIONS: &[&str] = &["brightness", "luminance", "hue", "chroma", "random"];
+const DEFAULT_SORT_ORDER: &str = "hue";
 
 pub fn build_cli() -> App<'static, 'static> {
     let color_arg = Arg::with_name("color")
