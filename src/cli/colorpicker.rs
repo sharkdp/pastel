@@ -87,5 +87,5 @@ pub fn run_external_colorpicker(picker: Option<&str>) -> Result<String> {
         }
     }
 
-    return Err(PastelError::NoColorPickerFound);
+    Err(PastelError::NoColorPickerFound)
 }
