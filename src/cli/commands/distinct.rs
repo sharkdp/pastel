@@ -49,7 +49,7 @@ fn print_colors(
 
         ci += 1;
     }
-    writeln!(out, "")?;
+    writeln!(out)?;
     Ok(())
 }
 
@@ -125,7 +125,7 @@ fn print_distance_matrix(
                 write!(out, "{} ", brush.paint(format!("{:6.2}", dist), style))?;
             }
         }
-        writeln!(out, "")?;
+        writeln!(out)?;
     }
     writeln!(out, "\n")?;
 
