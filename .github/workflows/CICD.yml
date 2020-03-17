@@ -30,12 +30,6 @@ jobs:
         case ${{ matrix.job.os }} in windows-latest) unset JOB_DO_FORMAT_TESTING ;; esac;
         echo set-output name=JOB_DO_FORMAT_TESTING::${JOB_DO_FORMAT_TESTING:-<empty>/false}
         echo ::set-output name=JOB_DO_FORMAT_TESTING::${JOB_DO_FORMAT_TESTING}
-        # target-specific options
-        # * CARGO_FEATURES_OPTION
-        CARGO_FEATURES_OPTION='' ;
-        if [ -n "${{ matrix.job.features }}" ]; then CARGO_FEATURES_OPTION='--features "${{ matrix.job.features }}"' ; fi
-        echo set-output name=CARGO_FEATURES_OPTION::${CARGO_FEATURES_OPTION}
-        echo ::set-output name=CARGO_FEATURES_OPTION::${CARGO_FEATURES_OPTION}
     - name: Install `rust` toolchain
       uses: actions-rs/toolchain@v1
       with:
@@ -54,7 +48,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: ${{ matrix.job.cargo-options }} ${{ steps.vars.outputs.CARGO_FEATURES_OPTION }} -- -D warnings
+        args: ${{ matrix.job.cargo-options }} -- -D warnings
 
   min_version:
     name: MinSRV # Minimum supported rust version
@@ -180,11 +174,6 @@ jobs:
         echo set-output name=DPKG_NAME::${DPKG_NAME}
         echo ::set-output name=DPKG_NAME::${DPKG_NAME}
         # target-specific options
-        # * CARGO_FEATURES_OPTION
-        CARGO_FEATURES_OPTION='' ;
-        if [ -n "${{ matrix.job.features }}" ]; then CARGO_FEATURES_OPTION='--features "${{ matrix.job.features }}"' ; fi
-        echo set-output name=CARGO_FEATURES_OPTION::${CARGO_FEATURES_OPTION}
-        echo ::set-output name=CARGO_FEATURES_OPTION::${CARGO_FEATURES_OPTION}
         # * CARGO_USE_CROSS (truthy)
         CARGO_USE_CROSS='true' ; case '${{ matrix.job.use-cross }}' in ''|0|f|false|n|no) unset CARGO_USE_CROSS ;; esac;
         echo set-output name=CARGO_USE_CROSS::${CARGO_USE_CROSS:-<empty>/false}
@@ -230,13 +219,13 @@ jobs:
       with:
         use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
         command: build
-        args: --release --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} ${{ steps.vars.outputs.CARGO_FEATURES_OPTION }}
+        args: --release --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }}
     - name: Test
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }} ${{ steps.vars.outputs.CARGO_FEATURES_OPTION }}
+        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }}
     - name: Archive executable artifacts
       uses: actions/upload-artifact@master
       with:
@@ -311,11 +300,6 @@ jobs:
         echo set-output name=TOOLCHAIN::${TOOLCHAIN}
         echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
         # target-specific options
-        # * CARGO_FEATURES_OPTION
-        CARGO_FEATURES_OPTION='--all-features' ;  ## default to '--all-features' for code coverage
-        if [ -n "${{ matrix.job.features }}" ]; then CARGO_FEATURES_OPTION='--features "${{ matrix.job.features }}"' ; fi
-        echo set-output name=CARGO_FEATURES_OPTION::${CARGO_FEATURES_OPTION}
-        echo ::set-output name=CARGO_FEATURES_OPTION::${CARGO_FEATURES_OPTION}
         # * CODECOV_FLAGS
         CODECOV_FLAGS=$( echo "${{ matrix.job.os }}" | sed 's/[^[:alnum:]]/_/g' )
         echo set-output name=CODECOV_FLAGS::${CODECOV_FLAGS}
@@ -330,7 +314,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: {{ steps.vars.outputs.CARGO_FEATURES_OPTION }} --no-fail-fast
+        args: --no-fail-fast
       env:
         CARGO_INCREMENTAL: '0'
         RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads'
