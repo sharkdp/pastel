@@ -21,15 +21,6 @@ jobs:
           - { os: windows-latest }
     steps:
     - uses: actions/checkout@v1
-    - name: Initialize workflow variables
-      id: vars
-      shell: bash
-      run: |
-        # 'windows-latest' `cargo fmt` is bugged for this project (see reasons @ GH:rust-lang/rustfmt #3324, #3590, #3688 ; waiting for repair)
-        JOB_DO_FORMAT_TESTING="true"
-        case ${{ matrix.job.os }} in windows-latest) unset JOB_DO_FORMAT_TESTING ;; esac;
-        echo set-output name=JOB_DO_FORMAT_TESTING::${JOB_DO_FORMAT_TESTING:-<empty>/false}
-        echo ::set-output name=JOB_DO_FORMAT_TESTING::${JOB_DO_FORMAT_TESTING}
     - name: Install `rust` toolchain
       uses: actions-rs/toolchain@v1
       with:
@@ -38,7 +29,6 @@ jobs:
         profile: minimal # minimal component installation (ie, no documentation)
         components: rustfmt, clippy
     - name: "`fmt` testing"
-      if: steps.vars.outputs.JOB_DO_FORMAT_TESTING
       uses: actions-rs/cargo@v1
       with:
         command: fmt
