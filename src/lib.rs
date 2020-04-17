@@ -236,6 +236,46 @@ impl Color {
         )
     }
 
+    /// Convert a `Color` to its cyan, magenta, yellow, and black values. The CMYK
+    /// values are floats smaller than or equal to 1.0.
+    pub fn to_cmyk(&self) -> CMYK {
+        let rgba = self.to_rgba();
+        let r = (rgba.r as f64) / 255.0;
+        let g = (rgba.g as f64) / 255.0;
+        let b = (rgba.b as f64) / 255.0;
+        let biggest = if r >= g && r >= b {
+            r
+        } else if g >= r && g >= b {
+            g
+        } else {
+            b
+        };
+        let k = 1.0 - biggest;
+        let c = (1.0 - r - k) / biggest;
+        let m = (1.0 - g - k) / biggest;
+        let y = (1.0 - b - k) / biggest;
+
+        CMYK {
+            c: if c.is_nan() { 0.0 } else { c },
+            m: if m.is_nan() { 0.0 } else { m },
+            y: if y.is_nan() { 0.0 } else { y },
+            k: k,
+        }
+    }
+
+    /// Format the color as a CMYK-representation string (`cmyk(0, 50, 100, 100)`).
+    pub fn to_cmyk_string(&self, format: Format) -> String {
+        let cmyk = self.to_cmyk();
+        format!(
+            "cmyk({c},{space}{m},{space}{y},{space}{k})",
+            c = (cmyk.c * 100.0).round(),
+            m = (cmyk.m * 100.0).round(),
+            y = (cmyk.y * 100.0).round(),
+            k = (cmyk.k * 100.0).round(),
+            space = if format == Format::Spaces { " " } else { "" }
+        )
+    }
+
     /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5,  0)`).
     pub fn to_rgb_float_string(&self, format: Format) -> String {
         let rgba = self.to_rgba_float();
@@ -932,6 +972,15 @@ impl ColorScale {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct CMYK {
+    pub c: Scalar,
+    pub m: Scalar,
+    pub y: Scalar,
+    pub k: Scalar,
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1376,4 +1425,26 @@ mod tests {
         assert_eq!(sample_red_green, mix_red_green);
         assert_eq!(sample_green_blue, mix_green_blue);
     }
+
+    #[test]
+    fn to_cmyk_string() {
+        let white = Color::from_rgb(255, 255, 255);
+        assert_eq!("cmyk(0, 0, 0, 0)", white.to_cmyk_string(Format::Spaces));
+
+        let black = Color::from_rgb(0, 0, 0);
+        assert_eq!("cmyk(0, 0, 0, 100)", black.to_cmyk_string(Format::Spaces));
+
+        let c = Color::from_rgb(19, 19, 1);
+        assert_eq!("cmyk(0, 0, 95, 93)", c.to_cmyk_string(Format::Spaces));
+
+        let c1 = Color::from_rgb(55, 55, 55);
+        assert_eq!("cmyk(0, 0, 0, 78)", c1.to_cmyk_string(Format::Spaces));
+
+        let c2 = Color::from_rgb(136, 117, 78);
+        assert_eq!("cmyk(0, 14, 43, 47)", c2.to_cmyk_string(Format::Spaces));
+
+        let c3 = Color::from_rgb(143, 111, 76);
+        assert_eq!("cmyk(0, 22, 47, 44)", c3.to_cmyk_string(Format::Spaces));
+    }
 }
+

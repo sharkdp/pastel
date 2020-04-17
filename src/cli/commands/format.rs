@@ -40,6 +40,7 @@ impl ColorCommand for FormatCommand {
             "ansi-24bit" => replace_escape(&color.to_ansi_sequence(Mode::TrueColor)),
             "ansi-8bit-escapecode" => color.to_ansi_sequence(Mode::Ansi8Bit),
             "ansi-24bit-escapecode" => color.to_ansi_sequence(Mode::TrueColor),
+            "cmyk" => color.to_cmyk_string(Format::Spaces),
             "name" => similar_colors(color)[0].name.to_owned(),
             &_ => {
                 unreachable!("Unknown format type");
