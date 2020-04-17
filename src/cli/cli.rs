@@ -216,7 +216,7 @@ pub fn build_cli() -> App<'static, 'static> {
                                            "luminance", "brightness",
                                            "ansi-8bit", "ansi-24bit",
                                            "ansi-8bit-escapecode", "ansi-24bit-escapecode",
-                                           "name"])
+                                           "cmyk", "name"])
                         .case_insensitive(true)
                         .default_value("hex")
                         .required(true),
