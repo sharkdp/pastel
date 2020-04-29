@@ -44,9 +44,7 @@ jobs:
           - { os: macos-latest   , target: x86_64-apple-darwin         }
           - { os: windows-latest , target: i686-pc-windows-gnu         }
           - { os: windows-latest , target: i686-pc-windows-msvc        }
-          - { os: windows-latest , target: x86_64-pc-windows-gnu , toolchain: nightly-x86_64-pc-windows-gnu }  ## ! maint: [rivy; due 2020-21-03] disable/remove when rust beta >= v1.43.0 is available (~mid-March) ;; [rivy; 2020-01-21] may break due to rust bug; follow possible solution from GH:rust-lang/rust#47048 (refs: GH:rust-lang/rust#47048 , GH:rust-lang/rust#53454 , GH:bike-barn/hermit#172)
-          # - { os: windows-latest , target: x86_64-pc-windows-gnu , toolchain: beta-x86_64-pc-windows-gnu }  ## ! maint: [rivy; due 2020-21-03; due 2020-01-05] enable when rust beta >= v1.43.0 is available (~mid-March); disable when rust stable >= 1.43.0 is available (~early-May)
-          # - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## note: requires rust >= 1.43.0 to link correctly # ! maint: [rivy; due 2020-01-05] enable when rust stable >= 1.43.0 is available
+          - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## note: requires rust >= 1.43.0 to link correctly
           - { os: windows-latest , target: x86_64-pc-windows-msvc      }
     steps:
     - uses: actions/checkout@v1
