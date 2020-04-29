@@ -9,37 +9,6 @@ env:
 on: [push, pull_request]
 
 jobs:
-  style:
-    name: Style
-    runs-on: ${{ matrix.job.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        job:
-          - { os: ubuntu-latest }
-          - { os: macos-latest }
-          - { os: windows-latest }
-    steps:
-    - uses: actions/checkout@v1
-    - name: Install `rust` toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-        profile: minimal # minimal component installation (ie, no documentation)
-        components: rustfmt, clippy
-    - name: "`fmt` testing"
-      uses: actions-rs/cargo@v1
-      with:
-        command: fmt
-        args: --all -- --check
-    - name: "`clippy` testing"
-      if: success() || failure() # run regardless of prior step ("`fmt` testing") success/failure
-      uses: actions-rs/cargo@v1
-      with:
-        command: clippy
-        args: ${{ matrix.job.cargo-options }} -- -D warnings
-
   min_version:
     name: MinSRV # Minimum supported rust version
     runs-on: ubuntu-latest
