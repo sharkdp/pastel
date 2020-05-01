@@ -247,7 +247,7 @@ pub fn get_colormode() -> Mode {
     use std::env;
 
     let env_colorterm = env::var("COLORTERM").ok();
-    match env_colorterm.as_ref().map(|s| s.as_str()) {
+    match env_colorterm.as_deref() {
         Some("truecolor") | Some("24bit") => Mode::TrueColor,
         _ => Mode::Ansi8Bit,
     }
