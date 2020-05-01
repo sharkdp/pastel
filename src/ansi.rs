@@ -1,6 +1,5 @@
 use std::borrow::Borrow;
 
-use atty;
 pub use atty::Stream;
 use lazy_static::lazy_static;
 
