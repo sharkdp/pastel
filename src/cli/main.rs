@@ -51,7 +51,7 @@ fn run() -> Result<ExitCode> {
             "auto" => {
                 if interactive_mode {
                     let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
-                    match env_color_mode.as_ref().map(|s| s.as_str()) {
+                    match env_color_mode.as_deref() {
                         Some("8bit") => Some(ansi::Mode::Ansi8Bit),
                         Some("24bit") => Some(ansi::Mode::TrueColor),
                         Some("off") => None,
