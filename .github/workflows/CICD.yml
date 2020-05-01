@@ -239,9 +239,9 @@ jobs:
       matrix:
         # job: [ { os: ubuntu-latest }, { os: macos-latest }, { os: windows-latest } ]
         job:
-          - { os: ubuntu-latest }
-          - { os: macos-latest }
-          - { os: windows-latest , toolchain: nightly-x86_64-pc-windows-gnu }
+          - { os: ubuntu-latest , toolchain: nightly-2020-04-29 }
+          - { os: macos-latest , toolchain: nightly-2020-04-29 }
+          - { os: windows-latest , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
     steps:
     - uses: actions/checkout@v1
     - name: Initialize workflow variables
