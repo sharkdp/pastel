@@ -868,6 +868,7 @@ impl ColorScale {
 
     /// Add a `Color` at the given position.
     pub fn add_stop(&mut self, color: Color, position: Fraction) -> &mut Self {
+        #![allow(clippy::float_cmp)]
         let same_position = self
             .color_stops
             .iter_mut()

@@ -15,6 +15,7 @@ impl Hue {
 
     /// Return a hue value in the interval [0, 360].
     pub fn value(self) -> Scalar {
+        #![allow(clippy::float_cmp)]
         if self.unclipped == 360.0 {
             self.unclipped
         } else {
