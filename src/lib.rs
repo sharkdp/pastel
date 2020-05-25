@@ -980,7 +980,6 @@ pub struct CMYK {
     pub k: Scalar,
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1447,4 +1446,3 @@ mod tests {
         assert_eq!("cmyk(0, 22, 47, 44)", c3.to_cmyk_string(Format::Spaces));
     }
 }
-
