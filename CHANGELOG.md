@@ -17,7 +17,7 @@
 
 ## Packaging
 
-- `pastel` is now available on snapstore, see #108 (@purveshpatel511)
+- `pastel` is now available on snapstore, see #130 (@purveshpatel511)
 
 # v0.7.1
 
