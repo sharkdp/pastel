@@ -4,6 +4,8 @@
 [![](https://img.shields.io/github/v/release/sharkdp/pastel?colorB=d7a400&style=flat-square)](https://github.com/sharkdp/pastel/releases)
 [![](https://img.shields.io/crates/l/pastel.svg?colorB=ff7155&style=flat-square)](https://crates.io/crates/pastel)
 [![](https://img.shields.io/crates/v/pastel.svg?colorB=ff69b4&style=flat-square)](https://crates.io/crates/pastel)
+[![pastel](https://snapcraft.io/pastel/badge.svg)](https://snapcraft.io/pastel)
+[![pastel](https://snapcraft.io/pastel/trending.svg?name=0)](https://snapcraft.io/pastel)
 
 
 `pastel` is a command-line tool to generate, analyze, convert and manipulate colors. It supports many different color formats and color spaces like RGB (sRGB), HSL, CIELAB, CIELCh as well as ANSI 8-bit and 24-bit representations.
@@ -166,6 +168,15 @@ Alternatively, you can install `pastel` directly from this repository by using
 git clone https://github.com/sharkdp/pastel
 cargo install --path ./pastel
 ```
+
+### Via snap package
+
+```
+sudo snap install pastel
+```
+
+[Get it from the Snap Store](https://snapcraft.io/pastel)
+
 
 ## Resources
 
