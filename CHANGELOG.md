@@ -15,6 +15,10 @@
 
 - Completely new CI/CD system via GitHub Actions, see #120 (@rivy)
 
+## Packaging
+
+- `pastel` is now available on snapstore, see #108 (@purveshpatel511)
+
 # v0.7.1
 
 ## Bugfixes
