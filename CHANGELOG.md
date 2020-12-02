@@ -5,6 +5,11 @@
 ## Changes
 ## Other
 
+## Packaging
+
+- `pastel` is now available on snapstore, see #130 (@purveshpatel511)
+
+
 # v0.8.0
 
 ## Features
@@ -14,10 +19,6 @@
 ## Other
 
 - Completely new CI/CD system via GitHub Actions, see #120 (@rivy)
-
-## Packaging
-
-- `pastel` is now available on snapstore, see #130 (@purveshpatel511)
 
 # v0.7.1
 
