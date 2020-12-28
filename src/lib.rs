@@ -39,17 +39,12 @@ const D65_ZN: Scalar = 1.088_830;
 
 impl Color {
     pub fn from_hsla(hue: Scalar, saturation: Scalar, lightness: Scalar, alpha: Scalar) -> Color {
-        Color {
-            hue: Hue::from(hue),
-            saturation: clamp(0.0, 1.0, saturation),
-            lightness: clamp(0.0, 1.0, lightness),
-            alpha: clamp(0.0, 1.0, alpha),
-        }
+        Self::from(&HSLA{ h: hue, s: saturation, l: lightness, alpha })
     }
 
     ///
     pub fn from_hsl(hue: Scalar, saturation: Scalar, lightness: Scalar) -> Color {
-        Self::from_hsla(hue, saturation, lightness, 1.0)
+        Self::from(&HSLA{ h: hue, s: saturation, l: lightness, alpha: 1.0 })
     }
 
     /// Create a `Color` from integer RGB values between 0 and 255 and a floating
@@ -57,57 +52,25 @@ impl Color {
     pub fn from_rgba(r: u8, g: u8, b: u8, alpha: Scalar) -> Color {
         // RGB to HSL conversion algorithm adapted from
         // https://en.wikipedia.org/wiki/HSL_and_HSV
+        Color::from(&RGBA::<u8>{ r, g, b, alpha })
 
-        let max_chroma = u8::max(u8::max(r, g), b);
-        let min_chroma = u8::min(u8::min(r, g), b);
-
-        let chroma = max_chroma - min_chroma;
-        let chroma_s = Scalar::from(chroma) / 255.0;
-
-        let r_s = Scalar::from(r) / 255.0;
-        let g_s = Scalar::from(g) / 255.0;
-        let b_s = Scalar::from(b) / 255.0;
-
-        let hue = 60.0
-            * (if chroma == 0 {
-                0.0
-            } else if r == max_chroma {
-                mod_positive((g_s - b_s) / chroma_s, 6.0)
-            } else if g == max_chroma {
-                (b_s - r_s) / chroma_s + 2.0
-            } else {
-                (r_s - g_s) / chroma_s + 4.0
-            });
-
-        let lightness = (Scalar::from(max_chroma) + Scalar::from(min_chroma)) / (255.0 * 2.0);
-        let saturation = if chroma == 0 {
-            0.0
-        } else {
-            chroma_s / (1.0 - Scalar::abs(2.0 * lightness - 1.0))
-        };
-
-        Self::from_hsla(hue, saturation, lightness, alpha)
     }
 
     /// Create a `Color` from integer RGB values between 0 and 255.
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Color {
-        Self::from_rgba(r, g, b, 1.0)
+        Self::from(&RGBA::<u8> { r, g, b, alpha: 1.0 })
     }
 
     /// Create a `Color` from RGB and alpha values between 0.0 and 1.0. Values outside this range
     /// will be clamped.
     pub fn from_rgba_float(r: Scalar, g: Scalar, b: Scalar, alpha: Scalar) -> Color {
-        let r = Scalar::round(clamp(0.0, 255.0, 255.0 * r)) as u8;
-        let g = Scalar::round(clamp(0.0, 255.0, 255.0 * g)) as u8;
-        let b = Scalar::round(clamp(0.0, 255.0, 255.0 * b)) as u8;
-
-        Self::from_rgba(r, g, b, alpha)
+        Self::from(&RGBA::<f64>{ r, g, b, alpha })
     }
 
     /// Create a `Color` from RGB values between 0.0 and 1.0. Values outside this range will be
     /// clamped.
     pub fn from_rgb_float(r: Scalar, g: Scalar, b: Scalar) -> Color {
-        Self::from_rgba_float(r, g, b, 1.0)
+        Self::from(&RGBA::<f64>{ r, g, b, alpha: 1.0 })
     }
 
     /// Create a `Color` from XYZ coordinates in the CIE 1931 color space. Note that a `Color`
@@ -120,30 +83,13 @@ impl Color {
     /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
     /// - https://en.wikipedia.org/wiki/SRGB
     pub fn from_xyz(x: Scalar, y: Scalar, z: Scalar, alpha: Scalar) -> Color {
-        #![allow(clippy::many_single_char_names)]
-        let f = |c| {
-            if c <= 0.003_130_8 {
-                12.92 * c
-            } else {
-                1.055 * Scalar::powf(c, 1.0 / 2.4) - 0.055
-            }
-        };
-
-        let r = f(3.2406 * x - 1.5372 * y - 0.4986 * z);
-        let g = f(-0.9689 * x + 1.8758 * y + 0.0415 * z);
-        let b = f(0.0557 * x - 0.2040 * y + 1.0570 * z);
-
-        Self::from_rgba_float(r, g, b, alpha)
+        Self::from(&XYZ{ x, y, z, alpha })
     }
 
     /// Create a `Color` from LMS coordinates. This is the matrix inverse of the matrix that
     /// appears in `to_lms`.
     pub fn from_lms(l: Scalar, m: Scalar, s: Scalar, alpha: Scalar) -> Color {
-        #![allow(clippy::many_single_char_names)]
-        let x = 1.91020 * l - 1.112_120 * m + 0.201_908 * s;
-        let y = 0.37095 * l + 0.629_054 * m + 0.000_000 * s;
-        let z = 0.00000 * l + 0.000_000 * m + 1.000_000 * s;
-        Color::from_xyz(x, y, z, alpha)
+        Self::from(&LMS{ l, m, s, alpha })
     }
 
     /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
@@ -151,23 +97,7 @@ impl Color {
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
     pub fn from_lab(l: Scalar, a: Scalar, b: Scalar, alpha: Scalar) -> Color {
-        #![allow(clippy::many_single_char_names)]
-        const DELTA: Scalar = 6.0 / 29.0;
-
-        let finv = |t| {
-            if t > DELTA {
-                Scalar::powf(t, 3.0)
-            } else {
-                3.0 * DELTA * DELTA * (t - 4.0 / 29.0)
-            }
-        };
-
-        let l_ = (l + 16.0) / 116.0;
-        let x = D65_XN * finv(l_ + a / 500.0);
-        let y = D65_YN * finv(l_);
-        let z = D65_ZN * finv(l_ - b / 200.0);
-
-        Self::from_xyz(x, y, z, alpha)
+        Self::from(&Lab { l, a, b, alpha })
     }
 
     /// Create a `Color` from lightness, chroma and hue coordinates in the CIE LCh color space.
@@ -176,25 +106,14 @@ impl Color {
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
     pub fn from_lch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
-        #![allow(clippy::many_single_char_names)]
-        const DEG2RAD: Scalar = std::f64::consts::PI / 180.0;
-
-        let a = c * Scalar::cos(h * DEG2RAD);
-        let b = c * Scalar::sin(h * DEG2RAD);
-
-        Self::from_lab(l, a, b, alpha)
+        Self::from(&LCh{ l, c, h, alpha })
     }
 
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
     /// in degrees, as a number between 0.0 and 360.0. Saturation, lightness and alpha are numbers
     /// between 0.0 and 1.0.
     pub fn to_hsla(&self) -> HSLA {
-        HSLA {
-            h: self.hue.value(),
-            s: self.saturation,
-            l: self.lightness,
-            alpha: self.alpha,
-        }
+        HSLA::from(self)
     }
 
     /// Format the color as a HSL-representation string (`hsl(123, 50.3%, 80.1%)`).
@@ -211,22 +130,12 @@ impl Color {
     /// Convert a `Color` to its red, green, blue and alpha values. The RGB values are integers in
     /// the range from 0 to 255. The alpha channel is a number between 0.0 and 1.0.
     pub fn to_rgba(&self) -> RGBA<u8> {
-        let c = self.to_rgba_float();
-        let r = Scalar::round(255.0 * c.r) as u8;
-        let g = Scalar::round(255.0 * c.g) as u8;
-        let b = Scalar::round(255.0 * c.b) as u8;
-
-        RGBA {
-            r,
-            g,
-            b,
-            alpha: self.alpha,
-        }
+        RGBA::<u8>::from(self)
     }
 
     /// Format the color as a RGB-representation string (`rgb(255, 127,  0)`).
     pub fn to_rgb_string(&self, format: Format) -> String {
-        let rgba = self.to_rgba();
+        let rgba = RGBA::<u8>::from(self);
         format!(
             "rgb({r},{space}{g},{space}{b})",
             r = rgba.r,
@@ -239,33 +148,12 @@ impl Color {
     /// Convert a `Color` to its cyan, magenta, yellow, and black values. The CMYK
     /// values are floats smaller than or equal to 1.0.
     pub fn to_cmyk(&self) -> CMYK {
-        let rgba = self.to_rgba();
-        let r = (rgba.r as f64) / 255.0;
-        let g = (rgba.g as f64) / 255.0;
-        let b = (rgba.b as f64) / 255.0;
-        let biggest = if r >= g && r >= b {
-            r
-        } else if g >= r && g >= b {
-            g
-        } else {
-            b
-        };
-        let k = 1.0 - biggest;
-        let c = (1.0 - r - k) / biggest;
-        let m = (1.0 - g - k) / biggest;
-        let y = (1.0 - b - k) / biggest;
-
-        CMYK {
-            c: if c.is_nan() { 0.0 } else { c },
-            m: if m.is_nan() { 0.0 } else { m },
-            y: if y.is_nan() { 0.0 } else { y },
-            k: k,
-        }
+        CMYK::from(self)
     }
 
     /// Format the color as a CMYK-representation string (`cmyk(0, 50, 100, 100)`).
     pub fn to_cmyk_string(&self, format: Format) -> String {
-        let cmyk = self.to_cmyk();
+        let cmyk = CMYK::from(self);
         format!(
             "cmyk({c},{space}{m},{space}{y},{space}{k})",
             c = (cmyk.c * 100.0).round(),
@@ -278,7 +166,7 @@ impl Color {
 
     /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5,  0)`).
     pub fn to_rgb_float_string(&self, format: Format) -> String {
-        let rgba = self.to_rgba_float();
+        let rgba = RGBA::<f64>::from(self);
         format!(
             "rgb({r:.3},{space}{g:.3},{space}{b:.3})",
             r = rgba.r,
@@ -303,33 +191,7 @@ impl Color {
     /// Convert a `Color` to its red, green, blue and alpha values. All numbers are from the range
     /// between 0.0 and 1.0.
     pub fn to_rgba_float(&self) -> RGBA<Scalar> {
-        let h_s = self.hue.value() / 60.0;
-        let chr = (1.0 - Scalar::abs(2.0 * self.lightness - 1.0)) * self.saturation;
-        let m = self.lightness - chr / 2.0;
-        let x = chr * (1.0 - Scalar::abs(h_s % 2.0 - 1.0));
-
-        struct RGB(Scalar, Scalar, Scalar);
-
-        let col = if h_s < 1.0 {
-            RGB(chr, x, 0.0)
-        } else if 1.0 <= h_s && h_s < 2.0 {
-            RGB(x, chr, 0.0)
-        } else if 2.0 <= h_s && h_s < 3.0 {
-            RGB(0.0, chr, x)
-        } else if 3.0 <= h_s && h_s < 4.0 {
-            RGB(0.0, x, chr)
-        } else if 4.0 <= h_s && h_s < 5.0 {
-            RGB(x, 0.0, chr)
-        } else {
-            RGB(chr, 0.0, x)
-        };
-
-        RGBA {
-            r: col.0 + m,
-            g: col.1 + m,
-            b: col.2 + m,
-            alpha: self.alpha,
-        }
+        RGBA::<f64>::from(self)
     }
 
     /// Return the color as an integer in RGB representation (`0xRRGGBB`)
@@ -344,30 +206,7 @@ impl Color {
     /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
     /// - https://en.wikipedia.org/wiki/SRGB
     pub fn to_xyz(&self) -> XYZ {
-        #![allow(clippy::many_single_char_names)]
-        let finv = |c_| {
-            if c_ <= 0.04045 {
-                c_ / 12.92
-            } else {
-                Scalar::powf((c_ + 0.055) / 1.055, 2.4)
-            }
-        };
-
-        let rec = self.to_rgba_float();
-        let r = finv(rec.r);
-        let g = finv(rec.g);
-        let b = finv(rec.b);
-
-        let x = 0.4124 * r + 0.3576 * g + 0.1805 * b;
-        let y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        let z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
-
-        XYZ {
-            x,
-            y,
-            z,
-            alpha: self.alpha,
-        }
+       XYZ::from(self) 
     }
 
     /// Get coordinates according to the LSM color space
@@ -375,46 +214,19 @@ impl Color {
     /// See https://en.wikipedia.org/wiki/LMS_color_space for info on the color space as well as an
     /// algorithm for converting from CIE XYZ
     pub fn to_lms(&self) -> LMS {
-        let XYZ { x, y, z, alpha } = self.to_xyz();
-        let l = 0.38971 * x + 0.68898 * y - 0.07868 * z;
-        let m = -0.22981 * x + 1.18340 * y + 0.04641 * z;
-        let s = 0.00000 * x + 0.00000 * y + 1.00000 * z;
-
-        LMS { l, m, s, alpha }
+        LMS::from(self)
     }
 
     /// Get L, a and b coordinates according to the Lab color space.
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
     pub fn to_lab(&self) -> Lab {
-        let rec = self.to_xyz();
-
-        let cut = Scalar::powf(6.0 / 29.0, 3.0);
-        let f = |t| {
-            if t > cut {
-                Scalar::powf(t, 1.0 / 3.0)
-            } else {
-                (1.0 / 3.0) * Scalar::powf(29.0 / 6.0, 2.0) * t + 4.0 / 29.0
-            }
-        };
-
-        let fy = f(rec.y / D65_YN);
-
-        let l = 116.0 * fy - 16.0;
-        let a = 500.0 * (f(rec.x / D65_XN) - fy);
-        let b = 200.0 * (fy - f(rec.z / D65_ZN));
-
-        Lab {
-            l,
-            a,
-            b,
-            alpha: self.alpha,
-        }
+        Lab::from(self)
     }
 
     /// Format the color as a Lab-representation string (`Lab(41, 83, -93)`).
     pub fn to_lab_string(&self, format: Format) -> String {
-        let lab = self.to_lab();
+        let lab = Lab::from(self);
         format!(
             "Lab({l:.0},{space}{a:.0},{space}{b:.0})",
             l = lab.l,
@@ -428,19 +240,12 @@ impl Color {
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
     pub fn to_lch(&self) -> LCh {
-        let Lab { l, a, b, alpha } = self.to_lab();
-
-        const RAD2DEG: Scalar = 180.0 / std::f64::consts::PI;
-
-        let c = Scalar::sqrt(a * a + b * b);
-        let h = mod_positive(Scalar::atan2(b, a) * RAD2DEG, 360.0);
-
-        LCh { l, c, h, alpha }
+        LCh::from(self)
     }
 
     /// Format the color as a LCh-representation string (`LCh(0.3, 0.2, 0.1)`).
     pub fn to_lch_string(&self, format: Format) -> String {
-        let lch = self.to_lch();
+        let lch = LCh::from(self);
         format!(
             "LCh({l:.0},{space}{c:.0},{space}{h:.0})",
             l = lch.l,
@@ -730,6 +535,142 @@ impl PartialEq for Color {
     }
 }
 
+//from HSLA to Color so you can do -> let new_color = Color::from(&some_hsla);
+impl From<&HSLA> for Color {
+    fn from(color: &HSLA) -> Self {
+        Color {
+            hue: Hue::from(color.h),
+            saturation: clamp(0.0, 1.0, color.s),
+            lightness: clamp(0.0, 1.0, color.l),
+            alpha: clamp(0.0, 1.0, color.alpha),
+        }
+    }
+}
+
+//from RGBA to Color so you can do -> let new_color = Color::from(&some_rgba);
+impl From<&RGBA<u8>> for Color {
+    fn from(color: &RGBA<u8>) -> Self {
+        let max_chroma = u8::max(u8::max(color.r, color.g), color.b);
+        let min_chroma = u8::min(u8::min(color.r, color.g), color.b);
+
+        let chroma = max_chroma - min_chroma;
+        let chroma_s = Scalar::from(chroma) / 255.0;
+
+        let r_s = Scalar::from(color.r) / 255.0;
+        let g_s = Scalar::from(color.g) / 255.0;
+        let b_s = Scalar::from(color.b) / 255.0;
+
+        let hue = 60.0
+            * (if chroma == 0 {
+                0.0
+            } else if color.r == max_chroma {
+                mod_positive((g_s - b_s) / chroma_s, 6.0)
+            } else if color.g == max_chroma {
+                (b_s - r_s) / chroma_s + 2.0
+            } else {
+                (r_s - g_s) / chroma_s + 4.0
+            });
+
+        let lightness = (Scalar::from(max_chroma) + Scalar::from(min_chroma)) / (255.0 * 2.0);
+        let saturation = if chroma == 0 {
+            0.0
+        } else {
+            chroma_s / (1.0 - Scalar::abs(2.0 * lightness - 1.0))
+        };
+        Self::from(&HSLA{ h: hue, s: saturation, l: lightness, alpha: color.alpha })
+    }
+}
+
+//from RGBA to Color so you can do -> let new_color = Color::from(&some_rgba);
+impl From<&RGBA<f64>> for Color {
+    fn from(color: &RGBA<f64>) -> Self {
+        let r = Scalar::round(clamp(0.0, 255.0, 255.0 * color.r)) as u8;
+        let g = Scalar::round(clamp(0.0, 255.0, 255.0 * color.g)) as u8;
+        let b = Scalar::round(clamp(0.0, 255.0, 255.0 * color.b)) as u8;
+        Self::from(&RGBA::<u8>{ r, g, b, alpha: color.alpha })
+    }
+}
+
+
+//from XYZ to Color so you can do -> let new_color = Color::from(&some_xyz);
+impl From<&XYZ> for Color {
+    fn from(color: &XYZ) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        let f = |c| {
+            if c <= 0.003_130_8 {
+                12.92 * c
+            } else {
+                1.055 * Scalar::powf(c, 1.0 / 2.4) - 0.055
+            }
+        };
+
+        let r = f(3.2406 * color.x - 1.5372 * color.y - 0.4986 * color.z);
+        let g = f(-0.9689 * color.x + 1.8758 * color.y + 0.0415 * color.z);
+        let b = f(0.0557 * color.x - 0.2040 * color.y + 1.0570 * color.z);
+
+        Self::from(&RGBA::<f64>{ r, g, b, alpha: color.alpha })
+    }
+}
+
+
+//from LMS to Color so you can do -> let new_color = Color::from(&some_lms);
+impl From<&LMS> for Color {
+    fn from(color: &LMS) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        let x = 1.91020 * color.l - 1.112_120 * color.m + 0.201_908 * color.s;
+        let y = 0.37095 * color.l + 0.629_054 * color.m + 0.000_000 * color.s;
+        let z = 0.00000 * color.l + 0.000_000 * color.m + 1.000_000 * color.s;
+        Self::from(&XYZ{ x, y, z, alpha: color.alpha })
+    }
+}
+
+//from LAB to Color so you can do -> let new_color = Color::from(&some_lab);
+impl From<&Lab> for Color {
+    fn from(color: &Lab) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        const DELTA: Scalar = 6.0 / 29.0;
+
+        let finv = |t| {
+            if t > DELTA {
+                Scalar::powf(t, 3.0)
+            } else {
+                3.0 * DELTA * DELTA * (t - 4.0 / 29.0)
+            }
+        };
+
+        let l_ = (color.l + 16.0) / 116.0;
+        let x = D65_XN * finv(l_ + color.a / 500.0);
+        let y = D65_YN * finv(l_);
+        let z = D65_ZN * finv(l_ - color.b / 200.0);
+
+        Self::from(&XYZ{ x, y, z, alpha: color.alpha})
+    }
+}
+
+
+//from LCh to Color so you can do -> let new_color = Color::from(&some_lch);
+impl From<&LCh> for Color {
+    fn from(color: &LCh) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        const DEG2RAD: Scalar = std::f64::consts::PI / 180.0;
+
+        let a = color.c * Scalar::cos(color.h * DEG2RAD);
+        let b = color.c * Scalar::sin(color.h * DEG2RAD);
+
+        Self::from(&Lab{ l: color.l, a: a, b: b, alpha: color.alpha })
+    }
+}
+
+
+//from CMYK to Color so you can do -> let new_color = Color::from(&some_cmyk);
+// impl From<&CMYK> for Color {
+//     fn from(color: &CMYK) -> Self {
+//         #![allow(clippy::many_single_char_names)]
+//         // let new = RGBA<a
+//     }
+// }
+
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct RGBA<T> {
     pub r: T,
@@ -754,6 +695,78 @@ impl ColorSpace for RGBA<f64> {
             b: interpolate(self.b, other.b, fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
         }
+    }
+}
+
+//from Color to RGBA<f64> so you can do -> let new_rgba = RGBA::<f64>::from(&some_color);
+impl From<&Color> for RGBA<f64> {
+    fn from(color: &Color) -> Self {
+        let h_s = color.hue.value() / 60.0;
+        let chr = (1.0 - Scalar::abs(2.0 * color.lightness - 1.0)) * color.saturation;
+        let m = color.lightness - chr / 2.0;
+        let x = chr * (1.0 - Scalar::abs(h_s % 2.0 - 1.0));
+
+        struct RGB(Scalar, Scalar, Scalar);
+
+        let col = if h_s < 1.0 {
+            RGB(chr, x, 0.0)
+        } else if 1.0 <= h_s && h_s < 2.0 {
+            RGB(x, chr, 0.0)
+        } else if 2.0 <= h_s && h_s < 3.0 {
+            RGB(0.0, chr, x)
+        } else if 3.0 <= h_s && h_s < 4.0 {
+            RGB(0.0, x, chr)
+        } else if 4.0 <= h_s && h_s < 5.0 {
+            RGB(x, 0.0, chr)
+        } else {
+            RGB(chr, 0.0, x)
+        };
+
+        RGBA {
+            r: col.0 + m,
+            g: col.1 + m,
+            b: col.2 + m,
+            alpha: color.alpha,
+        }
+    }
+}
+
+//from Color to RGBA<u8> so you can do -> let new_rgba = RGBA::<u8>::from(&some_color);
+impl From<&Color> for RGBA<u8> {
+    fn from(color: &Color) -> Self {
+        let c = RGBA::<f64>::from(color);
+        let r = Scalar::round(255.0 * c.r) as u8;
+        let g = Scalar::round(255.0 * c.g) as u8;
+        let b = Scalar::round(255.0 * c.b) as u8;
+
+        RGBA {
+            r,
+            g,
+            b,
+            alpha: color.alpha,
+        }
+    }
+}
+
+impl fmt::Display for RGBA<f64> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "rgb({r:.3}, {g:.3}, {b:.3})",
+            r = self.r,
+            g = self.g,
+            b = self.b,
+        )
+    }
+}
+
+impl fmt::Display for RGBA<u8> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "rgb({r}, {g}, {b})",
+            r = self.r,
+            g = self.g,
+            b = self.b,
+        )
     }
 }
 
@@ -788,12 +801,76 @@ impl ColorSpace for HSLA {
     }
 }
 
+//from Color to HSLA so you can do -> let new_hsla = HSLA::from(&some_color);
+impl From<&Color> for HSLA {
+    fn from(color: &Color) -> Self {
+        HSLA {
+            h: color.hue.value(),
+            s: color.saturation,
+            l: color.lightness,
+            alpha: color.alpha,
+        }
+    }
+}
+
+impl fmt::Display for HSLA {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "hsl({h:.0}, {s:.1}, {l:.1})",
+            h = self.h,
+            s = self.s,
+            l = self.l,
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct XYZ {
     pub x: Scalar,
     pub y: Scalar,
     pub z: Scalar,
     pub alpha: Scalar,
+}
+
+//from Color to XYZ so you can do -> let new_xyz = XYZ::from(&some_color);
+impl From<&Color> for XYZ {
+    fn from(color: &Color) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        let finv = |c_ :f64| {
+            if c_ <= 0.04045 {
+                c_ / 12.92
+            } else {
+                Scalar::powf((c_ + 0.055) / 1.055, 2.4)
+            }
+        };
+
+        let rec = RGBA::from(color);
+        let r = finv(rec.r);
+        let g = finv(rec.g);
+        let b = finv(rec.b);
+
+        let x = 0.4124 * r + 0.3576 * g + 0.1805 * b;
+        let y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        let z = 0.0193 * r + 0.1192 * g + 0.9505 * b;
+
+        XYZ {
+            x,
+            y,
+            z,
+            alpha: color.alpha,
+        }
+    }
+}
+
+impl fmt::Display for XYZ {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "XYZ({x:.0}, {y:.0}, {z:.0})",
+            x = self.x,
+            y = self.y,
+            z = self.z,
+        )
+    }
 }
 
 /// A color space whose axes correspond to the responsivity spectra of the long-, medium-, and
@@ -806,6 +883,30 @@ pub struct LMS {
     pub s: Scalar,
     pub alpha: Scalar,
 }
+
+//from Color to LMS so you can do -> let new_lsm = LMS::from(&some_color);
+impl From<&Color> for LMS {
+    fn from(color: &Color) -> Self {
+        let XYZ { x, y, z, alpha } = XYZ::from(color);
+        let l = 0.38971 * x + 0.68898 * y - 0.07868 * z;
+        let m = -0.22981 * x + 1.18340 * y + 0.04641 * z;
+        let s = 0.00000 * x + 0.00000 * y + 1.00000 * z;
+
+        LMS { l, m, s, alpha }
+    }
+}
+
+impl fmt::Display for LMS {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "LMS({l:.0}, {m:.0}, {s:.0})",
+            l = self.l,
+            m = self.m,
+            s = self.s,
+        )
+    }
+}
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lab {
@@ -831,6 +932,46 @@ impl ColorSpace for Lab {
             b: interpolate(self.b, other.b, fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
         }
+    }
+}
+
+//from Color to LAB so you can do -> let new_lab = Lab::from(&some_color);
+impl From<&Color> for Lab {
+    fn from(color: &Color) -> Self {
+        let rec = XYZ::from(color);
+
+        let cut = Scalar::powf(6.0 / 29.0, 3.0);
+        let f = |t| {
+            if t > cut {
+                Scalar::powf(t, 1.0 / 3.0)
+            } else {
+                (1.0 / 3.0) * Scalar::powf(29.0 / 6.0, 2.0) * t + 4.0 / 29.0
+            }
+        };
+
+        let fy = f(rec.y / D65_YN);
+
+        let l = 116.0 * fy - 16.0;
+        let a = 500.0 * (f(rec.x / D65_XN) - fy);
+        let b = 200.0 * (fy - f(rec.z / D65_ZN));
+
+        Lab {
+            l,
+            a,
+            b,
+            alpha: color.alpha,
+        }
+    }
+}
+
+impl fmt::Display for Lab {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "Lab({l:.0}, {a:.0}, {b:.0})",
+            l = self.l,
+            a = self.a,
+            b = self.b,
+        )
     }
 }
 
@@ -862,6 +1003,79 @@ impl ColorSpace for LCh {
             h: interpolate_angle(self_hue, other_hue, fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
         }
+    }
+}
+
+//from Color to LCh so you can do -> let new_lch = LCh::from(&some_color);
+impl From<&Color> for LCh {
+    fn from(color: &Color) -> Self {
+        let Lab { l, a, b, alpha } = Lab::from(color);
+
+        const RAD2DEG: Scalar = 180.0 / std::f64::consts::PI;
+
+        let c = Scalar::sqrt(a * a + b * b);
+        let h = mod_positive(Scalar::atan2(b, a) * RAD2DEG, 360.0);
+
+        LCh { l, c, h, alpha }
+    }
+}
+
+impl fmt::Display for LCh {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "LCh({l:.0}, {c:.0}, {h:.0})",
+            l = self.l,
+            c = self.c,
+            h = self.h,
+        )
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CMYK {
+    pub c: Scalar,
+    pub m: Scalar,
+    pub y: Scalar,
+    pub k: Scalar,
+}
+
+//from Color to CMYK so you can do -> let new_cmyk = CMYK::from(&some_color);
+impl From<&Color> for CMYK {
+    fn from(color: &Color) -> Self {
+        let rgba = RGBA::<u8>::from(color);
+        let r = (rgba.r as f64) / 255.0;
+        let g = (rgba.g as f64) / 255.0;
+        let b = (rgba.b as f64) / 255.0;
+        let biggest = if r >= g && r >= b {
+            r
+        } else if g >= r && g >= b {
+            g
+        } else {
+            b
+        };
+        let k = 1.0 - biggest;
+        let c = (1.0 - r - k) / biggest;
+        let m = (1.0 - g - k) / biggest;
+        let y = (1.0 - b - k) / biggest;
+
+        CMYK {
+            c: if c.is_nan() { 0.0 } else { c },
+            m: if m.is_nan() { 0.0 } else { m },
+            y: if y.is_nan() { 0.0 } else { y },
+            k: k,
+        }
+    }
+}
+
+impl fmt::Display for CMYK {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f,
+            "cmyk({c}, {m}, {y}, {k})",
+            c = (self.c * 100.0).round(),
+            m = (self.m * 100.0).round(),
+            y = (self.y * 100.0).round(),
+            k = (self.k * 100.0).round(),
+        )
     }
 }
 
@@ -970,14 +1184,6 @@ impl ColorScale {
             _ => None,
         }
     }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct CMYK {
-    pub c: Scalar,
-    pub m: Scalar,
-    pub y: Scalar,
-    pub k: Scalar,
 }
 
 #[cfg(test)]
