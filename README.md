@@ -150,12 +150,22 @@ brew install pastel
 
 ### Via snap package
 
+[Get it from the Snap Store](https://snapcraft.io/pastel):
 ```
 sudo snap install pastel
 ```
 
-[Get it from the Snap Store](https://snapcraft.io/pastel)
+### On NetBSD
+Using the package manager:
+```
+pkgin install pastel
+```
 
+From source:
+```
+cd /usr/pkgsrc/graphics/pastel
+make install
+```
 
 ### On other distributions
 
