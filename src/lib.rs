@@ -548,7 +548,6 @@ impl PartialEq for Color {
     }
 }
 
-//from HSLA to Color so you can do -> let new_color = Color::from(&some_hsla);
 impl From<&HSLA> for Color {
     fn from(color: &HSLA) -> Self {
         Color {
@@ -560,7 +559,6 @@ impl From<&HSLA> for Color {
     }
 }
 
-//from RGBA to Color so you can do -> let new_color = Color::from(&some_rgba);
 impl From<&RGBA<u8>> for Color {
     fn from(color: &RGBA<u8>) -> Self {
         let max_chroma = u8::max(u8::max(color.r, color.g), color.b);
@@ -594,7 +592,6 @@ impl From<&RGBA<u8>> for Color {
     }
 }
 
-//from RGBA to Color so you can do -> let new_color = Color::from(&some_rgba);
 impl From<&RGBA<f64>> for Color {
     fn from(color: &RGBA<f64>) -> Self {
         let r = Scalar::round(clamp(0.0, 255.0, 255.0 * color.r)) as u8;
@@ -605,7 +602,6 @@ impl From<&RGBA<f64>> for Color {
 }
 
 
-//from XYZ to Color so you can do -> let new_color = Color::from(&some_xyz);
 impl From<&XYZ> for Color {
     fn from(color: &XYZ) -> Self {
         #![allow(clippy::many_single_char_names)]
@@ -626,7 +622,6 @@ impl From<&XYZ> for Color {
 }
 
 
-//from LMS to Color so you can do -> let new_color = Color::from(&some_lms);
 impl From<&LMS> for Color {
     fn from(color: &LMS) -> Self {
         #![allow(clippy::many_single_char_names)]
@@ -637,7 +632,6 @@ impl From<&LMS> for Color {
     }
 }
 
-//from LAB to Color so you can do -> let new_color = Color::from(&some_lab);
 impl From<&Lab> for Color {
     fn from(color: &Lab) -> Self {
         #![allow(clippy::many_single_char_names)]
@@ -661,7 +655,6 @@ impl From<&Lab> for Color {
 }
 
 
-//from LCh to Color so you can do -> let new_color = Color::from(&some_lch);
 impl From<&LCh> for Color {
     fn from(color: &LCh) -> Self {
         #![allow(clippy::many_single_char_names)]
@@ -715,7 +708,6 @@ impl ColorSpace for RGBA<f64> {
     }
 }
 
-//from Color to RGBA<f64> so you can do -> let new_rgba = RGBA::<f64>::from(&some_color);
 impl From<&Color> for RGBA<f64> {
     fn from(color: &Color) -> Self {
         let h_s = color.hue.value() / 60.0;
@@ -748,7 +740,6 @@ impl From<&Color> for RGBA<f64> {
     }
 }
 
-//from Color to RGBA<u8> so you can do -> let new_rgba = RGBA::<u8>::from(&some_color);
 impl From<&Color> for RGBA<u8> {
     fn from(color: &Color) -> Self {
         let c = RGBA::<f64>::from(color);
@@ -818,7 +809,6 @@ impl ColorSpace for HSLA {
     }
 }
 
-//from Color to HSLA so you can do -> let new_hsla = HSLA::from(&some_color);
 impl From<&Color> for HSLA {
     fn from(color: &Color) -> Self {
         HSLA {
@@ -849,7 +839,6 @@ pub struct XYZ {
     pub alpha: Scalar,
 }
 
-//from Color to XYZ so you can do -> let new_xyz = XYZ::from(&some_color);
 impl From<&Color> for XYZ {
     fn from(color: &Color) -> Self {
         #![allow(clippy::many_single_char_names)]
@@ -901,7 +890,6 @@ pub struct LMS {
     pub alpha: Scalar,
 }
 
-//from Color to LMS so you can do -> let new_lsm = LMS::from(&some_color);
 impl From<&Color> for LMS {
     fn from(color: &Color) -> Self {
         let XYZ { x, y, z, alpha } = XYZ::from(color);
@@ -952,7 +940,6 @@ impl ColorSpace for Lab {
     }
 }
 
-//from Color to LAB so you can do -> let new_lab = Lab::from(&some_color);
 impl From<&Color> for Lab {
     fn from(color: &Color) -> Self {
         let rec = XYZ::from(color);
@@ -1023,7 +1010,6 @@ impl ColorSpace for LCh {
     }
 }
 
-//from Color to LCh so you can do -> let new_lch = LCh::from(&some_color);
 impl From<&Color> for LCh {
     fn from(color: &Color) -> Self {
         let Lab { l, a, b, alpha } = Lab::from(color);
@@ -1056,7 +1042,6 @@ pub struct CMYK {
     pub k: Scalar,
 }
 
-//from Color to CMYK so you can do -> let new_cmyk = CMYK::from(&some_color);
 impl From<&Color> for CMYK {
     fn from(color: &Color) -> Self {
         let rgba = RGBA::<u8>::from(color);
