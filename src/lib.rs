@@ -52,7 +52,7 @@ impl Color {
     pub fn from_rgba(r: u8, g: u8, b: u8, alpha: Scalar) -> Color {
         // RGB to HSL conversion algorithm adapted from
         // https://en.wikipedia.org/wiki/HSL_and_HSV
-        Color::from(&RGBA::<u8>{ r, g, b, alpha })
+        Self::from(&RGBA::<u8>{ r, g, b, alpha })
 
     }
 
@@ -107,6 +107,12 @@ impl Color {
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
     pub fn from_lch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
         Self::from(&LCh{ l, c, h, alpha })
+    }
+
+    /// Create a `Color` from  the four colours of the CMYK model: Cyan, Magenta, Yellow and Black. 
+    /// The CMYK colours are subtractive. This means the colours get darker as you blend them together
+    pub fn from_cmyk(c: Scalar, m: Scalar, y: Scalar, k: Scalar) -> Color {
+        Self::from(&CMYK{ c, m, y, k })
     }
 
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
@@ -523,6 +529,13 @@ impl Color {
     }
 }
 
+// by default Colors will be printed into HSLA fromat
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", HSLA::from(self).to_string() )
+    }
+}
+
 impl fmt::Debug for Color {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Color::from_{}", self.to_rgb_string(Format::NoSpaces))
@@ -662,13 +675,17 @@ impl From<&LCh> for Color {
 }
 
 
-//from CMYK to Color so you can do -> let new_color = Color::from(&some_cmyk);
-// impl From<&CMYK> for Color {
-//     fn from(color: &CMYK) -> Self {
-//         #![allow(clippy::many_single_char_names)]
-//         // let new = RGBA<a
-//     }
-// }
+// from CMYK to Color so you can do -> let new_color = Color::from(&some_cmyk);
+impl From<&CMYK> for Color {
+    fn from(color: &CMYK) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        let r = 255.0 * ((1.0 - color.c ) / 100.0) * (( 1.0 - color.k ) / 100.0);
+        let g = 255.0 * ((1.0 - color.m ) / 100.0) * (( 1.0 - color.k ) / 100.0);
+        let b = 255.0 * ((1.0 - color.y ) / 100.0) * (( 1.0 - color.k ) / 100.0);
+
+        Color::from(&RGBA::<f64>{ r, g, b, alpha: 1.0 })
+    }
+}
 
 
 #[derive(Debug, Clone, PartialEq)]
