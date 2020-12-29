@@ -86,39 +86,6 @@ pub fn ciede2000(color1: &Lab, color2: &Lab) -> f64 {
     (lightness.powi(2) + chroma.powi(2) + hue.powi(2) + r_sub_t * chroma * hue).sqrt()
 }
 
-
-pub fn cie94(color0: &Lab, color: &Lab) -> f64 {
-    let xc1 = (color0.a.powi(2) + color0.b.powi(2)).sqrt();
-    let xc2 = (color.a.powi(2) + color.b.powi(2)).sqrt();
-    let xdl = color.l - color0.l;
-    let mut xdc = xc2 - xc1;
-    let xde = ( (color0.l - color.l).powi(2) + (color0.a - color.a).powi(2) + (color0.b - color.b).powi(2) ).sqrt();
-
-    let mut xdh = xde.powi(2) - xdl.powi(2) - xdc.powi(2);
-    if xdh > 0.0 {
-        xdh = xdh.sqrt();
-    } else {
-        xdh = 0.0;
-    }
-
-    let xsc = 1.0 + 0.045 * xc1;
-    let xsh = 1.0 + 0.015 * xc1;
-    xdc /= xsc;
-    xdh /= xsh;
-
-    return ( xdl.powi(2) + xdc.powi(2) + xdh.powi(2) ).sqrt();
-}
-
-// Finds the index and distance from nearest color from a group of colors
-pub fn nearest(color: &Lab, colors: &Vec<Lab>, delta_f: &dyn Fn(&Lab, &Lab) -> f64) -> (usize, f64) {
-    return colors
-        .iter()
-        .map(|c| delta_f(color, c))
-        .enumerate()
-        .min_by(|(_, a), (_, b)| a.partial_cmp(&b).expect("NaN encountered"))
-        .unwrap();
-}
-
 fn get_h_prime_fn(x: f64, y: f64) -> f64 {
     let mut hue_angle;
 
