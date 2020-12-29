@@ -706,8 +706,8 @@ impl From<&LCh> for Color {
 
         Self::from(&Lab {
             l: color.l,
-            a: a,
-            b: b,
+            a,
+            b,
             alpha: color.alpha,
         })
     }
@@ -1077,7 +1077,7 @@ impl From<&Color> for CMYK {
             c: if c.is_nan() { 0.0 } else { c },
             m: if m.is_nan() { 0.0 } else { m },
             y: if y.is_nan() { 0.0 } else { y },
-            k: k,
+            k,
         }
     }
 }
