@@ -134,6 +134,12 @@ impl Color {
         Self::from(&CMYK { c, m, y, k })
     }
 
+    /// Create a `Color` from HEX string. Shoud be exactly 6 chars or 7 with leading '#'
+    pub fn from_hex(hex_string: &str) -> Color {
+        let val = if hex_string.starts_with("#") { &hex_string[1..] } else { hex_string };
+        Self::from(&HEX{ val: val.to_string() })
+    }
+
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
     /// in degrees, as a number between 0.0 and 360.0. Saturation, lightness and alpha are numbers
     /// between 0.0 and 1.0.
@@ -200,16 +206,13 @@ impl Color {
             space = if format == Format::Spaces { " " } else { "" }
         )
     }
-
     /// Format the color as a RGB-representation string (`#fc0070`).
     pub fn to_rgb_hex_string(&self, leading_hash: bool) -> String {
-        let rgba = self.to_rgba();
+        let hex = HEX::from(self);
         format!(
-            "{}{:02x}{:02x}{:02x}",
+            "{}{}",
             if leading_hash { "#" } else { "" },
-            rgba.r,
-            rgba.g,
-            rgba.b
+            hex.val
         )
     }
 
@@ -240,6 +243,11 @@ impl Color {
     /// algorithm for converting from CIE XYZ
     pub fn to_lms(&self) -> LMS {
         LMS::from(self)
+    }
+
+    /// Convert a `Color` to its a HEX color. It converts to RGBA as intermediary then to HEX
+    pub fn to_hex(&self) -> HEX {
+        HEX::from(self)
     }
 
     /// Get L, a and b coordinates according to the Lab color space.
@@ -669,6 +677,17 @@ impl From<&LMS> for Color {
     }
 }
 
+impl From<&HEX> for Color {
+    fn from(hex: &HEX) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        let r = u8::from_str_radix(&hex.val[..2], 16).unwrap_or(0);
+        let g = u8::from_str_radix(&hex.val[2..4], 16).unwrap_or(0);
+        let b = u8::from_str_radix(&hex.val[5..], 16).unwrap_or(0);
+    
+        Color::from(&RGBA::<u8>{ r, g, b, alpha: 1.0 })
+    }
+}
+
 impl From<&Lab> for Color {
     fn from(color: &Lab) -> Self {
         #![allow(clippy::many_single_char_names)]
@@ -1094,6 +1113,31 @@ impl fmt::Display for CMYK {
         )
     }
 }
+
+
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct HEX {
+    pub val: String,
+}
+
+impl From<&Color> for HEX {
+    fn from(color: &Color) -> Self {
+        let rgb = RGBA::<u8>::from(color);
+        HEX{ val: format!("{:02x}{:02x}{:02x}",
+            rgb.r,
+            rgb.g,
+            rgb.b) 
+        }
+    }
+}
+
+impl fmt::Display for HEX {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "#{}", self.val )
+    }
+}
+
 
 /// A representation of the different kinds of colorblindness. More info
 /// [here](https://en.wikipedia.org/wiki/Color_blindness).
