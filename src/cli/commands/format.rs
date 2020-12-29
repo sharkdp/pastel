@@ -47,10 +47,10 @@ impl ColorCommand for FormatCommand {
             }
         };
 
-        let write_colored_line = match format_type.as_ref() {
-            "ansi-8bit-escapecode" | "ansi-24bit-escapecode" => false,
-            _ => true,
-        };
+        let write_colored_line = !matches!(
+            format_type.as_ref(),
+            "ansi-8bit-escapecode" | "ansi-24bit-escapecode"
+        );
 
         if write_colored_line {
             writeln!(
