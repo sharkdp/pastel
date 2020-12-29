@@ -39,12 +39,22 @@ const D65_ZN: Scalar = 1.088_830;
 
 impl Color {
     pub fn from_hsla(hue: Scalar, saturation: Scalar, lightness: Scalar, alpha: Scalar) -> Color {
-        Self::from(&HSLA{ h: hue, s: saturation, l: lightness, alpha })
+        Self::from(&HSLA {
+            h: hue,
+            s: saturation,
+            l: lightness,
+            alpha,
+        })
     }
 
     ///
     pub fn from_hsl(hue: Scalar, saturation: Scalar, lightness: Scalar) -> Color {
-        Self::from(&HSLA{ h: hue, s: saturation, l: lightness, alpha: 1.0 })
+        Self::from(&HSLA {
+            h: hue,
+            s: saturation,
+            l: lightness,
+            alpha: 1.0,
+        })
     }
 
     /// Create a `Color` from integer RGB values between 0 and 255 and a floating
@@ -52,25 +62,34 @@ impl Color {
     pub fn from_rgba(r: u8, g: u8, b: u8, alpha: Scalar) -> Color {
         // RGB to HSL conversion algorithm adapted from
         // https://en.wikipedia.org/wiki/HSL_and_HSV
-        Self::from(&RGBA::<u8>{ r, g, b, alpha })
-
+        Self::from(&RGBA::<u8> { r, g, b, alpha })
     }
 
     /// Create a `Color` from integer RGB values between 0 and 255.
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Color {
-        Self::from(&RGBA::<u8> { r, g, b, alpha: 1.0 })
+        Self::from(&RGBA::<u8> {
+            r,
+            g,
+            b,
+            alpha: 1.0,
+        })
     }
 
     /// Create a `Color` from RGB and alpha values between 0.0 and 1.0. Values outside this range
     /// will be clamped.
     pub fn from_rgba_float(r: Scalar, g: Scalar, b: Scalar, alpha: Scalar) -> Color {
-        Self::from(&RGBA::<f64>{ r, g, b, alpha })
+        Self::from(&RGBA::<f64> { r, g, b, alpha })
     }
 
     /// Create a `Color` from RGB values between 0.0 and 1.0. Values outside this range will be
     /// clamped.
     pub fn from_rgb_float(r: Scalar, g: Scalar, b: Scalar) -> Color {
-        Self::from(&RGBA::<f64>{ r, g, b, alpha: 1.0 })
+        Self::from(&RGBA::<f64> {
+            r,
+            g,
+            b,
+            alpha: 1.0,
+        })
     }
 
     /// Create a `Color` from XYZ coordinates in the CIE 1931 color space. Note that a `Color`
@@ -83,13 +102,13 @@ impl Color {
     /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
     /// - https://en.wikipedia.org/wiki/SRGB
     pub fn from_xyz(x: Scalar, y: Scalar, z: Scalar, alpha: Scalar) -> Color {
-        Self::from(&XYZ{ x, y, z, alpha })
+        Self::from(&XYZ { x, y, z, alpha })
     }
 
     /// Create a `Color` from LMS coordinates. This is the matrix inverse of the matrix that
     /// appears in `to_lms`.
     pub fn from_lms(l: Scalar, m: Scalar, s: Scalar, alpha: Scalar) -> Color {
-        Self::from(&LMS{ l, m, s, alpha })
+        Self::from(&LMS { l, m, s, alpha })
     }
 
     /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
@@ -106,13 +125,13 @@ impl Color {
     ///
     /// See: https://en.wikipedia.org/wiki/Lab_color_space
     pub fn from_lch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
-        Self::from(&LCh{ l, c, h, alpha })
+        Self::from(&LCh { l, c, h, alpha })
     }
 
-    /// Create a `Color` from  the four colours of the CMYK model: Cyan, Magenta, Yellow and Black. 
+    /// Create a `Color` from  the four colours of the CMYK model: Cyan, Magenta, Yellow and Black.
     /// The CMYK colours are subtractive. This means the colours get darker as you blend them together
     pub fn from_cmyk(c: Scalar, m: Scalar, y: Scalar, k: Scalar) -> Color {
-        Self::from(&CMYK{ c, m, y, k })
+        Self::from(&CMYK { c, m, y, k })
     }
 
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
@@ -212,7 +231,7 @@ impl Color {
     /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
     /// - https://en.wikipedia.org/wiki/SRGB
     pub fn to_xyz(&self) -> XYZ {
-       XYZ::from(self) 
+        XYZ::from(self)
     }
 
     /// Get coordinates according to the LSM color space
@@ -532,7 +551,7 @@ impl Color {
 // by default Colors will be printed into HSLA fromat
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", HSLA::from(self).to_string() )
+        write!(f, "{}", HSLA::from(self).to_string())
     }
 }
 
@@ -588,7 +607,12 @@ impl From<&RGBA<u8>> for Color {
         } else {
             chroma_s / (1.0 - Scalar::abs(2.0 * lightness - 1.0))
         };
-        Self::from(&HSLA{ h: hue, s: saturation, l: lightness, alpha: color.alpha })
+        Self::from(&HSLA {
+            h: hue,
+            s: saturation,
+            l: lightness,
+            alpha: color.alpha,
+        })
     }
 }
 
@@ -597,10 +621,14 @@ impl From<&RGBA<f64>> for Color {
         let r = Scalar::round(clamp(0.0, 255.0, 255.0 * color.r)) as u8;
         let g = Scalar::round(clamp(0.0, 255.0, 255.0 * color.g)) as u8;
         let b = Scalar::round(clamp(0.0, 255.0, 255.0 * color.b)) as u8;
-        Self::from(&RGBA::<u8>{ r, g, b, alpha: color.alpha })
+        Self::from(&RGBA::<u8> {
+            r,
+            g,
+            b,
+            alpha: color.alpha,
+        })
     }
 }
-
 
 impl From<&XYZ> for Color {
     fn from(color: &XYZ) -> Self {
@@ -617,10 +645,14 @@ impl From<&XYZ> for Color {
         let g = f(-0.9689 * color.x + 1.8758 * color.y + 0.0415 * color.z);
         let b = f(0.0557 * color.x - 0.2040 * color.y + 1.0570 * color.z);
 
-        Self::from(&RGBA::<f64>{ r, g, b, alpha: color.alpha })
+        Self::from(&RGBA::<f64> {
+            r,
+            g,
+            b,
+            alpha: color.alpha,
+        })
     }
 }
-
 
 impl From<&LMS> for Color {
     fn from(color: &LMS) -> Self {
@@ -628,7 +660,12 @@ impl From<&LMS> for Color {
         let x = 1.91020 * color.l - 1.112_120 * color.m + 0.201_908 * color.s;
         let y = 0.37095 * color.l + 0.629_054 * color.m + 0.000_000 * color.s;
         let z = 0.00000 * color.l + 0.000_000 * color.m + 1.000_000 * color.s;
-        Self::from(&XYZ{ x, y, z, alpha: color.alpha })
+        Self::from(&XYZ {
+            x,
+            y,
+            z,
+            alpha: color.alpha,
+        })
     }
 }
 
@@ -650,10 +687,14 @@ impl From<&Lab> for Color {
         let y = D65_YN * finv(l_);
         let z = D65_ZN * finv(l_ - color.b / 200.0);
 
-        Self::from(&XYZ{ x, y, z, alpha: color.alpha})
+        Self::from(&XYZ {
+            x,
+            y,
+            z,
+            alpha: color.alpha,
+        })
     }
 }
-
 
 impl From<&LCh> for Color {
     fn from(color: &LCh) -> Self {
@@ -663,23 +704,31 @@ impl From<&LCh> for Color {
         let a = color.c * Scalar::cos(color.h * DEG2RAD);
         let b = color.c * Scalar::sin(color.h * DEG2RAD);
 
-        Self::from(&Lab{ l: color.l, a: a, b: b, alpha: color.alpha })
+        Self::from(&Lab {
+            l: color.l,
+            a: a,
+            b: b,
+            alpha: color.alpha,
+        })
     }
 }
-
 
 // from CMYK to Color so you can do -> let new_color = Color::from(&some_cmyk);
 impl From<&CMYK> for Color {
     fn from(color: &CMYK) -> Self {
         #![allow(clippy::many_single_char_names)]
-        let r = 255.0 * ((1.0 - color.c ) / 100.0) * (( 1.0 - color.k ) / 100.0);
-        let g = 255.0 * ((1.0 - color.m ) / 100.0) * (( 1.0 - color.k ) / 100.0);
-        let b = 255.0 * ((1.0 - color.y ) / 100.0) * (( 1.0 - color.k ) / 100.0);
+        let r = 255.0 * ((1.0 - color.c) / 100.0) * ((1.0 - color.k) / 100.0);
+        let g = 255.0 * ((1.0 - color.m) / 100.0) * ((1.0 - color.k) / 100.0);
+        let b = 255.0 * ((1.0 - color.y) / 100.0) * ((1.0 - color.k) / 100.0);
 
-        Color::from(&RGBA::<f64>{ r, g, b, alpha: 1.0 })
+        Color::from(&RGBA::<f64> {
+            r,
+            g,
+            b,
+            alpha: 1.0,
+        })
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RGBA<T> {
@@ -758,23 +807,13 @@ impl From<&Color> for RGBA<u8> {
 
 impl fmt::Display for RGBA<f64> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
-            "rgb({r}, {g}, {b})",
-            r = self.r,
-            g = self.g,
-            b = self.b,
-        )
+        write!(f, "rgb({r}, {g}, {b})", r = self.r, g = self.g, b = self.b,)
     }
 }
 
 impl fmt::Display for RGBA<u8> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
-            "rgb({r}, {g}, {b})",
-            r = self.r,
-            g = self.g,
-            b = self.b,
-        )
+        write!(f, "rgb({r}, {g}, {b})", r = self.r, g = self.g, b = self.b,)
     }
 }
 
@@ -822,12 +861,7 @@ impl From<&Color> for HSLA {
 
 impl fmt::Display for HSLA {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
-            "hsl({h}, {s}, {l})",
-            h = self.h,
-            s = self.s,
-            l = self.l,
-        )
+        write!(f, "hsl({h}, {s}, {l})", h = self.h, s = self.s, l = self.l,)
     }
 }
 
@@ -842,7 +876,7 @@ pub struct XYZ {
 impl From<&Color> for XYZ {
     fn from(color: &Color) -> Self {
         #![allow(clippy::many_single_char_names)]
-        let finv = |c_ :f64| {
+        let finv = |c_: f64| {
             if c_ <= 0.04045 {
                 c_ / 12.92
             } else {
@@ -870,12 +904,7 @@ impl From<&Color> for XYZ {
 
 impl fmt::Display for XYZ {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
-            "XYZ({x}, {y}, {z})",
-            x = self.x,
-            y = self.y,
-            z = self.z,
-        )
+        write!(f, "XYZ({x}, {y}, {z})", x = self.x, y = self.y, z = self.z,)
     }
 }
 
@@ -903,15 +932,9 @@ impl From<&Color> for LMS {
 
 impl fmt::Display for LMS {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
-            "LMS({l}, {m}, {s})",
-            l = self.l,
-            m = self.m,
-            s = self.s,
-        )
+        write!(f, "LMS({l}, {m}, {s})", l = self.l, m = self.m, s = self.s,)
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lab {
@@ -970,12 +993,7 @@ impl From<&Color> for Lab {
 
 impl fmt::Display for Lab {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
-            "Lab({l}, {a}, {b})",
-            l = self.l,
-            a = self.a,
-            b = self.b,
-        )
+        write!(f, "Lab({l}, {a}, {b})", l = self.l, a = self.a, b = self.b,)
     }
 }
 
@@ -1025,12 +1043,7 @@ impl From<&Color> for LCh {
 
 impl fmt::Display for LCh {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
-            "LCh({l}, {c}, {h})",
-            l = self.l,
-            c = self.c,
-            h = self.h,
-        )
+        write!(f, "LCh({l}, {c}, {h})", l = self.l, c = self.c, h = self.h,)
     }
 }
 
@@ -1071,7 +1084,8 @@ impl From<&Color> for CMYK {
 
 impl fmt::Display for CMYK {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             "cmyk({c}, {m}, {y}, {k})",
             c = self.c,
             m = self.m,
