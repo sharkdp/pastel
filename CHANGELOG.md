@@ -1,6 +1,8 @@
 # unreleased
 
 ## Features
+- Added `From` and `Display` traits for each color struct, see #133 (@bresilla)
+
 ## Bugfixes
 ## Changes
 ## Other

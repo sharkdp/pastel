@@ -759,7 +759,7 @@ impl From<&Color> for RGBA<u8> {
 impl fmt::Display for RGBA<f64> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,
-            "rgb({r:.3}, {g:.3}, {b:.3})",
+            "rgb({r}, {g}, {b})",
             r = self.r,
             g = self.g,
             b = self.b,
@@ -823,7 +823,7 @@ impl From<&Color> for HSLA {
 impl fmt::Display for HSLA {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,
-            "hsl({h:.0}, {s:.1}, {l:.1})",
+            "hsl({h}, {s}, {l})",
             h = self.h,
             s = self.s,
             l = self.l,
@@ -871,7 +871,7 @@ impl From<&Color> for XYZ {
 impl fmt::Display for XYZ {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,
-            "XYZ({x:.0}, {y:.0}, {z:.0})",
+            "XYZ({x}, {y}, {z})",
             x = self.x,
             y = self.y,
             z = self.z,
@@ -904,7 +904,7 @@ impl From<&Color> for LMS {
 impl fmt::Display for LMS {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,
-            "LMS({l:.0}, {m:.0}, {s:.0})",
+            "LMS({l}, {m}, {s})",
             l = self.l,
             m = self.m,
             s = self.s,
@@ -971,7 +971,7 @@ impl From<&Color> for Lab {
 impl fmt::Display for Lab {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,
-            "Lab({l:.0}, {a:.0}, {b:.0})",
+            "Lab({l}, {a}, {b})",
             l = self.l,
             a = self.a,
             b = self.b,
@@ -1026,7 +1026,7 @@ impl From<&Color> for LCh {
 impl fmt::Display for LCh {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,
-            "LCh({l:.0}, {c:.0}, {h:.0})",
+            "LCh({l}, {c}, {h})",
             l = self.l,
             c = self.c,
             h = self.h,
@@ -1073,10 +1073,10 @@ impl fmt::Display for CMYK {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f,
             "cmyk({c}, {m}, {y}, {k})",
-            c = (self.c * 100.0).round(),
-            m = (self.m * 100.0).round(),
-            y = (self.y * 100.0).round(),
-            k = (self.k * 100.0).round(),
+            c = self.c,
+            m = self.m,
+            y = self.y,
+            k = self.k,
         )
     }
 }
