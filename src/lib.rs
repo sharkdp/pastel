@@ -1068,16 +1068,16 @@ impl From<&Color> for CMYK {
         } else {
             b
         };
-        let k = 1.0 - biggest;
-        let c = (1.0 - r - k) / biggest;
-        let m = (1.0 - g - k) / biggest;
-        let y = (1.0 - b - k) / biggest;
+        let out_k = 1.0 - biggest;
+        let out_c = (1.0 - r - out_k) / biggest;
+        let out_m = (1.0 - g - out_k) / biggest;
+        let out_y = (1.0 - b - out_k) / biggest;
 
         CMYK {
-            c: if c.is_nan() { 0.0 } else { c },
-            m: if m.is_nan() { 0.0 } else { m },
-            y: if y.is_nan() { 0.0 } else { y },
-            k,
+            c: if out_c.is_nan() { 0.0 } else { out_c },
+            m: if out_m.is_nan() { 0.0 } else { out_m },
+            y: if out_y.is_nan() { 0.0 } else { out_y },
+            k: out_k,
         }
     }
 }
