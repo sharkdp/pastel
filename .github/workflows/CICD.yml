@@ -4,7 +4,7 @@ env:
   PROJECT_NAME: pastel
   PROJECT_DESC: "A command-line tool to generate, analyze, convert and manipulate colors"
   PROJECT_AUTH: "sharkdp"
-  RUST_MIN_SRV: "1.40.0"
+  RUST_MIN_SRV: "1.43.0"
 
 on: [push, pull_request]
 

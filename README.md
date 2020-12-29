@@ -175,7 +175,7 @@ Check out the [release page](https://github.com/sharkdp/pastel/releases) for bin
 
 If you do not have cargo, install using [rust's installation documentation](https://doc.rust-lang.org/book/ch01-01-installation.html).
 
-If you have Rust 1.40 or higher, you can install `pastel` from source via `cargo`:
+If you have Rust 1.43 or higher, you can install `pastel` from source via `cargo`:
 ```
 cargo install pastel
 ```
