@@ -107,7 +107,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
     }
 
     fn modify_color(&mut self, color: &mut (Color, Lab)) {
-        const STRATEGY: random::strategies::UniformRGB = random::strategies::UniformRGB {};
+        let mut strategy = random::strategies::UniformRGB {};
 
         match self.parameters.opt_mode {
             OptimizationMode::Local => {
@@ -118,7 +118,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
                 color.0 = Color::from_rgb(rgb.r, rgb.g, rgb.b);
             }
             OptimizationMode::Global => {
-                color.0 = STRATEGY.generate_with(&mut self.rng);
+                color.0 = strategy.generate_with(&mut self.rng);
             }
         }
         color.1 = color.0.to_lab();
