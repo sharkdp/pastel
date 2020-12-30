@@ -66,7 +66,7 @@ fn parse_angle(input: &str) -> IResult<&str, f64> {
     alt((parse_turns, parse_grads, parse_rads, parse_degrees))(input)
 }
 
-fn parse_hex(input: &str) -> IResult<&str, Color> {
+pub fn parse_hex(input: &str) -> IResult<&str, Color> {
     let (input, _) = opt_hash_char(input)?;
     let (input, hex_chars) = hex_digit1(input)?;
     match hex_chars.len() {

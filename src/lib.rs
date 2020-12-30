@@ -136,8 +136,7 @@ impl Color {
 
     /// Create a `Color` from HEX string. Shoud be exactly 6 chars or 7 with leading '#'
     pub fn from_hex(hex_string: &str) -> Color {
-        let val = if hex_string.starts_with("#") { &hex_string[1..] } else { hex_string };
-        Self::from(&HEX{ val: val.to_string() })
+        parser::parse_hex(hex_string).unwrap().1
     }
 
     /// Convert a `Color` to its hue, saturation, lightness and alpha values. The hue is given
@@ -679,12 +678,7 @@ impl From<&LMS> for Color {
 
 impl From<&HEX> for Color {
     fn from(hex: &HEX) -> Self {
-        #![allow(clippy::many_single_char_names)]
-        let r = u8::from_str_radix(&hex.val[..2], 16).unwrap_or(0);
-        let g = u8::from_str_radix(&hex.val[2..4], 16).unwrap_or(0);
-        let b = u8::from_str_radix(&hex.val[5..], 16).unwrap_or(0);
-    
-        Color::from(&RGBA::<u8>{ r, g, b, alpha: 1.0 })
+        parser::parse_color(&hex.val).unwrap()
     }
 }
 
