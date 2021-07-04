@@ -11,7 +11,7 @@ on: [push, pull_request]
 jobs:
   min_version:
     name: MinSRV # Minimum supported rust version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Install `rust` toolchain (v${{ env.RUST_MIN_SRV }})
@@ -33,18 +33,18 @@ jobs:
       matrix:
         job:
           # { os, target, cargo-options, features, use-cross, toolchain }
-          - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: true }
-          - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: true }
-          - { os: ubuntu-18.04   , target: i586-unknown-linux-gnu      , use-cross: true }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: true }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: true }
-          - { os: macos-latest   , target: x86_64-apple-darwin         }
-          - { os: windows-latest , target: i686-pc-windows-gnu         }
-          - { os: windows-latest , target: i686-pc-windows-msvc        }
-          - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## note: requires rust >= 1.43.0 to link correctly
-          - { os: windows-latest , target: x86_64-pc-windows-msvc      }
+          - { os: ubuntu-18.04, target: arm-unknown-linux-gnueabihf , use-cross: true }
+          - { os: ubuntu-18.04, target: aarch64-unknown-linux-gnu   , use-cross: true }
+          - { os: ubuntu-18.04, target: i586-unknown-linux-gnu      , use-cross: true }
+          - { os: ubuntu-18.04, target: i686-unknown-linux-gnu      , use-cross: true }
+          - { os: ubuntu-18.04, target: i686-unknown-linux-musl     , use-cross: true }
+          - { os: ubuntu-18.04, target: x86_64-unknown-linux-gnu    }
+          - { os: ubuntu-18.04, target: x86_64-unknown-linux-musl   , use-cross: true }
+          - { os: macos-10.15 , target: x86_64-apple-darwin         }
+          - { os: windows-2019, target: i686-pc-windows-gnu         }
+          - { os: windows-2019, target: i686-pc-windows-msvc        }
+          - { os: windows-2019, target: x86_64-pc-windows-gnu       }  ## note: requires rust >= 1.43.0 to link correctly
+          - { os: windows-2019, target: x86_64-pc-windows-msvc      }
     steps:
     - uses: actions/checkout@v1
     - name: Install any prerequisites
