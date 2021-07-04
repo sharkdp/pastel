@@ -1,35 +1,37 @@
 name: CICD
 
 env:
-  RUST_MIN_SRV: "1.43.0"
+  MIN_SUPPORTED_RUST_VERSION: "1.43.0"
 
 on: [push, pull_request]
 
 jobs:
   min_version:
-    name: MinSRV # Minimum supported rust version
+    name: Minimum supported rust version
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v1
-    - name: Install `rust` toolchain (v${{ env.RUST_MIN_SRV }})
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ env.RUST_MIN_SRV }}
+        toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
-    - name: Test
+
+    - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
 
   build:
-    name: Build
+    name: ${{ matrix.job.os }} (${{ matrix.job.target }})
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
       matrix:
         job:
-          # { os, target, cargo-options, features, use-cross, toolchain }
           - { os: ubuntu-18.04, target: arm-unknown-linux-gnueabihf , use-cross: true }
           - { os: ubuntu-18.04, target: aarch64-unknown-linux-gnu   , use-cross: true }
           - { os: ubuntu-18.04, target: i586-unknown-linux-gnu      , use-cross: true }
@@ -40,17 +42,20 @@ jobs:
           - { os: macos-10.15 , target: x86_64-apple-darwin         }
           - { os: windows-2019, target: i686-pc-windows-gnu         }
           - { os: windows-2019, target: i686-pc-windows-msvc        }
-          - { os: windows-2019, target: x86_64-pc-windows-gnu       }  ## note: requires rust >= 1.43.0 to link correctly
+          - { os: windows-2019, target: x86_64-pc-windows-gnu       }
           - { os: windows-2019, target: x86_64-pc-windows-msvc      }
     steps:
-    - uses: actions/checkout@v1
-    - name: Install any prerequisites
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Install prerequisites
       shell: bash
       run: |
         case ${{ matrix.job.target }} in
           arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
           aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
         esac
+
     - name: Extract crate information
       shell: bash
       run: |
@@ -58,6 +63,7 @@ jobs:
         echo "PROJECT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
         echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
         echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
+
     - name: Initialize workflow variables
       id: vars
       shell: bash
@@ -111,12 +117,14 @@ jobs:
         # * executable for `strip`?
         STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
         echo ::set-output name=STRIP::${STRIP}
+
     - name: Create all needed build/work directories
       shell: bash
       run: |
         mkdir -p '${{ steps.vars.outputs.STAGING }}'
         mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}'
         mkdir -p '${{ steps.vars.outputs.STAGING }}/dpkg'
+
     - name: rust toolchain ~ install
       uses: actions-rs/toolchain@v1
       with:
@@ -124,7 +132,8 @@ jobs:
         target: ${{ matrix.job.target }}
         override: true
         profile: minimal # minimal component installation (ie, no documentation)
-    - name: Info
+
+    - name: Show version information (Rust, cargo, GCC)
       shell: bash
       run: |
         gcc --version || true
@@ -133,19 +142,22 @@ jobs:
         rustup default
         cargo -V
         rustc -V
+
     - name: Build
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.jobs.use-cross }}
         command: build
-        args: --release --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }}
-    - name: Test
+        args: --release --target=${{ matrix.job.target }}
+
+    - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.jobs.use-cross }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }}
-    - name: Package
+        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}}
+
+    - name: Create tarball and Debian package
       shell: bash
       run: |
         # binary
@@ -178,11 +190,13 @@ jobs:
           # build dpkg
           fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
         fi
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@master
       with:
         name: ${{ steps.vars.outputs.PKG_NAME }}
         path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
+
     - name: Publish
       uses: softprops/action-gh-release@v1
       if: steps.vars.outputs.DEPLOY
