@@ -2,8 +2,16 @@ name: CICD
 
 env:
   MIN_SUPPORTED_RUST_VERSION: "1.43.0"
+  CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   min_version:
@@ -19,7 +27,12 @@ jobs:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
-
+        components: clippy
+    - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-targets --all-features
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
@@ -64,71 +77,10 @@ jobs:
         echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
         echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
 
-    - name: Initialize workflow variables
-      id: vars
-      shell: bash
-      run: |
-        # toolchain
-        TOOLCHAIN="stable" ## default to "stable" toolchain
-        # * specify alternate TOOLCHAIN for *-pc-windows-gnu targets; gnu targets on Windows are broken for the standard *-pc-windows-msvc toolchain (refs: <https://github.com/rust-lang/rust/issues/47048>, <https://github.com/rust-lang/rust/issues/53454>, <https://github.com/rust-lang/cargo/issues/6754>)
-        case ${{ matrix.job.target }} in *-pc-windows-gnu) TOOLCHAIN="stable-${{ matrix.job.target }}" ;; esac;
-        # * use requested TOOLCHAIN if specified
-        if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
-        echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
-        # staging directory
-        STAGING='_staging'
-        echo ::set-output name=STAGING::${STAGING}
-        # determine EXE suffix
-        EXE_suffix="" ; case ${{ matrix.job.target }} in *-pc-windows-*) EXE_suffix=".exe" ;; esac;
-        echo ::set-output name=EXE_suffix::${EXE_suffix}
-        # parse commit reference info
-        unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
-        REF_SHAS=${GITHUB_SHA:0:8}
-        # package name
-        PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
-        PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
-        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
-        echo ::set-output name=PKG_NAME::${PKG_NAME}
-        # deployable tag? (ie, leading "vM" or "M"; M == version number)
-        unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
-        echo ::set-output name=DEPLOY::${DEPLOY}
-        # DPKG architecture?
-        unset DPKG_ARCH ; case ${{ matrix.job.target }} in i686-*-linux-*) DPKG_ARCH=i686 ;; x86_64-*-linux-*) DPKG_ARCH=amd64 ;; esac;
-        echo ::set-output name=DPKG_ARCH::${DPKG_ARCH}
-        # DPKG version?
-        unset DPKG_VERSION ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DPKG_VERSION=${REF_TAG/#[vV]/} ; fi
-        echo ::set-output name=DPKG_VERSION::${DPKG_VERSION}
-        # DPKG base name/conflicts?
-        DPKG_BASENAME=${PROJECT_NAME}
-        DPKG_CONFLICTS=${PROJECT_NAME}-musl
-        case ${{ matrix.job.target }} in *-musl) DPKG_BASENAME=${PROJECT_NAME}-musl ; DPKG_CONFLICTS=${PROJECT_NAME} ;; esac;
-        echo ::set-output name=DPKG_BASENAME::${DPKG_BASENAME}
-        echo ::set-output name=DPKG_CONFLICTS::${DPKG_CONFLICTS}
-        # DPKG name
-        unset DPKG_NAME;
-        if [[ -n $DPKG_ARCH && -n $DPKG_VERSION ]]; then DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb" ; fi
-        echo ::set-output name=DPKG_NAME::${DPKG_NAME}
-        # target-specific options
-        # # * test only library units tests and binary for arm-type targets
-        unset CARGO_TEST_OPTIONS
-        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
-        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
-        # * executable for `strip`?
-        STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
-        echo ::set-output name=STRIP::${STRIP}
-
-    - name: Create all needed build/work directories
-      shell: bash
-      run: |
-        mkdir -p '${{ steps.vars.outputs.STAGING }}'
-        mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}'
-        mkdir -p '${{ steps.vars.outputs.STAGING }}/dpkg'
-
-    - name: rust toolchain ~ install
+    - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ steps.vars.outputs.TOOLCHAIN }}
+        toolchain: stable
         target: ${{ matrix.job.target }}
         override: true
         profile: minimal # minimal component installation (ie, no documentation)
@@ -146,63 +98,218 @@ jobs:
     - name: Build
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ matrix.jobs.use-cross }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: build
         args: --release --target=${{ matrix.job.target }}
+
+    - name: Strip debug information from executable
+      id: strip
+      shell: bash
+      run: |
+        # Figure out suffix of binary
+        EXE_suffix=""
+        case ${{ matrix.job.target }} in
+          *-pc-windows-*) EXE_suffix=".exe" ;;
+        esac;
+
+        # Figure out what strip tool to use if any
+        STRIP="strip"
+        case ${{ matrix.job.target }} in
+          arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;;
+          aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;;
+          *-pc-windows-msvc) STRIP="" ;;
+        esac;
+
+        # Setup paths
+        BIN_DIR="${{ env.CICD_INTERMEDIATES_DIR }}/stripped-release-bin/"
+        mkdir -p "${BIN_DIR}"
+        BIN_NAME="${{ env.PROJECT_NAME }}${EXE_suffix}"
+        BIN_PATH="${BIN_DIR}/${BIN_NAME}"
+
+        # Copy the release build binary to the result location
+        cp "target/${{ matrix.job.target }}/release/${BIN_NAME}" "${BIN_DIR}"
+
+        # Also strip if possible
+        if [ -n "${STRIP}" ]; then
+          "${STRIP}" "${BIN_PATH}"
+        fi
+
+        # Let subsequent steps know where to find the (stripped) bin
+        echo ::set-output name=BIN_PATH::${BIN_PATH}
+        echo ::set-output name=BIN_NAME::${BIN_NAME}
+
+    - name: Set testing options
+      id: test-options
+      shell: bash
+      run: |
+        # test only library unit tests and binary for arm-type targets
+        unset CARGO_TEST_OPTIONS
+        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
+        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
 
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ matrix.jobs.use-cross }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}}
+        args: --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
 
-    - name: Create tarball and Debian package
+    - name: Create tarball
+      id: package
       shell: bash
       run: |
-        # binary
-        cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
-        # `strip` binary (if needed)
-        if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' ; fi
-        # README and LICENSE
-        # * spell-checker:ignore EADME ICENSE
-        (shopt -s nullglob; for f in [R]"EADME"{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
-        (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
+        PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
+        PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
+        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
+        echo ::set-output name=PKG_NAME::${PKG_NAME}
+
+        PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
+        ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
+        mkdir -p "${ARCHIVE_DIR}"
+
+        # Binary
+        cp "${{ steps.strip.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
+
+        # README, LICENSE and CHANGELOG files
+        cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
+
         # base compressed package
-        pushd '${{ steps.vars.outputs.STAGING }}/' >/dev/null
+        pushd "${PKG_STAGING}/" >/dev/null
         case ${{ matrix.job.target }} in
-          *-pc-windows-*) 7z -y a '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* | tail -2 ;;
-          *) tar czf '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* ;;
+          *-pc-windows-*) 7z -y a "${PKG_NAME}" "${PKG_BASENAME}"/* | tail -2 ;;
+          *) tar czf "${PKG_NAME}" "${PKG_BASENAME}"/* ;;
         esac;
         popd >/dev/null
-        # dpkg
-        if [ -n "${{ steps.vars.outputs.DPKG_NAME }}" ]; then
-          DPKG_DIR="${{ steps.vars.outputs.STAGING }}/dpkg"
-          # binary
-          install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
-          if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
-          # README and LICENSE
-          (shopt -s nullglob; for f in [R]"EADME"{,.*}; do install -Dm644 "$f" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/$f" ; done)
-          (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do install -Dm644 "$f" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/$f" ; done)
+
+        # Let subsequent steps know where to find the compressed package
+        echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
+
+    - name: Create Debian package
+      id: debian-package
+      shell: bash
+      if: startsWith(matrix.job.os, 'ubuntu')
+      run: |
+        COPYRIGHT_YEARS="2018 - "$(date "+%Y")
+        DPKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/debian-package"
+        DPKG_DIR="${DPKG_STAGING}/dpkg"
+        mkdir -p "${DPKG_DIR}"
+
+        DPKG_BASENAME=${PROJECT_NAME}
+        DPKG_CONFLICTS=${PROJECT_NAME}-musl
+        case ${{ matrix.job.target }} in *-musl) DPKG_BASENAME=${PROJECT_NAME}-musl ; DPKG_CONFLICTS=${PROJECT_NAME} ;; esac;
+        DPKG_VERSION=${PROJECT_VERSION}
+
+        unset DPKG_ARCH
+        case ${{ matrix.job.target }} in
+          aarch64-*-linux-*) DPKG_ARCH=arm64 ;;
+          arm-*-linux-*hf) DPKG_ARCH=armhf ;;
+          i686-*-linux-*) DPKG_ARCH=i686 ;;
+          x86_64-*-linux-*) DPKG_ARCH=amd64 ;;
+          *) DPKG_ARCH=notset ;;
+        esac;
+
+        DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb"
+        echo ::set-output name=DPKG_NAME::${DPKG_NAME}
+
+        # Binary
+        install -Dm755 "${{ steps.strip.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.strip.outputs.BIN_NAME }}"
+
+        # README and LICENSE
+        install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/README.md"
+        install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/LICENSE-MIT"
+        install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/LICENSE-APACHE"
+        install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/changelog"
+        gzip -n --best "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/changelog"
+
+        cat > "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/copyright" <<EOF
+        Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+        Upstream-Name: ${{ env.PROJECT_NAME }}
+        Source: ${{ env.PROJECT_HOMEPAGE }}
+
+        Files: *
+        Copyright: ${{ env.PROJECT_MAINTAINER }}
+        Copyright: $COPYRIGHT_YEARS ${{ env.PROJECT_MAINTAINER }}
+        License: Apache-2.0 or MIT
+
+        License: Apache-2.0
+          On Debian systems, the complete text of the Apache-2.0 can be found in the
+          file /usr/share/common-licenses/Apache-2.0.
+
+        License: MIT
+          Permission is hereby granted, free of charge, to any
+          person obtaining a copy of this software and associated
+          documentation files (the "Software"), to deal in the
+          Software without restriction, including without
+          limitation the rights to use, copy, modify, merge,
+          publish, distribute, sublicense, and/or sell copies of
+          the Software, and to permit persons to whom the Software
+          is furnished to do so, subject to the following
+          conditions:
+          .
+          The above copyright notice and this permission notice
+          shall be included in all copies or substantial portions
+          of the Software.
+          .
+          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+          ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+          TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+          PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+          SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+          CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+          OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+          IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+          DEALINGS IN THE SOFTWARE.
+        EOF
+          chmod 644 "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/copyright"
+
           # control file
           mkdir -p "${DPKG_DIR}/DEBIAN"
-          printf "Package: ${{ steps.vars.outputs.DPKG_BASENAME }}\nVersion: ${{ steps.vars.outputs.DPKG_VERSION }}\nSection: utils\nPriority: optional\nMaintainer: ${{ env.PROJECT_MAINTAINER }}\nArchitecture: ${{ steps.vars.outputs.DPKG_ARCH }}\nProvides: ${{ env.PROJECT_NAME }}\nConflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}\nDescription: ${{ env.PROJECT_DESC }}\n" > "${DPKG_DIR}/DEBIAN/control"
-          # build dpkg
-          fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
-        fi
+          cat > "${DPKG_DIR}/DEBIAN/control" <<EOF
+        Package: ${DPKG_BASENAME}
+        Version: ${DPKG_VERSION}
+        Section: utils
+        Priority: optional
+        Maintainer: ${{ env.PROJECT_MAINTAINER }}
+        Homepage: ${{ env.PROJECT_HOMEPAGE }}
+        Architecture: ${DPKG_ARCH}
+        Provides: ${{ env.PROJECT_NAME }}
+        Conflicts: ${DPKG_CONFLICTS}
+        Description: cat(1) clone with wings.
+          A cat(1) clone with syntax highlighting and Git integration.
+        EOF
 
-    - name: Upload build artifacts
+        DPKG_PATH="${DPKG_STAGING}/${DPKG_NAME}"
+        echo ::set-output name=DPKG_PATH::${DPKG_PATH}
+
+        # build dpkg
+        fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
+
+    - name: "Artifact upload: tarball"
       uses: actions/upload-artifact@master
       with:
-        name: ${{ steps.vars.outputs.PKG_NAME }}
-        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
+        name: ${{ steps.package.outputs.PKG_NAME }}
+        path: ${{ steps.package.outputs.PKG_PATH }}
 
-    - name: Publish
+    - name: "Artifact upload: Debian package"
+      uses: actions/upload-artifact@master
+      if: steps.debian-package.outputs.DPKG_NAME
+      with:
+        name: ${{ steps.debian-package.outputs.DPKG_NAME }}
+        path: ${{ steps.debian-package.outputs.DPKG_PATH }}
+
+    - name: Check for release
+      id: is-release
+      shell: bash
+      run: |
+        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
+
+    - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
-      if: steps.vars.outputs.DEPLOY
+      if: steps.is-release.outputs.IS_RELEASE
       with:
         files: |
-          ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
-          ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}
+          ${{ steps.package.outputs.PKG_PATH }}
+          ${{ steps.debian-package.outputs.DPKG_PATH }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
