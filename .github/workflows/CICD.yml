@@ -75,16 +75,10 @@ jobs:
         # parse commit reference info
         unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
         REF_SHAS=${GITHUB_SHA:0:8}
-        # parse target
-        unset TARGET_ARCH ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) TARGET_ARCH=arm ;; i686-*) TARGET_ARCH=i686 ;; x86_64-*) TARGET_ARCH=x86_64 ;; esac;
-        echo ::set-output name=TARGET_ARCH::${TARGET_ARCH}
-        unset TARGET_OS ; case ${{ matrix.job.target }} in *-linux-*) TARGET_OS=linux ;; *-apple-*) TARGET_OS=macos ;; *-windows-*) TARGET_OS=windows ;; esac;
-        echo ::set-output name=TARGET_OS::${TARGET_OS}
         # package name
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
         PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo ::set-output name=PKG_suffix::${PKG_suffix}
         echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
         # deployable tag? (ie, leading "vM" or "M"; M == version number)
@@ -107,10 +101,6 @@ jobs:
         if [[ -n $DPKG_ARCH && -n $DPKG_VERSION ]]; then DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb" ; fi
         echo ::set-output name=DPKG_NAME::${DPKG_NAME}
         # target-specific options
-        # # * `arm` cannot be tested on ubuntu-* hosts (b/c testing is currently primarily done via comparison of target outputs with built-in outputs and the `arm` target is not executable on the host)
-        JOB_DO_TESTING="true"
-        case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
-        echo ::set-output name=JOB_DO_TESTING::${JOB_DO_TESTING}
         # # * test only library units tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
