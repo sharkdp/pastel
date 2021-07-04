@@ -481,7 +481,8 @@ impl Color {
             } else {
                 Scalar::powf((s + 0.055) / 1.055, 2.4)
             }
-        };
+        }
+
         let c = self.to_rgba_float();
         let r = f(c.r);
         let g = f(c.g);
