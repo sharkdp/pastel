@@ -32,6 +32,27 @@ fn write_stderr(c: Color, title: &str, message: &str) {
     .ok();
 }
 
+fn print_pastel_warning() {
+    write_stderr(Color::yellow(), "pastel warning",
+        "Your terminal emulator does not appear to support 24-bit colors \
+        (this means that the COLORTERM environment variable is not set to \
+        'truecolor' or '24bit'). \
+        pastel will fall back to 8-bit colors, but you will only be able \
+        to see rough approximations of the real colors.\n\n\
+        To fix this, follow these steps:\n  \
+          1. Run 'pastel colorcheck' to test if your terminal\n     \
+             emulator does support 24-bit colors. If this is the\n     \
+             case, set 'PASTEL_COLOR_MODE=24bit' to force 24-bit\n     \
+             mode and to remove this warning. Alternatively, make\n     \
+             sure that COLORTERM is properly set by your terminal\n     \
+             emulator.\n  \
+          2. If your terminal emulator does not support 24-bit\n     \
+             colors, set 'PASTEL_COLOR_MODE=8bit' to remove this\n     \
+             warning or try a different terminal emulator.\n\n\
+        \
+        For more information, see https://gist.github.com/XVilka/8346728\n");
+}
+
 fn run() -> Result<ExitCode> {
     let app = cli::build_cli();
     let global_matches = app.get_matches();
@@ -60,31 +81,13 @@ fn run() -> Result<ExitCode> {
                         }
                         None => {
                             let mode = ansi::get_colormode();
-
-                            if mode == ansi::Mode::Ansi8Bit
+                            if mode == Some(ansi::Mode::Ansi8Bit)
                                 && global_matches.subcommand_name() != Some("paint")
                                 && global_matches.subcommand_name() != Some("colorcheck")
                             {
-                                write_stderr(Color::yellow(), "pastel warning",
-                                    "Your terminal emulator does not appear to support 24-bit colors \
-                                    (this means that the COLORTERM environment variable is not set to \
-                                    'truecolor' or '24bit'). \
-                                    pastel will fall back to 8-bit colors, but you will only be able \
-                                    to see rough approximations of the real colors.\n\n\
-                                    To fix this, follow these steps:\n  \
-                                      1. Run 'pastel colorcheck' to test if your terminal\n     \
-                                         emulator does support 24-bit colors. If this is the\n     \
-                                         case, set 'PASTEL_COLOR_MODE=24bit' to force 24-bit\n     \
-                                         mode and to remove this warning. Alternatively, make\n     \
-                                         sure that COLORTERM is properly set by your terminal\n     \
-                                         emulator.\n  \
-                                      2. If your terminal emulator does not support 24-bit\n     \
-                                         colors, set 'PASTEL_COLOR_MODE=8bit' to remove this\n     \
-                                         warning or try a different terminal emulator.\n\n\
-                                    \
-                                    For more information, see https://gist.github.com/XVilka/8346728\n");
+                                print_pastel_warning();
                             }
-                            Some(mode)
+                            mode
                         }
                     }
                 } else {

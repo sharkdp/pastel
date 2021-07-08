@@ -243,20 +243,29 @@ impl ToAnsiStyle for Color {
 }
 
 #[cfg(not(windows))]
-pub fn get_colormode() -> Mode {
+pub fn get_colormode() -> Option<Mode> {
     use std::env;
+    let env_nocolor = env::var_os("NO_COLOR");
+    if env_nocolor.is_some() {
+        return None;
+    }
 
     let env_colorterm = env::var("COLORTERM").ok();
     match env_colorterm.as_deref() {
-        Some("truecolor") | Some("24bit") => Mode::TrueColor,
-        _ => Mode::Ansi8Bit,
+        Some("truecolor") | Some("24bit") => Some(Mode::TrueColor),
+        _ => Some(Mode::Ansi8Bit),
     }
 }
 
 #[cfg(windows)]
-pub fn get_colormode() -> Mode {
-    // Assume 24bit support on Windows
-    Mode::TrueColor
+pub fn get_colormode() -> Option<Mode> {
+    use std::env;
+    let env_nocolor = env::var_os("NO_COLOR");
+    match env_nocolor {
+        Some(_) => None,
+        // Assume 24bit support on Windows
+        None => Some(Mode::TrueColor),
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -271,7 +280,7 @@ impl Brush {
 
     pub fn from_environment(stream: Stream) -> Self {
         let mode = if atty::is(stream) {
-            Some(get_colormode())
+            get_colormode()
         } else {
             None
         };
