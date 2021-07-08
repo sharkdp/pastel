@@ -1,6 +1,7 @@
 # unreleased
 
 ## Features
+- Added support for `NO_COLOR` environment variable
 
 ## Bugfixes
 
