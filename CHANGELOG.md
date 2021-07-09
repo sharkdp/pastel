@@ -1,11 +1,26 @@
 # unreleased
 
 ## Features
-- Added `From` and `Display` traits for each color struct, see #133 (@bresilla)
 
 ## Bugfixes
+
 ## Changes
+
 ## Other
+
+## Packaging
+
+
+
+# v0.8.1
+
+## Features
+
+- Added `From` and `Display` traits for each color struct, see #133 (@bresilla)
+
+## Other
+
+- Updated `lexical-core` dependency to fix a compile error with newer Rust versions
 
 ## Packaging
 
