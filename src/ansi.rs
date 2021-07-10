@@ -243,13 +243,25 @@ impl ToAnsiStyle for Color {
 }
 
 #[cfg(not(windows))]
+pub fn get_colormode_if_colorterm_absent() -> Mode {
+    use std::env;
+    let env_color_mode = env::var("PASTEL_COLOR_MODE").ok();
+    match env_color_mode.as_deref() {
+        Some("8bit") => Mode::Ansi8Bit,
+        Some("24bit") => Mode::TrueColor,
+        _ => Mode::Ansi8Bit,
+    }
+}
+
+
+#[cfg(not(windows))]
 pub fn get_colormode() -> Mode {
     use std::env;
 
     let env_colorterm = env::var("COLORTERM").ok();
     match env_colorterm.as_deref() {
         Some("truecolor") | Some("24bit") => Mode::TrueColor,
-        _ => Mode::Ansi8Bit,
+        _ => get_colormode_if_colorterm_absent(),
     }
 }
 
