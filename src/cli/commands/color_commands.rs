@@ -1,6 +1,7 @@
 use crate::colorspace::get_mixing_function;
 use crate::commands::prelude::*;
 
+use pastel::colorspace::ColorSpace;
 use pastel::ColorblindnessType;
 use pastel::Fraction;
 
@@ -136,7 +137,7 @@ color_command!(SetCommand, config, matches, color, {
             }
             Color::from_hsla(hsla.h, hsla.s, hsla.l, hsla.alpha)
         }
-        "lightness" | "lab-a" | "lab-b" => {
+        "lightness" | "lab-a" | "lab-b" | "luminance" => {
             let mut lab = color.to_lab();
             match property {
                 "lightness" => {
@@ -147,6 +148,35 @@ color_command!(SetCommand, config, matches, color, {
                 }
                 "lab-b" => {
                     lab.b = value;
+                }
+                "luminance" => {
+                    let mut luminance = lab.into_color().luminance();
+
+                    let mut max_l = 100.0;
+                    let mut min_l = 0.0;
+                    let mut past_l = lab.l;
+
+                    // Binary search to get to the luminance value we want by adjusting the
+                    // lightness value in lab
+                    while (luminance - value).abs() > 0.001 {
+                        if luminance > value {
+                            max_l = lab.l;
+                        } else {
+                            min_l = lab.l;
+                        }
+
+                        lab.l = (max_l + min_l) / 2.0;
+
+                        // If we haven't made any changes, get out before we loop infinitely
+                        if past_l == lab.l {
+                            break;
+                        }
+                        past_l = lab.l;
+
+                        // Do this in order to get the actual L value
+                        lab = lab.into_color().to_lab();
+                        luminance = lab.into_color().luminance();
+                    }
                 }
                 _ => unreachable!(),
             }
