@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use pastel::ansi::{Brush, ToAnsiStyle};
+use pastel::ansi::{Brush, Style, ToAnsiStyle};
 use pastel::Color;
 
 use crate::Result;
@@ -71,11 +71,30 @@ impl Canvas {
         }
     }
 
+    pub fn draw_colored_text(&mut self, row: usize, col: usize, text: &str, fg: &Color, bg: &Color) {
+        self.draw_text(row, col, text);
+        self.draw_rect(row, col, 1, text.len(), fg);
+        self.draw_rect(row + 1, col, 1, text.len(), bg);
+    }
+
     pub fn print(&self, out: &mut dyn Write) -> Result<()> {
         for i_div_2 in 0..self.height / 2 {
             for j in 0..self.width {
                 if let Some(c) = self.char(i_div_2, j) {
-                    write!(out, "{}", c)?;
+                    let p_top = self.pixel(2 * i_div_2, j);
+                    let p_bottom = self.pixel(2 * i_div_2 + 1, j);
+
+                    let mut style = Style::default();
+
+                    if let Some(fg) = p_top {
+                        style.foreground(fg);
+                    }
+
+                    if let Some(bg) = p_bottom {
+                        style.on(bg);
+                    }
+
+                    write!(out, "{}", self.brush.paint(c, style))?;
                 } else {
                     let p_top = self.pixel(2 * i_div_2, j);
                     let p_bottom = self.pixel(2 * i_div_2 + 1, j);
