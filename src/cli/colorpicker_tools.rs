@@ -5,6 +5,8 @@ pub struct ColorPickerTool {
     pub args: &'static [&'static str],
     pub version_args: &'static [&'static str],
     pub version_output_starts_with: &'static [u8],
+    /// Post-Process the output of the color picker tool
+    pub post_process: Option<fn(String) -> Result<String, &'static str>>,
 }
 
 lazy_static! {
@@ -33,42 +35,83 @@ lazy_static! {
             ],
             version_args: &["-l", "JavaScript", "-s", "o", "-e", "'ok';"],
             version_output_starts_with: b"ok",
+            post_process: None,
+        },
+        #[cfg(target_os = "linux")]
+        ColorPickerTool {
+            command: "gdbus",
+            args: &["call","--session", "--dest", "org.gnome.Shell.Screenshot", "--object-path", "/org/gnome/Shell/Screenshot", "--method", "org.gnome.Shell.Screenshot.PickColor"],
+            version_args: &[],
+            version_output_starts_with: b"",
+            post_process: Some(gdbus_parse_color),
         },
         ColorPickerTool {
             command: "gpick",
             args: &["--pick", "--single", "--output"],
             version_args: &["--version"],
             version_output_starts_with: b"Gpick",
+            post_process: None,
         },
         ColorPickerTool {
             command: "xcolor",
             args: &["--format", "hex"],
             version_args: &["--version"],
             version_output_starts_with: b"xcolor",
+            post_process: None,
         },
         ColorPickerTool {
             command: "grabc",
             args: &["-hex"],
             version_args: &["-v"],
             version_output_starts_with: b"grabc",
+            post_process: None,
         },
         ColorPickerTool {
             command: "colorpicker",
             args: &["--one-shot", "--short"],
             version_args: &["--help"],
             version_output_starts_with: b"",
+            post_process: None,
         },
         ColorPickerTool {
             command: "chameleon",
             args: &[],
             version_args: &["-h"],
             version_output_starts_with: b"",
+            post_process: None,
         },
         ColorPickerTool {
             command: "kcolorchooser",
             args: &["--print"],
             version_args: &["-v"],
             version_output_starts_with: b"kcolorchooser",
+            post_process: None,
         },
     ];
+}
+
+#[cfg(target_os = "linux")]
+pub fn gdbus_parse_color(raw: String) -> Result<String, &'static str> {
+    const PARSE_ERROR: &str = "Unexpected gdbus output format";
+    let rgb = raw
+        .split('(')
+        .nth(2)
+        .ok_or(PARSE_ERROR)?
+        .split(')')
+        .next()
+        .ok_or(PARSE_ERROR)?;
+    let rgb = rgb
+        .split(',')
+        .map(|v| v.trim().parse::<f64>())
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| PARSE_ERROR)?;
+    if rgb.len() != 3 {
+        return Err(PARSE_ERROR);
+    }
+    Ok(format!(
+        "rgb({}%,{}%,{}%)",
+        rgb[0] * 100.,
+        rgb[1] * 100.,
+        rgb[2] * 100.
+    ))
 }
