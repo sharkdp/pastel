@@ -140,7 +140,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
         for iter in 0..self.parameters.num_iterations {
             let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
                 self.rng
-                    .gen_range(self.parameters.num_fixed_colors, self.colors.len())
+                    .gen_range(self.parameters.num_fixed_colors..self.colors.len())
             } else {
                 // first check if any of the colors cannot change, if that's the case just return
                 // the other color. Note that the closest_pair cannot contain only fixed colors.
