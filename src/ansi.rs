@@ -87,7 +87,7 @@ impl AnsiColor for Color {
         let self_lab = self.to_lab();
         ANSI_LAB_REPRESENTATIONS
             .iter()
-            .min_by_key(|(_, lab)| ciede2000(&self_lab, &lab) as i32)
+            .min_by_key(|(_, lab)| ciede2000(&self_lab, lab) as i32)
             .expect("list of codes can not be empty")
             .0
     }

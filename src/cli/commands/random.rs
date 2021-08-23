@@ -23,7 +23,7 @@ impl GenericCommand for RandomCommand {
         };
 
         for _ in 0..count {
-            out.show_color(&config, &strategy.generate())?;
+            out.show_color(config, &strategy.generate())?;
         }
 
         Ok(())

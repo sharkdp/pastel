@@ -5,6 +5,7 @@ pub struct ColorPickerTool {
     pub args: &'static [&'static str],
     pub version_args: &'static [&'static str],
     pub version_output_starts_with: &'static [u8],
+    #[allow(clippy::type_complexity)]
     /// Post-Process the output of the color picker tool
     pub post_process: Option<fn(String) -> Result<String, &'static str>>,
 }

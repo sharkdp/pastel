@@ -74,7 +74,7 @@ color_command!(MixCommand, config, matches, color, {
 
     let mix = get_mixing_function(matches.value_of("colorspace").expect("required argument"));
 
-    mix(&base, &color, fraction)
+    mix(&base, color, fraction)
 });
 
 color_command!(ColorblindCommand, config, matches, color, {
