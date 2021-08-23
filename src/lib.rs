@@ -744,7 +744,7 @@ impl ColorSpace for RGBA<f64> {
         c.to_rgba_float()
     }
 
-    fn into_color(&self) -> Color {
+    fn into_color(self) -> Color {
         Color::from_rgba_float(self.r, self.g, self.b, self.alpha)
     }
 
@@ -832,7 +832,7 @@ impl ColorSpace for HSLA {
         c.to_hsla()
     }
 
-    fn into_color(&self) -> Color {
+    fn into_color(self) -> Color {
         Color::from_hsla(self.h, self.s, self.l, self.alpha)
     }
 
@@ -951,7 +951,7 @@ impl ColorSpace for Lab {
         c.to_lab()
     }
 
-    fn into_color(&self) -> Color {
+    fn into_color(self) -> Color {
         Color::from_lab(self.l, self.a, self.b, self.alpha)
     }
 
@@ -1012,7 +1012,7 @@ impl ColorSpace for LCh {
         c.to_lch()
     }
 
-    fn into_color(&self) -> Color {
+    fn into_color(self) -> Color {
         Color::from_lch(self.l, self.c, self.h, self.alpha)
     }
 
