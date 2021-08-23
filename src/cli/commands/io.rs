@@ -60,7 +60,7 @@ impl<'a> ColorArgIterator<'a> {
 
         let line = line.trim();
 
-        parse_color(&line).ok_or_else(|| PastelError::ColorParseError(line.to_string()))
+        parse_color(line).ok_or_else(|| PastelError::ColorParseError(line.to_string()))
     }
 
     pub fn from_color_arg(
@@ -94,10 +94,10 @@ impl<'a> Iterator for ColorArgIterator<'a> {
                 ref mut config,
                 ref mut args,
                 ref mut print_spectrum,
-            ) => match args.next() {
-                Some(color_arg) => Some(Self::from_color_arg(config, color_arg, print_spectrum)),
-                None => None,
-            },
+            ) => args
+                .next()
+                .map(|color_arg| Self::from_color_arg(config, color_arg, print_spectrum)),
+
             ColorArgIterator::FromStdin => match Self::color_from_stdin() {
                 Ok(color) => Some(Ok(color)),
                 Err(PastelError::CouldNotReadFromStdin) => None,

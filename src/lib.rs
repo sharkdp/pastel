@@ -765,17 +765,18 @@ impl From<&Color> for RGBA<f64> {
         let m = color.lightness - chr / 2.0;
         let x = chr * (1.0 - Scalar::abs(h_s % 2.0 - 1.0));
 
+        #[allow(clippy::upper_case_acronyms)]
         struct RGB(Scalar, Scalar, Scalar);
 
         let col = if h_s < 1.0 {
             RGB(chr, x, 0.0)
-        } else if 1.0 <= h_s && h_s < 2.0 {
+        } else if (1.0..2.0).contains(&h_s) {
             RGB(x, chr, 0.0)
-        } else if 2.0 <= h_s && h_s < 3.0 {
+        } else if (2.0..3.0).contains(&h_s) {
             RGB(0.0, chr, x)
-        } else if 3.0 <= h_s && h_s < 4.0 {
+        } else if (3.0..4.0).contains(&h_s) {
             RGB(0.0, x, chr)
-        } else if 4.0 <= h_s && h_s < 5.0 {
+        } else if (4.0..5.0).contains(&h_s) {
             RGB(x, 0.0, chr)
         } else {
             RGB(chr, 0.0, x)

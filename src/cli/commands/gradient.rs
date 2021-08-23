@@ -43,7 +43,7 @@ impl GenericCommand for GradientCommand {
 
             let color = color_scale.sample(position, &mix).expect("gradient color");
 
-            out.show_color(&config, &color)?;
+            out.show_color(config, &color)?;
         }
 
         Ok(())

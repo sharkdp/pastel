@@ -33,7 +33,9 @@ fn write_stderr(c: Color, title: &str, message: &str) {
 }
 
 fn print_pastel_warning() {
-    write_stderr(Color::yellow(), "pastel warning",
+    write_stderr(
+        Color::yellow(),
+        "pastel warning",
         "Your terminal emulator does not appear to support 24-bit colors \
         (this means that the COLORTERM environment variable is not set to \
         'truecolor' or '24bit'). \
@@ -50,7 +52,8 @@ fn print_pastel_warning() {
              colors, set 'PASTEL_COLOR_MODE=8bit' to remove this\n     \
              warning or try a different terminal emulator.\n\n\
         \
-        For more information, see https://gist.github.com/XVilka/8346728\n");
+        For more information, see https://gist.github.com/XVilka/8346728\n",
+    );
 }
 
 fn run() -> Result<ExitCode> {
