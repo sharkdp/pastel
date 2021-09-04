@@ -88,6 +88,20 @@ lazy_static! {
             version_output_starts_with: b"kcolorchooser",
             post_process: None,
         },
+        ColorPickerTool {
+            command: "zenity",
+            args: &["--color-selection"],
+            version_args: &["--version"],
+            version_output_starts_with: b"",
+            post_process: None,
+        },
+        ColorPickerTool {
+            command: "yad",
+            args: &["--color"],
+            version_args: &["--version"],
+            version_output_starts_with: b"",
+            post_process: None,
+        },
     ];
 }
 

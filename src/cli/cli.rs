@@ -190,6 +190,8 @@ pub fn build_cli() -> App<'static, 'static> {
                   - colorpicker (https://github.com/Jack12816/colorpicker)\n  \
                   - chameleon (https://github.com/seebye/chameleon)\n  \
                   - KColorChooser (https://kde.org/applications/graphics/org.kde.kcolorchooser)\n  \
+                  - zenity (https://wiki.gnome.org/Projects/Zenity)\n  \
+                  - yad (https://github.com/v1cont/yad)\n  \
                   - macOS built-in color picker")
                 .arg(
                     Arg::with_name("count")
