@@ -148,6 +148,13 @@ You can install `pastel` via [Homebrew](https://formulae.brew.sh/formula/pastel)
 brew install pastel
 ```
 
+### On Windows
+
+You can install `pastel` via [Scoop](https://github.com/ScoopInstaller/Main/blob/master/bucket/pastel.json)
+```
+scoop install pastel
+```
+
 ### Via snap package
 
 [Get it from the Snap Store](https://snapcraft.io/pastel):
