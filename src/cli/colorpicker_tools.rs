@@ -38,14 +38,6 @@ lazy_static! {
             version_output_starts_with: b"ok",
             post_process: None,
         },
-        #[cfg(target_os = "linux")]
-        ColorPickerTool {
-            command: "gdbus",
-            args: &["call","--session", "--dest", "org.gnome.Shell.Screenshot", "--object-path", "/org/gnome/Shell/Screenshot", "--method", "org.gnome.Shell.Screenshot.PickColor"],
-            version_args: &[],
-            version_output_starts_with: b"",
-            post_process: Some(gdbus_parse_color),
-        },
         ColorPickerTool {
             command: "gpick",
             args: &["--pick", "--single", "--output"],
@@ -101,6 +93,14 @@ lazy_static! {
             version_args: &["--version"],
             version_output_starts_with: b"",
             post_process: None,
+        },
+        #[cfg(target_os = "linux")]
+        ColorPickerTool {
+            command: "gdbus",
+            args: &["call","--session", "--dest", "org.gnome.Shell.Screenshot", "--object-path", "/org/gnome/Shell/Screenshot", "--method", "org.gnome.Shell.Screenshot.PickColor"],
+            version_args: &[],
+            version_output_starts_with: b"",
+            post_process: Some(gdbus_parse_color),
         },
     ];
 }
