@@ -98,8 +98,9 @@ lazy_static! {
         ColorPickerTool {
             command: "gdbus",
             args: &["call","--session", "--dest", "org.gnome.Shell.Screenshot", "--object-path", "/org/gnome/Shell/Screenshot", "--method", "org.gnome.Shell.Screenshot.PickColor"],
-            version_args: &[],
-            version_output_starts_with: b"",
+            version_args: &[
+"introspect", "--session", "--dest", "org.gnome.Shell.Screenshot", "--object-path", "/org/gnome/Shell/Screenshot"],
+            version_output_starts_with: b"node /org/gnome/Shell/Screenshot",
             post_process: Some(gdbus_parse_color),
         },
     ];
