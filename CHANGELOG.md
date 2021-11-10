@@ -1,7 +1,9 @@
 # unreleased
 
 ## Features
+
 - Added support for `NO_COLOR` environment variable
+- Added new color pickers: Gnome/Wayland via gdbus, zenity, yad
 
 ## Bugfixes
 
