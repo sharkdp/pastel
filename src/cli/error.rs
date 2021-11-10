@@ -47,7 +47,7 @@ impl PastelError {
                 "The number of fixed colors must be smaller than the total number of colors".into()
             }
             PastelError::ColorPickerExecutionError(name) => {
-                format!("Error while running color picker '{}", name)
+                format!("Error while running color picker '{}'", name)
             }
             PastelError::NoColorPickerFound => {
                 "Could not find any external color picker tool. See 'pastel pick -h' for more information.".into()
