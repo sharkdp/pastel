@@ -53,6 +53,13 @@ lazy_static! {
             post_process: None,
         },
         ColorPickerTool {
+            command: "wcolor",
+            args: &["--format", "hex"],
+            version_args: &["--version"],
+            version_output_starts_with: b"wcolor",
+            post_process: None,
+        },
+        ColorPickerTool {
             command: "grabc",
             args: &["-hex"],
             version_args: &["-v"],

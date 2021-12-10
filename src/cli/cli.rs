@@ -186,6 +186,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 Supported tools:\n  \
                   - gpick (https://github.com/thezbyg/gpick)\n  \
                   - xcolor (https://github.com/Soft/xcolor)\n  \
+                  - wcolor (https://github.com/Elvyria/wcolor)\n  \
                   - grabc (https://www.muquit.com/muquit/software/grabc/grabc.html)\n  \
                   - colorpicker (https://github.com/Jack12816/colorpicker)\n  \
                   - chameleon (https://github.com/seebye/chameleon)\n  \
