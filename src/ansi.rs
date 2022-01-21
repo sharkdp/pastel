@@ -1,16 +1,16 @@
 use std::borrow::Borrow;
 
 pub use atty::Stream;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 use crate::delta_e::ciede2000;
 use crate::{Color, Lab};
 
-lazy_static! {
-    static ref ANSI_LAB_REPRESENTATIONS: Vec<(u8, Lab)> = (16..255)
+static ANSI_LAB_REPRESENTATIONS: Lazy<Vec<(u8, Lab)>> = Lazy::new(|| {
+    (16..255)
         .map(|code| (code, Color::from_ansi_8bit(code).to_lab()))
-        .collect();
-}
+        .collect()
+});
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Mode {

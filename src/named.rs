@@ -1,4 +1,4 @@
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 use crate::Color;
 
@@ -15,8 +15,8 @@ fn named_color(name: &'static str, r: u8, g: u8, b: u8) -> NamedColor {
     }
 }
 
-lazy_static! {
-    pub static ref NAMED_COLORS: [NamedColor; 148] = [
+pub static NAMED_COLORS: Lazy<[NamedColor; 148]> = Lazy::new(|| {
+    [
         named_color("aliceblue", 240, 248, 255),
         named_color("antiquewhite", 250, 235, 215),
         named_color("aqua", 0, 255, 255),
@@ -165,5 +165,5 @@ lazy_static! {
         named_color("whitesmoke", 245, 245, 245),
         named_color("yellow", 255, 255, 0),
         named_color("yellowgreen", 154, 205, 50),
-    ];
-}
+    ]
+});

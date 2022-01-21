@@ -1,4 +1,4 @@
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 pub struct ColorPickerTool {
     pub command: &'static str,
@@ -10,8 +10,8 @@ pub struct ColorPickerTool {
     pub post_process: Option<fn(String) -> Result<String, &'static str>>,
 }
 
-lazy_static! {
-    pub static ref COLOR_PICKER_TOOLS: Vec<ColorPickerTool> = vec![
+pub static COLOR_PICKER_TOOLS: Lazy<Vec<ColorPickerTool>> = Lazy::new(|| {
+    vec![
         #[cfg(target_os = "macos")]
         ColorPickerTool {
             command: "osascript",
@@ -104,14 +104,29 @@ lazy_static! {
         #[cfg(target_os = "linux")]
         ColorPickerTool {
             command: "gdbus",
-            args: &["call","--session", "--dest", "org.gnome.Shell.Screenshot", "--object-path", "/org/gnome/Shell/Screenshot", "--method", "org.gnome.Shell.Screenshot.PickColor"],
+            args: &[
+                "call",
+                "--session",
+                "--dest",
+                "org.gnome.Shell.Screenshot",
+                "--object-path",
+                "/org/gnome/Shell/Screenshot",
+                "--method",
+                "org.gnome.Shell.Screenshot.PickColor",
+            ],
             version_args: &[
-"introspect", "--session", "--dest", "org.gnome.Shell.Screenshot", "--object-path", "/org/gnome/Shell/Screenshot"],
+                "introspect",
+                "--session",
+                "--dest",
+                "org.gnome.Shell.Screenshot",
+                "--object-path",
+                "/org/gnome/Shell/Screenshot",
+            ],
             version_output_starts_with: b"node /org/gnome/Shell/Screenshot",
             post_process: Some(gdbus_parse_color),
         },
-    ];
-}
+    ]
+});
 
 #[cfg(target_os = "linux")]
 pub fn gdbus_parse_color(raw: String) -> Result<String, &'static str> {
