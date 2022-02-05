@@ -129,9 +129,9 @@ sudo dpkg -i pastel_0.8.1_amd64.deb
 
 ### On Arch Linux
 
-You can install `pastel` from the [AUR package](https://aur.archlinux.org/packages/pastel/):
+You can install `pastel` from the [Community](https://archlinux.org/packages/community/x86_64/pastel/) repositories:
 ```
-yay -S pastel
+sudo pacman -S pastel
 ```
 
 ### On Nix
