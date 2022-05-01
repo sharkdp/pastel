@@ -18,14 +18,28 @@ fn rgb(r: u8, g: u8, b: u8) -> Color {
     Color::from_rgb(r, g, b)
 }
 
+fn rgba(r: u8, g: u8, b: u8, a: f64) -> Color {
+    Color::from_rgba(r, g, b, a)
+}
+
 fn comma_separated(input: &str) -> IResult<&str, &str> {
     let (input, _) = space0(input)?;
     let (input, _) = char(',')(input)?;
     space0(input)
 }
 
+fn slash_separated(input: &str) -> IResult<&str, &str> {
+    let (input, _) = space0(input)?;
+    let (input, _) = char('/')(input)?;
+    space0(input)
+}
+
 fn parse_separator(input: &str) -> IResult<&str, &str> {
     alt((comma_separated, space1))(input)
+}
+
+fn parse_alpha_separator(input: &str) -> IResult<&str, &str> {
+    alt((slash_separated, comma_separated, space1))(input)
 }
 
 fn opt_hash_char(s: &str) -> IResult<&str, Option<char>> {
@@ -66,16 +80,26 @@ fn parse_angle(input: &str) -> IResult<&str, f64> {
     alt((parse_turns, parse_grads, parse_rads, parse_degrees))(input)
 }
 
+fn parse_alpha<'a>(input: &'a str) -> IResult<&'a str, f64> {
+    let (input, alpha) = opt(|input: &'a str| {
+        let (input, _) = parse_alpha_separator(input)?;
+        alt((parse_percentage, double))(input)
+    })(input)?;
+    Ok((input, alpha.unwrap_or(1.0)))
+}
+
 fn parse_hex(input: &str) -> IResult<&str, Color> {
     let (input, _) = opt_hash_char(input)?;
     let (input, hex_chars) = hex_digit1(input)?;
     match hex_chars.len() {
+        // RRGGBB
         6 => {
             let r = hex_to_u8_unsafe(&hex_chars[0..2]);
             let g = hex_to_u8_unsafe(&hex_chars[2..4]);
             let b = hex_to_u8_unsafe(&hex_chars[4..6]);
             Ok((input, rgb(r, g, b)))
         }
+        // RGB
         3 => {
             let r = hex_to_u8_unsafe(&hex_chars[0..1]);
             let g = hex_to_u8_unsafe(&hex_chars[1..2]);
@@ -85,6 +109,26 @@ fn parse_hex(input: &str) -> IResult<&str, Color> {
             let b = b * 16 + b;
             Ok((input, rgb(r, g, b)))
         }
+        // RRGGBBAA
+        8 => {
+            let r = hex_to_u8_unsafe(&hex_chars[0..2]);
+            let g = hex_to_u8_unsafe(&hex_chars[2..4]);
+            let b = hex_to_u8_unsafe(&hex_chars[4..6]);
+            let a = hex_to_u8_unsafe(&hex_chars[6..8]) as f64 / 255.0;
+            Ok((input, rgba(r, g, b, a)))
+        }
+        // RGBA
+        4 => {
+            let r = hex_to_u8_unsafe(&hex_chars[0..1]);
+            let g = hex_to_u8_unsafe(&hex_chars[1..2]);
+            let b = hex_to_u8_unsafe(&hex_chars[2..3]);
+            let a = hex_to_u8_unsafe(&hex_chars[3..4]);
+            let r = r * 16 + r;
+            let g = g * 16 + g;
+            let b = b * 16 + b;
+            let a = (a * 16 + a) as f64 / 255.0;
+            Ok((input, rgba(r, g, b, a)))
+        }
         _ => Err(Err::Error(nom::error::Error::new(
             "Expected hex string of 3 or 6 characters length",
             ErrorKind::Many1,
@@ -93,7 +137,7 @@ fn parse_hex(input: &str) -> IResult<&str, Color> {
 }
 
 fn parse_numeric_rgb(input: &str) -> IResult<&str, Color> {
-    let (input, prefixed) = opt(tag("rgb("))(input)?;
+    let (input, prefixed) = opt(alt((tag("rgb("), tag("rgba("))))(input)?;
     let is_prefixed = prefixed.is_some();
     let (input, _) = space0(input)?;
     let (input, r) = double(input)?;
@@ -101,19 +145,20 @@ fn parse_numeric_rgb(input: &str) -> IResult<&str, Color> {
     let (input, g) = double(input)?;
     let (input, _) = parse_separator(input)?;
     let (input, b) = double(input)?;
+    let (input, alpha) = parse_alpha(input)?;
     let (input, _) = space0(input)?;
     let (input, _) = cond(is_prefixed, char(')'))(input)?;
 
     let r = r / 255.;
     let g = g / 255.;
     let b = b / 255.;
-    let c = Color::from_rgb_float(r, g, b);
+    let c = Color::from_rgba_float(r, g, b, alpha);
 
     Ok((input, c))
 }
 
 fn parse_percentage_rgb(input: &str) -> IResult<&str, Color> {
-    let (input, prefixed) = opt(tag("rgb("))(input)?;
+    let (input, prefixed) = opt(alt((tag("rgb("), tag("rgba("))))(input)?;
     let is_prefixed = prefixed.is_some();
     let (input, _) = space0(input)?;
     let (input, r) = parse_percentage(input)?;
@@ -121,26 +166,28 @@ fn parse_percentage_rgb(input: &str) -> IResult<&str, Color> {
     let (input, g) = parse_percentage(input)?;
     let (input, _) = parse_separator(input)?;
     let (input, b) = parse_percentage(input)?;
+    let (input, alpha) = parse_alpha(input)?;
     let (input, _) = space0(input)?;
     let (input, _) = cond(is_prefixed, char(')'))(input)?;
 
-    let c = Color::from_rgb_float(r, g, b);
+    let c = Color::from_rgba_float(r, g, b, alpha);
 
     Ok((input, c))
 }
 
 fn parse_hsl(input: &str) -> IResult<&str, Color> {
-    let (input, _) = tag("hsl(")(input)?;
+    let (input, _) = alt((tag("hsl("), tag("hsla(")))(input)?;
     let (input, _) = space0(input)?;
     let (input, h) = parse_angle(input)?;
     let (input, _) = parse_separator(input)?;
     let (input, s) = parse_percentage(input)?;
     let (input, _) = parse_separator(input)?;
     let (input, l) = parse_percentage(input)?;
+    let (input, alpha) = parse_alpha(input)?;
     let (input, _) = space0(input)?;
     let (input, _) = char(')')(input)?;
 
-    let c = Color::from_hsl(h, s, l);
+    let c = Color::from_hsla(h, s, l, alpha);
 
     Ok((input, c))
 }
@@ -157,7 +204,7 @@ fn parse_gray(input: &str) -> IResult<&str, Color> {
     Ok((input, c))
 }
 
-fn parse_lab<'a>(input: &'a str) -> IResult<&'a str, Color> {
+fn parse_lab(input: &str) -> IResult<&str, Color> {
     let (input, _) = opt(tag_no_case("cie"))(input)?;
     let (input, _) = tag_no_case("lab(")(input)?;
     let (input, _) = space0(input)?;
@@ -166,14 +213,11 @@ fn parse_lab<'a>(input: &'a str) -> IResult<&'a str, Color> {
     let (input, a) = double(input)?;
     let (input, _) = parse_separator(input)?;
     let (input, b) = double(input)?;
-    let (input, alpha) = opt(|input: &'a str| {
-        let (input, _) = parse_separator(input)?;
-        double(input)
-    })(input)?;
+    let (input, alpha) = parse_alpha(input)?;
     let (input, _) = space0(input)?;
     let (input, _) = char(')')(input)?;
 
-    let c = Color::from_lab(l, a, b, alpha.unwrap_or(1.0));
+    let c = Color::from_lab(l, a, b, alpha);
 
     Ok((input, c))
 }
@@ -426,4 +470,92 @@ fn parse_named_syntax() {
     assert_eq!(Some(rgb(255, 20, 147)), parse_color("deeppink"));
     assert_eq!(None, parse_color("whatever"));
     assert_eq!(None, parse_color("red blue"));
+}
+
+#[test]
+fn parse_alpha_syntax() {
+    // hex
+    assert_eq!(Some(rgba(255, 0, 0, 1.0)), parse_color("ff0000ff"));
+    assert_eq!(Some(rgba(255, 0, 0, 1.0)), parse_color("#ff0000ff"));
+
+    // rgb/rgba
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/ 1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 /1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 / 1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/1.0)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/ 1.0)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 /1.0)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 / 1.0)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/100%)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/ 100%)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 /100%)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 / 100%)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0,1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0, 1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgba(10,0,0,1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgba(10,0,0, 1)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgba(10,0,0,1.0)"));
+    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgba(10,0,0, 1.0)"));
+
+    // hsl/hsla
+    assert_eq!(
+        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
+        parse_color("hsl(10,50%,50%/1)")
+    );
+    assert_eq!(
+        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
+        parse_color("hsl(10,50%,50%/1.0)")
+    );
+    assert_eq!(
+        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
+        parse_color("hsl(10,50%,50%,1)")
+    );
+    assert_eq!(
+        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
+        parse_color("hsl(10,50%,50%,1.0)")
+    );
+    assert_eq!(
+        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
+        parse_color("hsla(10,50%,50%,1)")
+    );
+    assert_eq!(
+        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
+        parse_color("hsla(10,50%,50%,1.0)")
+    );
+
+    // lab
+    assert_eq!(
+        Some(Color::from_lab(10.0, 30.0, 50.0, 1.0)),
+        parse_color("lab(10,30,50/1)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(10.0, 30.0, 50.0, 1.0)),
+        parse_color("lab(10,30,50/1.0)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(10.0, 30.0, 50.0, 1.0)),
+        parse_color("lab(10,30,50,1)")
+    );
+    assert_eq!(
+        Some(Color::from_lab(10.0, 30.0, 50.0, 1.0)),
+        parse_color("lab(10,30,50,1.0)")
+    );
+
+    // alpha parsing
+    assert_eq!(Some(rgba(10, 0, 0, 0.5)), parse_color("rgba(10,0,0,0.5)"));
+    assert_eq!(Some(rgba(10, 0, 0, 0.5)), parse_color("rgba(10,0,0,50%)"));
+    assert_eq!(Some(rgba(10, 0, 0, 0.33)), parse_color("rgba(10,0,0,0.33)"));
+    assert_eq!(Some(rgba(10, 0, 0, 0.33)), parse_color("rgba(10,0,0,33%)"));
+
+    // hex alpha doesn't line up nicely with decimal precision,
+    // so just compare the debug output (3 digit precision)
+    assert_eq!(
+        format!("{:?}", Some(rgba(10, 0, 0, 0.502))),
+        format!("{:?}", parse_color("0a000080"))
+    );
+    assert_eq!(
+        format!("{:?}", Some(rgba(10, 0, 0, 0.329))),
+        format!("{:?}", parse_color("0a000054"))
+    );
 }
