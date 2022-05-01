@@ -151,10 +151,11 @@ impl Color {
             h = self.hue.value(),
             s = 100.0 * self.saturation,
             l = 100.0 * self.lightness,
+            space = space,
             a = if self.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!(",{space}{:.3}", self.alpha)
+                format!(",{space}{:.3}", self.alpha, space = space)
             }
         )
     }
@@ -176,10 +177,11 @@ impl Color {
             r = rgba.r,
             g = rgba.g,
             b = rgba.b,
+            space = space,
             a = if rgba.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!(",{space}{:.3}", rgba.alpha)
+                format!(",{space}{:.3}", rgba.alpha, space = space)
             }
         )
     }
@@ -214,10 +216,11 @@ impl Color {
             r = rgba.r,
             g = rgba.g,
             b = rgba.b,
+            space = space,
             a = if rgba.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!(",{space}{:.3}", rgba.alpha)
+                format!(",{space}{:.3}", rgba.alpha, space = space)
             }
         )
     }
@@ -286,10 +289,11 @@ impl Color {
             l = lab.l,
             a = lab.a,
             b = lab.b,
+            space = space,
             alpha = if self.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!("{space}/{space}{:.2}%", self.alpha * 100.)
+                format!("{space}/{space}{:.2}%", self.alpha * 100., space = space)
             }
         )
     }
@@ -311,10 +315,11 @@ impl Color {
             l = lch.l,
             c = lch.c,
             h = lch.h,
+            space = space,
             alpha = if self.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!("{space}/{space}{:.2}%", self.alpha * 100.)
+                format!("{space}/{space}{:.2}%", self.alpha * 100., space = space)
             }
         )
     }
