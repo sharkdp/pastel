@@ -141,14 +141,21 @@ impl Color {
         HSLA::from(self)
     }
 
-    /// Format the color as a HSL-representation string (`hsl(123, 50.3%, 80.1%)`).
+    /// Format the color as a HSL-representation string (`hsla(123, 50.3%, 80.1%, 0.4)`). If the
+    /// alpha channel is `1.0`, the simplified `hsl()` format will be used instead.
     pub fn to_hsl_string(&self, format: Format) -> String {
+        let space = if format == Format::Spaces { " " } else { "" };
         format!(
-            "hsl({:.0},{space}{:.1}%,{space}{:.1}%)",
-            self.hue.value(),
-            100.0 * self.saturation,
-            100.0 * self.lightness,
-            space = if format == Format::Spaces { " " } else { "" }
+            "hsl{a_prefix}({h:.0},{space}{s:.1}%,{space}{l:.1}%{a})",
+            a_prefix = if self.alpha == 1.0 { "" } else { "a" },
+            h = self.hue.value(),
+            s = 100.0 * self.saturation,
+            l = 100.0 * self.lightness,
+            a = if self.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!(",{space}{:.3}", self.alpha)
+            }
         )
     }
 
@@ -158,15 +165,22 @@ impl Color {
         RGBA::<u8>::from(self)
     }
 
-    /// Format the color as a RGB-representation string (`rgb(255, 127,  0)`).
+    /// Format the color as a RGB-representation string (`rgba(255, 127, 0, 0.5)`). If the alpha channel
+    /// is `1.0`, the simplified `rgb()` format will be used instead.
     pub fn to_rgb_string(&self, format: Format) -> String {
         let rgba = RGBA::<u8>::from(self);
+        let space = if format == Format::Spaces { " " } else { "" };
         format!(
-            "rgb({r},{space}{g},{space}{b})",
+            "rgb{a_prefix}({r},{space}{g},{space}{b}{a})",
+            a_prefix = if rgba.alpha == 1.0 { "" } else { "a" },
             r = rgba.r,
             g = rgba.g,
             b = rgba.b,
-            space = if format == Format::Spaces { " " } else { "" }
+            a = if rgba.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!(",{space}{:.3}", rgba.alpha)
+            }
         )
     }
 
@@ -189,27 +203,40 @@ impl Color {
         )
     }
 
-    /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5,  0)`).
+    /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5,  0)`). If the alpha channel
+    /// is `1.0`, the simplified `rgb()` format will be used instead.
     pub fn to_rgb_float_string(&self, format: Format) -> String {
         let rgba = RGBA::<f64>::from(self);
+        let space = if format == Format::Spaces { " " } else { "" };
         format!(
-            "rgb({r:.3},{space}{g:.3},{space}{b:.3})",
+            "rgb{a_prefix}({r:.3},{space}{g:.3},{space}{b:.3}{a})",
+            a_prefix = if rgba.alpha == 1.0 { "" } else { "a" },
             r = rgba.r,
             g = rgba.g,
             b = rgba.b,
-            space = if format == Format::Spaces { " " } else { "" }
+            a = if rgba.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!(",{space}{:.3}", rgba.alpha)
+            }
         )
     }
 
-    /// Format the color as a RGB-representation string (`#fc0070`).
+    /// Format the color as a RGB-representation string (`#fc0070`). The output will contain 6 hex
+    /// digits if the alpha channel is `1.0`, or 8 hex digits otherwise.
     pub fn to_rgb_hex_string(&self, leading_hash: bool) -> String {
         let rgba = self.to_rgba();
         format!(
-            "{}{:02x}{:02x}{:02x}",
+            "{}{:02x}{:02x}{:02x}{}",
             if leading_hash { "#" } else { "" },
             rgba.r,
             rgba.g,
-            rgba.b
+            rgba.b,
+            if rgba.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!("{:02x}", (rgba.alpha * 255.) as u8)
+            }
         )
     }
 
@@ -249,15 +276,21 @@ impl Color {
         Lab::from(self)
     }
 
-    /// Format the color as a Lab-representation string (`Lab(41, 83, -93)`).
+    /// Format the color as a Lab-representation string (`Lab(41, 83, -93 / 50%)`). If the alpha channel
+    /// is `1.0`, it won't be included in the output.
     pub fn to_lab_string(&self, format: Format) -> String {
         let lab = Lab::from(self);
+        let space = if format == Format::Spaces { " " } else { "" };
         format!(
-            "Lab({l:.0},{space}{a:.0},{space}{b:.0})",
+            "Lab({l:.0},{space}{a:.0},{space}{b:.0}{alpha})",
             l = lab.l,
             a = lab.a,
             b = lab.b,
-            space = if format == Format::Spaces { " " } else { "" }
+            alpha = if self.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!("{space}/{space}{:.2}%", self.alpha * 100.)
+            }
         )
     }
 
@@ -268,15 +301,21 @@ impl Color {
         LCh::from(self)
     }
 
-    /// Format the color as a LCh-representation string (`LCh(0.3, 0.2, 0.1)`).
+    /// Format the color as a LCh-representation string (`LCh(0.3, 0.2, 0.1 / 50%)`). If the alpha channel
+    /// is `1.0`, it won't be included in the output.
     pub fn to_lch_string(&self, format: Format) -> String {
         let lch = LCh::from(self);
+        let space = if format == Format::Spaces { " " } else { "" };
         format!(
-            "LCh({l:.0},{space}{c:.0},{space}{h:.0})",
+            "LCh({l:.0},{space}{c:.0},{space}{h:.0}{alpha})",
             l = lch.l,
             c = lch.c,
             h = lch.h,
-            space = if format == Format::Spaces { " " } else { "" }
+            alpha = if self.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!("{space}/{space}{:.2}%", self.alpha * 100.)
+            }
         )
     }
 

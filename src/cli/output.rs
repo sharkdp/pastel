@@ -35,7 +35,7 @@ impl Output<'_> {
         let text_position_x: usize = checkerboard_size + 2 * config.padding;
         let text_position_y: usize = 0;
 
-        let mut canvas = Canvas::new(checkerboard_size, 51, config.brush);
+        let mut canvas = Canvas::new(checkerboard_size, 60, config.brush);
         canvas.draw_checkerboard(
             checkerboard_position_y,
             checkerboard_position_x,
