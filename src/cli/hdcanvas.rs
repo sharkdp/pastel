@@ -41,7 +41,11 @@ impl Canvas {
     ) {
         for i in 0..height {
             for j in 0..width {
-                *self.pixel_mut(row + i, col + j) = Some(color.clone());
+                let px = self.pixel_mut(row + i, col + j);
+                *px = Some(match px {
+                    Some(backdrop) => backdrop.composite(color),
+                    None => color.clone(),
+                });
             }
         }
     }
