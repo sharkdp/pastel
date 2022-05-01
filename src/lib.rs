@@ -547,6 +547,35 @@ impl Color {
             .mix(&C::from_color(other), fraction)
             .into_color()
     }
+
+    /// Alpha composite two colors, placing the second over the first.
+    pub fn composite(&self, source: &Color) -> Color {
+        let backdrop = self.to_rgba();
+        let source = source.to_rgba();
+
+        // Composite A over B (see https://en.wikipedia.org/wiki/Alpha_compositing)
+        //
+        //   αo = αa + αb(1 - αa)
+        //   Co = Ca * αa + Cb * αb(1 - αa)
+        //        -------------------------
+        //                   αo
+        //
+        //       αo:  output alpha
+        //   αa, αb:  A/B alpha
+        //       Co:  output color
+        //   Ca, Cb:  A/B color
+        //
+        fn composite_channel(c_a: u8, a_a: f64, c_b: u8, a_b: f64, a_o: f64) -> u8 {
+            ((c_a as f64 * a_a + c_b as f64 * a_b * (1.0 - a_a)) / a_o).floor() as u8
+        }
+
+        let a = source.alpha + backdrop.alpha * (1.0 - source.alpha);
+        let r = composite_channel(source.r, source.alpha, backdrop.r, backdrop.alpha, a);
+        let g = composite_channel(source.g, source.alpha, backdrop.g, backdrop.alpha, a);
+        let b = composite_channel(source.b, source.alpha, backdrop.b, backdrop.alpha, a);
+
+        Color::from_rgba(r, g, b, a)
+    }
 }
 
 // by default Colors will be printed into HSLA fromat
