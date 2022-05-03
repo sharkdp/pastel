@@ -145,18 +145,19 @@ impl Color {
     /// alpha channel is `1.0`, the simplified `hsl()` format will be used instead.
     pub fn to_hsl_string(&self, format: Format) -> String {
         let space = if format == Format::Spaces { " " } else { "" };
+        let (a_prefix, a) = if self.alpha == 1.0 {
+            ("", "".to_string())
+        } else {
+            ("a", format!(",{space}{:.3}", self.alpha, space = space))
+        };
         format!(
             "hsl{a_prefix}({h:.0},{space}{s:.1}%,{space}{l:.1}%{a})",
-            a_prefix = if self.alpha == 1.0 { "" } else { "a" },
+            space = space,
+            a_prefix = a_prefix,
             h = self.hue.value(),
             s = 100.0 * self.saturation,
             l = 100.0 * self.lightness,
-            space = space,
-            a = if self.alpha == 1.0 {
-                "".to_string()
-            } else {
-                format!(",{space}{:.3}", self.alpha, space = space)
-            }
+            a = a,
         )
     }
 
@@ -171,18 +172,19 @@ impl Color {
     pub fn to_rgb_string(&self, format: Format) -> String {
         let rgba = RGBA::<u8>::from(self);
         let space = if format == Format::Spaces { " " } else { "" };
+        let (a_prefix, a) = if self.alpha == 1.0 {
+            ("", "".to_string())
+        } else {
+            ("a", format!(",{space}{:.3}", rgba.alpha, space = space))
+        };
         format!(
             "rgb{a_prefix}({r},{space}{g},{space}{b}{a})",
-            a_prefix = if rgba.alpha == 1.0 { "" } else { "a" },
+            space = space,
+            a_prefix = a_prefix,
             r = rgba.r,
             g = rgba.g,
             b = rgba.b,
-            space = space,
-            a = if rgba.alpha == 1.0 {
-                "".to_string()
-            } else {
-                format!(",{space}{:.3}", rgba.alpha, space = space)
-            }
+            a = a,
         )
     }
 
@@ -210,18 +212,19 @@ impl Color {
     pub fn to_rgb_float_string(&self, format: Format) -> String {
         let rgba = RGBA::<f64>::from(self);
         let space = if format == Format::Spaces { " " } else { "" };
+        let (a_prefix, a) = if self.alpha == 1.0 {
+            ("", "".to_string())
+        } else {
+            ("a", format!(",{space}{:.3}", rgba.alpha, space = space))
+        };
         format!(
             "rgb{a_prefix}({r:.3},{space}{g:.3},{space}{b:.3}{a})",
-            a_prefix = if rgba.alpha == 1.0 { "" } else { "a" },
+            space = space,
+            a_prefix = a_prefix,
             r = rgba.r,
             g = rgba.g,
             b = rgba.b,
-            space = space,
-            a = if rgba.alpha == 1.0 {
-                "".to_string()
-            } else {
-                format!(",{space}{:.3}", rgba.alpha, space = space)
-            }
+            a = a,
         )
     }
 
@@ -600,8 +603,9 @@ impl Color {
         // Composite A over B (see https://en.wikipedia.org/wiki/Alpha_compositing)
         //
         //   αo = αa + αb(1 - αa)
-        //   Co = Ca * αa + Cb * αb(1 - αa)
-        //        -------------------------
+        //
+        //        Ca * αa + Cb * αb(1 - αa)
+        //   Co = -------------------------
         //                   αo
         //
         //       αo:  output alpha
