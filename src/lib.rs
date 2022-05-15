@@ -12,7 +12,7 @@ use std::fmt;
 
 use colorspace::ColorSpace;
 pub use helper::Fraction;
-use helper::{clamp, interpolate, interpolate_angle, mod_positive};
+use helper::{clamp, interpolate, interpolate_angle, mod_positive, MaxPrecision};
 use types::{Hue, Scalar};
 
 /// The representation of a color.
@@ -148,7 +148,14 @@ impl Color {
         let (a_prefix, a) = if self.alpha == 1.0 {
             ("", "".to_string())
         } else {
-            ("a", format!(",{space}{:.3}", self.alpha, space = space))
+            (
+                "a",
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::<3>::wrap(self.alpha),
+                    space = space
+                ),
+            )
         };
         format!(
             "hsl{a_prefix}({h:.0},{space}{s:.1}%,{space}{l:.1}%{a})",
@@ -175,7 +182,14 @@ impl Color {
         let (a_prefix, a) = if self.alpha == 1.0 {
             ("", "".to_string())
         } else {
-            ("a", format!(",{space}{:.3}", rgba.alpha, space = space))
+            (
+                "a",
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::<3>::wrap(rgba.alpha),
+                    space = space
+                ),
+            )
         };
         format!(
             "rgb{a_prefix}({r},{space}{g},{space}{b}{a})",
@@ -215,7 +229,14 @@ impl Color {
         let (a_prefix, a) = if self.alpha == 1.0 {
             ("", "".to_string())
         } else {
-            ("a", format!(",{space}{:.3}", rgba.alpha, space = space))
+            (
+                "a",
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::<3>::wrap(rgba.alpha),
+                    space = space
+                ),
+            )
         };
         format!(
             "rgb{a_prefix}({r:.3},{space}{g:.3},{space}{b:.3}{a})",
@@ -282,7 +303,7 @@ impl Color {
         Lab::from(self)
     }
 
-    /// Format the color as a Lab-representation string (`Lab(41, 83, -93 / 50%)`). If the alpha channel
+    /// Format the color as a Lab-representation string (`Lab(41, 83, -93, 0.5)`). If the alpha channel
     /// is `1.0`, it won't be included in the output.
     pub fn to_lab_string(&self, format: Format) -> String {
         let lab = Lab::from(self);
@@ -296,7 +317,11 @@ impl Color {
             alpha = if self.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!("{space}/{space}{:.2}%", self.alpha * 100., space = space)
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::<3>::wrap(self.alpha),
+                    space = space
+                )
             }
         )
     }
@@ -308,7 +333,7 @@ impl Color {
         LCh::from(self)
     }
 
-    /// Format the color as a LCh-representation string (`LCh(0.3, 0.2, 0.1 / 50%)`). If the alpha channel
+    /// Format the color as a LCh-representation string (`LCh(0.3, 0.2, 0.1, 0.5)`). If the alpha channel
     /// is `1.0`, it won't be included in the output.
     pub fn to_lch_string(&self, format: Format) -> String {
         let lch = LCh::from(self);
@@ -322,7 +347,11 @@ impl Color {
             alpha = if self.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!("{space}/{space}{:.2}%", self.alpha * 100., space = space)
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::<3>::wrap(self.alpha),
+                    space = space
+                )
             }
         )
     }
