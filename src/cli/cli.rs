@@ -25,7 +25,7 @@ pub fn build_cli() -> App<'static, 'static> {
              \n  - 'rgb(119, 136, 153)'\
              \n  - '119,136,153'\
              \n  - 'hsl(210, 14.3%, 53.3%)'\n\
-             Alpha transparency is also supported:
+             Alpha transparency is also supported:\
              \n  - '#77889980'\
              \n  - 'rgba(119, 136, 153, 0.5)'\
              \n  - 'hsla(210, 14.3%, 53.3%, 50%)'",
