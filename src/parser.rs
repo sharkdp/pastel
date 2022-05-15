@@ -28,18 +28,8 @@ fn comma_separated(input: &str) -> IResult<&str, &str> {
     space0(input)
 }
 
-fn slash_separated(input: &str) -> IResult<&str, &str> {
-    let (input, _) = space0(input)?;
-    let (input, _) = char('/')(input)?;
-    space0(input)
-}
-
 fn parse_separator(input: &str) -> IResult<&str, &str> {
     alt((comma_separated, space1))(input)
-}
-
-fn parse_alpha_separator(input: &str) -> IResult<&str, &str> {
-    alt((slash_separated, comma_separated, space1))(input)
 }
 
 fn opt_hash_char(s: &str) -> IResult<&str, Option<char>> {
@@ -82,7 +72,7 @@ fn parse_angle(input: &str) -> IResult<&str, f64> {
 
 fn parse_alpha<'a>(input: &'a str) -> IResult<&'a str, f64> {
     let (input, alpha) = opt(|input: &'a str| {
-        let (input, _) = parse_alpha_separator(input)?;
+        let (input, _) = parse_separator(input)?;
         alt((parse_percentage, double))(input)
     })(input)?;
     Ok((input, alpha.unwrap_or(1.0)))
@@ -479,18 +469,6 @@ fn parse_alpha_syntax() {
     assert_eq!(Some(rgba(255, 0, 0, 1.0)), parse_color("#ff0000ff"));
 
     // rgb/rgba
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/1)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/ 1)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 /1)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 / 1)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/1.0)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/ 1.0)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 /1.0)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 / 1.0)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/100%)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0/ 100%)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 /100%)"));
-    assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0 / 100%)"));
     assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0,1)"));
     assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgb(10,0,0, 1)"));
     assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgba(10,0,0,1)"));
@@ -499,14 +477,6 @@ fn parse_alpha_syntax() {
     assert_eq!(Some(rgba(10, 0, 0, 1.0)), parse_color("rgba(10,0,0, 1.0)"));
 
     // hsl/hsla
-    assert_eq!(
-        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
-        parse_color("hsl(10,50%,50%/1)")
-    );
-    assert_eq!(
-        Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
-        parse_color("hsl(10,50%,50%/1.0)")
-    );
     assert_eq!(
         Some(Color::from_hsla(10.0, 0.5, 0.5, 1.0)),
         parse_color("hsl(10,50%,50%,1)")
@@ -525,14 +495,6 @@ fn parse_alpha_syntax() {
     );
 
     // lab
-    assert_eq!(
-        Some(Color::from_lab(10.0, 30.0, 50.0, 1.0)),
-        parse_color("lab(10,30,50/1)")
-    );
-    assert_eq!(
-        Some(Color::from_lab(10.0, 30.0, 50.0, 1.0)),
-        parse_color("lab(10,30,50/1.0)")
-    );
     assert_eq!(
         Some(Color::from_lab(10.0, 30.0, 50.0, 1.0)),
         parse_color("lab(10,30,50,1)")
