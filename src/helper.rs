@@ -1,4 +1,7 @@
-use std::cmp::Ordering;
+use std::{
+    cmp::Ordering,
+    fmt::{self, Display},
+};
 
 use crate::types::Scalar;
 
@@ -48,6 +51,34 @@ pub fn interpolate_angle(a: Scalar, b: Scalar, fraction: Fraction) -> Scalar {
     mod_positive(interpolate(shortest.0, shortest.1, fraction), 360.0)
 }
 
+// `format!`-style format strings only allow specifying a fixed floating
+// point precision, e.g. `{:.3}` to print 3 decimal places. This always
+// displays trailing zeroes, while web colors generally omit them. For
+// example, we'd prefer to print `0.5` as `0.5` instead of `0.500`.
+//
+// Note that this will round using omitted decimal places:
+//
+//     MaxPrecision::<3>::wrap(0.5004) //=> 0.500
+//     MaxPrecision::<3>::wrap(0.5005) //=> 0.501
+//
+pub struct MaxPrecision<const N: u32> {
+    inner: f64,
+}
+
+impl<const N: u32> MaxPrecision<N> {
+    pub fn wrap(inner: f64) -> Self {
+        Self { inner }
+    }
+}
+
+impl<const N: u32> Display for MaxPrecision<N> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let pow_10 = 10u32.pow(N) as f64;
+        let rounded = (self.inner * pow_10).round() / pow_10;
+        write!(f, "{}", rounded)
+    }
+}
+
 #[test]
 fn test_interpolate() {
     assert_eq!(0.0, interpolate_angle(0.0, 90.0, Fraction::from(0.0)));
@@ -62,4 +93,13 @@ fn test_interpolate_angle() {
     assert_eq!(20.0, interpolate_angle(0.0, 100.0, Fraction::from(0.2)));
     assert_eq!(0.0, interpolate_angle(10.0, 350.0, Fraction::from(0.5)));
     assert_eq!(0.0, interpolate_angle(350.0, 10.0, Fraction::from(0.5)));
+}
+
+#[test]
+fn test_max_precision() {
+    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.5)), "0.5");
+    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.51)), "0.51");
+    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.512)), "0.512");
+    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.5124)), "0.512");
+    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.5125)), "0.513");
 }
