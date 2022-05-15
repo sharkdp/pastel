@@ -58,8 +58,8 @@ pub fn interpolate_angle(a: Scalar, b: Scalar, fraction: Fraction) -> Scalar {
 //
 // Note that this will round using omitted decimal places:
 //
-//     MaxPrecision::<3>::wrap(0.5004) //=> 0.500
-//     MaxPrecision::<3>::wrap(0.5005) //=> 0.501
+//     MaxPrecision::wrap(3, 0.5004) //=> 0.500
+//     MaxPrecision::wrap(3, 0.5005) //=> 0.501
 //
 pub struct MaxPrecision {
     precision: u32,

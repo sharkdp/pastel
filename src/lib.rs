@@ -221,7 +221,7 @@ impl Color {
         )
     }
 
-    /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5,  0)`). If the alpha channel
+    /// Format the color as a floating point RGB-representation string (`rgb(1.0, 0.5, 0)`). If the alpha channel
     /// is `1.0`, the simplified `rgb()` format will be used instead.
     pub fn to_rgb_float_string(&self, format: Format) -> String {
         let rgba = RGBA::<f64>::from(self);
