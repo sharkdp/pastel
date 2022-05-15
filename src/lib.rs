@@ -152,7 +152,7 @@ impl Color {
                 "a",
                 format!(
                     ",{space}{alpha}",
-                    alpha = MaxPrecision::<3>::wrap(self.alpha),
+                    alpha = MaxPrecision::wrap(3, self.alpha),
                     space = space
                 ),
             )
@@ -186,7 +186,7 @@ impl Color {
                 "a",
                 format!(
                     ",{space}{alpha}",
-                    alpha = MaxPrecision::<3>::wrap(rgba.alpha),
+                    alpha = MaxPrecision::wrap(3, rgba.alpha),
                     space = space
                 ),
             )
@@ -233,7 +233,7 @@ impl Color {
                 "a",
                 format!(
                     ",{space}{alpha}",
-                    alpha = MaxPrecision::<3>::wrap(rgba.alpha),
+                    alpha = MaxPrecision::wrap(3, rgba.alpha),
                     space = space
                 ),
             )
@@ -319,7 +319,7 @@ impl Color {
             } else {
                 format!(
                     ",{space}{alpha}",
-                    alpha = MaxPrecision::<3>::wrap(self.alpha),
+                    alpha = MaxPrecision::wrap(3, self.alpha),
                     space = space
                 )
             }
@@ -349,7 +349,7 @@ impl Color {
             } else {
                 format!(
                     ",{space}{alpha}",
-                    alpha = MaxPrecision::<3>::wrap(self.alpha),
+                    alpha = MaxPrecision::wrap(3, self.alpha),
                     space = space
                 )
             }

@@ -61,19 +61,20 @@ pub fn interpolate_angle(a: Scalar, b: Scalar, fraction: Fraction) -> Scalar {
 //     MaxPrecision::<3>::wrap(0.5004) //=> 0.500
 //     MaxPrecision::<3>::wrap(0.5005) //=> 0.501
 //
-pub struct MaxPrecision<const N: u32> {
+pub struct MaxPrecision {
+    precision: u32,
     inner: f64,
 }
 
-impl<const N: u32> MaxPrecision<N> {
-    pub fn wrap(inner: f64) -> Self {
-        Self { inner }
+impl MaxPrecision {
+    pub fn wrap(precision: u32, inner: f64) -> Self {
+        Self { precision, inner }
     }
 }
 
-impl<const N: u32> Display for MaxPrecision<N> {
+impl Display for MaxPrecision {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let pow_10 = 10u32.pow(N) as f64;
+        let pow_10 = 10u32.pow(self.precision) as f64;
         let rounded = (self.inner * pow_10).round() / pow_10;
         write!(f, "{}", rounded)
     }
@@ -97,9 +98,9 @@ fn test_interpolate_angle() {
 
 #[test]
 fn test_max_precision() {
-    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.5)), "0.5");
-    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.51)), "0.51");
-    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.512)), "0.512");
-    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.5124)), "0.512");
-    assert_eq!(format!("{}", MaxPrecision::<3>::wrap(0.5125)), "0.513");
+    assert_eq!(format!("{}", MaxPrecision::wrap(3, 0.5)), "0.5");
+    assert_eq!(format!("{}", MaxPrecision::wrap(3, 0.51)), "0.51");
+    assert_eq!(format!("{}", MaxPrecision::wrap(3, 0.512)), "0.512");
+    assert_eq!(format!("{}", MaxPrecision::wrap(3, 0.5124)), "0.512");
+    assert_eq!(format!("{}", MaxPrecision::wrap(3, 0.5125)), "0.513");
 }
