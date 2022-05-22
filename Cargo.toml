@@ -46,3 +46,7 @@ criterion = "0.3"
 [[bench]]
 name = "parse_color"
 harness = false
+
+[profile.release]
+opt-level = 3
+debug = true
