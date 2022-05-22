@@ -133,7 +133,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
         }
         color.1 = color.0.to_lab();
     }
-    
+
     pub fn run(&mut self, callback: &mut dyn FnMut(&IterationStatistics)) -> DistanceResult {
         self.temperature = self.parameters.initial_temperature;
 
@@ -146,7 +146,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
         if self.parameters.num_fixed_colors == self.colors.len() {
             return result;
         }
-        
+
         for iter in 0..self.parameters.num_iterations {
             let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
                 self.rng
@@ -222,7 +222,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
                 self.temperature *= self.parameters.cooling_rate;
             }
         }
-        
+
         result
     }
 }
