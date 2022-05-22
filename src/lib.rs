@@ -1052,7 +1052,7 @@ impl fmt::Display for LMS {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub struct Lab {
     pub l: Scalar,
     pub a: Scalar,
