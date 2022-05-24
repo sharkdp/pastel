@@ -97,11 +97,11 @@ impl<R: Rng> SimulatedAnnealing<R> {
     pub fn get_colors(&self) -> Vec<Color> {
         self.colors.iter().map(|(c, _)| c.clone()).collect()
     }
-    // function for get the lab for colors
+    // function for get the labs for colors
     pub fn get_labs(&self) -> Vec<Lab> {
         self.colors.iter().map(|(_, l)| l.clone()).collect()
     }
-    // function for update the lab to colors
+    // function for update the labs to colors
     pub fn update_labs(&mut self, labs: &[Lab]) {
         for i in 0..self.colors.len() {
             self.colors[i].1 = labs[i];           
@@ -116,23 +116,23 @@ impl<R: Rng> SimulatedAnnealing<R> {
         }
     }
 
-    fn modify_color(&mut self, color: &mut (Color, Lab)) {
-        let mut strategy = random::strategies::UniformRGB {};
+    // fn modify_color(&mut self, color: &mut (Color, Lab)) {
+    //     let mut strategy = random::strategies::UniformRGB {};
 
-        match self.parameters.opt_mode {
-            OptimizationMode::Local => {
-                let mut rgb = color.0.to_rgba();
-                self.modify_channel(&mut rgb.r);
-                self.modify_channel(&mut rgb.g);
-                self.modify_channel(&mut rgb.b);
-                color.0 = Color::from_rgb(rgb.r, rgb.g, rgb.b);
-            }
-            OptimizationMode::Global => {
-                color.0 = strategy.generate_with(&mut self.rng);
-            }
-        }
-        color.1 = color.0.to_lab();
-    }
+    //     match self.parameters.opt_mode {
+    //         OptimizationMode::Local => {
+    //             let mut rgb = color.0.to_rgba();
+    //             self.modify_channel(&mut rgb.r);
+    //             self.modify_channel(&mut rgb.g);
+    //             self.modify_channel(&mut rgb.b);
+    //             color.0 = Color::from_rgb(rgb.r, rgb.g, rgb.b);
+    //         }
+    //         OptimizationMode::Global => {
+    //             color.0 = strategy.generate_with(&mut self.rng);
+    //         }
+    //     }
+    //     color.1 = color.0.to_lab();
+    // }
 
     pub fn run(&mut self, callback: &mut dyn FnMut(&IterationStatistics)) -> DistanceResult {
         self.temperature = self.parameters.initial_temperature;
@@ -185,7 +185,8 @@ impl<R: Rng> SimulatedAnnealing<R> {
                 self.colors[random_index].0 = strategy.generate_with(&mut self.rng);
                 new_labs[random_index] = self.colors[random_index].0.to_lab();
             }
-            let new_result = result.update2(&new_labs, random_index);
+            
+            let new_result = result.update_for_labs(&new_labs, random_index);
 
             let (score, new_score) = match self.parameters.opt_target {
                 OptimizationTarget::Mean => (
@@ -327,17 +328,10 @@ impl DistanceResult {
         result
     }
 
-    fn update(&self, colors: &[(Color, Lab)], changed_color: usize) -> Self {
+    fn update_for_labs(&self, labs: &[Lab], changed_color: usize) -> Self {
         let mut result = self.clone();
-        result.update_distances(colors, changed_color, true);
-        result.update_totals();
-        result
-    }
-
-    fn update2(&self, labs: &[Lab], changed_color: usize) -> Self {
-        let mut result = self.clone();
-        result.update_distances2(labs, changed_color, true);
-        result.update_totals2();
+        result.update_distances_for_labs(labs, changed_color, true);
+        result.update_totals_for_labs();
         result
     }
 
@@ -353,7 +347,7 @@ impl DistanceResult {
                 continue;
             }
 
-            let dist = self.distance(c, &colors[color]);//only related to lab not color
+            let dist = self.distance(c, &colors[color]);
 
             if dist < self.closest_distances[i].0 {
                 self.closest_distances[i] = (dist, color);
@@ -374,7 +368,7 @@ impl DistanceResult {
         }
     }
 
-    fn update_distances2(&mut self, labs: &[Lab], color: usize, changed: bool) {
+    fn update_distances_for_labs(&mut self, labs: &[Lab], color: usize, changed: bool) {
         self.closest_distances[color] = (scalar::MAX, std::usize::MAX);
 
         // we need to recalculate distances for nodes where the previous min dist was with
@@ -386,7 +380,7 @@ impl DistanceResult {
                 continue;
             }
 
-            let dist = self.distance2(l, &at_lab);
+            let dist = self.distance_for_labs(l, &at_lab);
 
             if dist < self.closest_distances[i].0 {
                 self.closest_distances[i] = (dist, color);
@@ -403,7 +397,7 @@ impl DistanceResult {
         }
 
         for i in to_recalc {
-            self.update_distances2(labs, i, false);
+            self.update_distances_for_labs(labs, i, false);
         }
     }
 
@@ -437,7 +431,7 @@ impl DistanceResult {
             (self.closest_distances.len() - self.num_fixed_colors) as Scalar;
     }
 
-    fn update_totals2(&mut self) {
+    fn update_totals_for_labs(&mut self) {
         self.mean_closest_distance = 0.0;
         self.min_closest_distance = scalar::MAX;
 
@@ -473,7 +467,7 @@ impl DistanceResult {
             DistanceMetric::CIEDE2000 => delta_e::ciede2000(&a.1, &b.1),
         }
     }
-    fn distance2(&self, a: &Lab, b: &Lab) -> Scalar {
+    fn distance_for_labs(&self, a: &Lab, b: &Lab) -> Scalar {
         match self.distance_metric {
             DistanceMetric::CIE76 => delta_e::cie76(&a, &b),
             DistanceMetric::CIEDE2000 => delta_e::ciede2000(&a, &b),
