@@ -1775,4 +1775,19 @@ mod tests {
         let c3 = Color::from_rgb(143, 111, 76);
         assert_eq!("cmyk(0, 22, 47, 44)", c3.to_cmyk_string(Format::Spaces));
     }
+
+    #[test]
+    fn alpha_interchangeable_hex_to_decimal() {
+        // We use a max of 3 decimal places when displaying RGB floating point
+        // alpha values. This test insures that is sufficient to interchange
+        // back and forth between hex (values 0..256) and float (values 0..=1),
+        // e.g. hex `80` is float `0.502`, which parses to hex `80`, and so on.
+        for alpha_int in 0..256 {
+            let alpha_float: f64 = alpha_int as f64 / 255.0;
+            let alpha_string_3digits = format!("{}", MaxPrecision::wrap(3, alpha_float));
+            let parsed_float = alpha_string_3digits.parse::<f64>().unwrap();
+            let parsed_int = (parsed_float * 255.0).round() as i32;
+            assert_eq!(alpha_int, parsed_int);
+        }
+    }
 }
