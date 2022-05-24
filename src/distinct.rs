@@ -116,24 +116,6 @@ impl<R: Rng> SimulatedAnnealing<R> {
         }
     }
 
-    // fn modify_color(&mut self, color: &mut (Color, Lab)) {
-    //     let mut strategy = random::strategies::UniformRGB {};
-
-    //     match self.parameters.opt_mode {
-    //         OptimizationMode::Local => {
-    //             let mut rgb = color.0.to_rgba();
-    //             self.modify_channel(&mut rgb.r);
-    //             self.modify_channel(&mut rgb.g);
-    //             self.modify_channel(&mut rgb.b);
-    //             color.0 = Color::from_rgb(rgb.r, rgb.g, rgb.b);
-    //         }
-    //         OptimizationMode::Global => {
-    //             color.0 = strategy.generate_with(&mut self.rng);
-    //         }
-    //     }
-    //     color.1 = color.0.to_lab();
-    // }
-
     pub fn run(&mut self, callback: &mut dyn FnMut(&IterationStatistics)) -> DistanceResult {
         self.temperature = self.parameters.initial_temperature;
 
