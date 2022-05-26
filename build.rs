@@ -1,4 +1,4 @@
-use clap::Shell;
+use clap_complete::{generate_to, Shell};
 use std::fs;
 
 include!("src/cli/colorpicker_tools.rs");
@@ -12,11 +12,11 @@ fn main() {
     };
     fs::create_dir_all(&outdir).unwrap();
 
-    let mut app = build_cli();
-    app.gen_completions("pastel", Shell::Bash, &outdir);
-    app.gen_completions("pastel", Shell::Fish, &outdir);
-    app.gen_completions("pastel", Shell::Zsh, &outdir);
-    app.gen_completions("pastel", Shell::PowerShell, &outdir);
+    let mut cmd = build_cli();
+
+    for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
+        generate_to(shell, &mut cmd, crate_name!(), &outdir).unwrap();
+    }
 
     println!("cargo:rustc-cfg=pastel_normal_build");
 }
