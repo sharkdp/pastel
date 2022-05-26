@@ -99,8 +99,8 @@ impl Color {
     /// sRGB range.
     ///
     /// See:
-    /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
-    /// - https://en.wikipedia.org/wiki/SRGB
+    /// - <https://en.wikipedia.org/wiki/CIE_1931_color_space>
+    /// - <https://en.wikipedia.org/wiki/SRGB>
     pub fn from_xyz(x: Scalar, y: Scalar, z: Scalar, alpha: Scalar) -> Color {
         Self::from(&XYZ { x, y, z, alpha })
     }
@@ -114,7 +114,7 @@ impl Color {
     /// Create a `Color` from L, a and b coordinates coordinates in the Lab color
     /// space. Note: See documentation for `from_xyz`. The same restrictions apply here.
     ///
-    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    /// See: <https://en.wikipedia.org/wiki/Lab_color_space>
     pub fn from_lab(l: Scalar, a: Scalar, b: Scalar, alpha: Scalar) -> Color {
         Self::from(&Lab { l, a, b, alpha })
     }
@@ -123,7 +123,7 @@ impl Color {
     /// This is a cylindrical transform of the Lab color space. Note: See documentation for
     /// `from_xyz`. The same restrictions apply here.
     ///
-    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    /// See: <https://en.wikipedia.org/wiki/Lab_color_space>
     pub fn from_lch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
         Self::from(&LCh { l, c, h, alpha })
     }
@@ -282,15 +282,15 @@ impl Color {
     /// Get XYZ coordinates according to the CIE 1931 color space.
     ///
     /// See:
-    /// - https://en.wikipedia.org/wiki/CIE_1931_color_space
-    /// - https://en.wikipedia.org/wiki/SRGB
+    /// - <https://en.wikipedia.org/wiki/CIE_1931_color_space>
+    /// - <https://en.wikipedia.org/wiki/SRGB>
     pub fn to_xyz(&self) -> XYZ {
         XYZ::from(self)
     }
 
     /// Get coordinates according to the LSM color space
     ///
-    /// See https://en.wikipedia.org/wiki/LMS_color_space for info on the color space as well as an
+    /// See <https://en.wikipedia.org/wiki/LMS_color_space> for info on the color space as well as an
     /// algorithm for converting from CIE XYZ
     pub fn to_lms(&self) -> LMS {
         LMS::from(self)
@@ -298,7 +298,7 @@ impl Color {
 
     /// Get L, a and b coordinates according to the Lab color space.
     ///
-    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    /// See: <https://en.wikipedia.org/wiki/Lab_color_space>
     pub fn to_lab(&self) -> Lab {
         Lab::from(self)
     }
@@ -328,7 +328,7 @@ impl Color {
 
     /// Get L, C and h coordinates according to the CIE LCh color space.
     ///
-    /// See: https://en.wikipedia.org/wiki/Lab_color_space
+    /// See: <https://en.wikipedia.org/wiki/Lab_color_space>
     pub fn to_lch(&self) -> LCh {
         LCh::from(self)
     }
@@ -534,7 +534,7 @@ impl Color {
 
     /// The percieved brightness of the color (A number between 0.0 and 1.0).
     ///
-    /// See: https://www.w3.org/TR/AERT#color-contrast
+    /// See: <https://www.w3.org/TR/AERT#color-contrast>
     pub fn brightness(&self) -> Scalar {
         let c = self.to_rgba_float();
         (299.0 * c.r + 587.0 * c.g + 114.0 * c.b) / 1000.0
@@ -549,7 +549,7 @@ impl Color {
     /// The relative brightness of a color (normalized to 0.0 for darkest black
     /// and 1.0 for lightest white), according to the WCAG definition.
     ///
-    /// See: https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+    /// See: <https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef>
     pub fn luminance(&self) -> Scalar {
         fn f(s: Scalar) -> Scalar {
             if s <= 0.03928 {
@@ -571,7 +571,7 @@ impl Color {
     /// to 21.0. Two colors with a contrast ratio of 4.5 or higher can be used as text color and
     /// background color and should be well readable.
     ///
-    /// https://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef
+    /// <https://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef>
     pub fn contrast_ratio(&self, other: &Color) -> Scalar {
         let l_self = self.luminance();
         let l_other = other.luminance();
@@ -603,7 +603,7 @@ impl Color {
     /// Compute the perceived 'distance' between two colors according to the CIE76 delta-E
     /// standard. A distance below ~2.3 is not noticable.
     ///
-    /// See: https://en.wikipedia.org/wiki/Color_difference
+    /// See: <https://en.wikipedia.org/wiki/Color_difference>
     pub fn distance_delta_e_cie76(&self, other: &Color) -> Scalar {
         delta_e::cie76(&self.to_lab(), &other.to_lab())
     }
@@ -611,7 +611,7 @@ impl Color {
     /// Compute the perceived 'distance' between two colors according to the CIEDE2000 delta-E
     /// standard.
     ///
-    /// See: https://en.wikipedia.org/wiki/Color_difference
+    /// See: <https://en.wikipedia.org/wiki/Color_difference>
     pub fn distance_delta_e_ciede2000(&self, other: &Color) -> Scalar {
         delta_e::ciede2000(&self.to_lab(), &other.to_lab())
     }

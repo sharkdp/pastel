@@ -213,7 +213,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
 /// Note: this is only a heuristic and will not yield optimal results (especially at the end of
 /// the sequence).
 ///
-/// See: https://en.wikipedia.org/wiki/Farthest-first_traversal
+/// See: <https://en.wikipedia.org/wiki/Farthest-first_traversal>
 pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
     let distance = |c1: &Color, c2: &Color| match metric {
         DistanceMetric::CIE76 => c1.distance_delta_e_cie76(c2),

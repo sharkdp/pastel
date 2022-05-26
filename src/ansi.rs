@@ -36,7 +36,7 @@ pub trait AnsiColor {
 impl AnsiColor for Color {
     /// Create a color from an 8-bit ANSI escape code
     ///
-    /// See: https://en.wikipedia.org/wiki/ANSI_escape_code
+    /// See: <https://en.wikipedia.org/wiki/ANSI_escape_code>
     fn from_ansi_8bit(code: u8) -> Color {
         match code {
             0 => Color::black(),
@@ -82,7 +82,7 @@ impl AnsiColor for Color {
     /// Approximate a color by its closest 8-bit ANSI color (as measured by the perceived
     /// color distance).
     ///
-    /// See: https://en.wikipedia.org/wiki/ANSI_escape_code
+    /// See: <https://en.wikipedia.org/wiki/ANSI_escape_code>
     fn to_ansi_8bit(&self) -> u8 {
         let self_lab = self.to_lab();
         ANSI_LAB_REPRESENTATIONS
