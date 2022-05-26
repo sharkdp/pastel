@@ -128,9 +128,8 @@ pub static COLOR_PICKER_TOOLS: Lazy<Vec<ColorPickerTool>> = Lazy::new(|| {
     ]
 });
 
-pub static COLOR_PICKER_TOOL_NAMES: Lazy<Vec<&'static str>> = Lazy::new(|| {
-    COLOR_PICKER_TOOLS.iter().map(|t| t.command).collect()
-});
+pub static COLOR_PICKER_TOOL_NAMES: Lazy<Vec<&'static str>> =
+    Lazy::new(|| COLOR_PICKER_TOOLS.iter().map(|t| t.command).collect());
 
 #[cfg(target_os = "linux")]
 pub fn gdbus_parse_color(raw: String) -> Result<String, &'static str> {

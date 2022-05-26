@@ -17,7 +17,7 @@ impl ColorCommand for FormatCommand {
         let format_type = matches.value_of("type").expect("required argument");
         let format_type = format_type.to_lowercase();
 
-        let replace_escape = |code: &str| code.replace("\x1b", "\\x1b");
+        let replace_escape = |code: &str| code.replace('\x1b', "\\x1b");
 
         let output = match format_type.as_ref() {
             "rgb" => color.to_rgb_string(Format::Spaces),

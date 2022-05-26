@@ -40,11 +40,7 @@ fn print_colors(
             }
         }
 
-        write!(
-            out,
-            "{} ",
-            brush.paint(c.to_rgb_hex_string(false).to_string(), style)
-        )?;
+        write!(out, "{} ", brush.paint(c.to_rgb_hex_string(false), style))?;
     }
     writeln!(out)?;
     Ok(())

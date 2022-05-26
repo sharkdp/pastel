@@ -106,7 +106,7 @@ impl AnsiColor for Color {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Style {
     foreground: Option<Color>,
     background: Option<Color>,
@@ -187,18 +187,6 @@ impl Style {
                 .collect::<Vec<_>>()
                 .join(";")
         )
-    }
-}
-
-impl Default for Style {
-    fn default() -> Style {
-        Style {
-            foreground: None,
-            background: None,
-            bold: false,
-            italic: false,
-            underline: false,
-        }
     }
 }
 
