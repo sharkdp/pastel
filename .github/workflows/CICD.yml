@@ -53,12 +53,12 @@ jobs:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         components: clippy
+        profile: minimal # minimal component installation (ie, no documentation)
     - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
       uses: actions-rs/cargo@v1
       with:
         command: clippy
         args: --locked --all-targets --all-features
-        profile: minimal # minimal component installation (ie, no documentation)
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
@@ -142,7 +142,7 @@ jobs:
         # Figure out what strip tool to use if any
         STRIP="strip"
         case ${{ matrix.job.target }} in
-          arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;;
+          arm-unknown-linux-*) STRIP="arm-linux-gnueabihf-strip" ;;
           aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;;
           *-pc-windows-msvc) STRIP="" ;;
         esac;
@@ -179,7 +179,7 @@ jobs:
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+        args: --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
 
     - name: Create tarball
       id: package
@@ -203,9 +203,9 @@ jobs:
 
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'*/out/'${{ env.PROJECT_NAME }}.bash' "$ARCHIVE_DIR/autocomplete/"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'*/out/_'${{ env.PROJECT_NAME }}' "$ARCHIVE_DIR/autocomplete/"
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'*/out/'${{ env.PROJECT_NAME }}.fish' "$ARCHIVE_DIR/autocomplete/"
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'*/out/'_${{ env.PROJECT_NAME }}.ps1' "$ARCHIVE_DIR/autocomplete/"
-        cp 'contrib/completion/_fd' "$ARCHIVE_DIR/autocomplete/"
 
         # base compressed package
         pushd "${PKG_STAGING}/" >/dev/null
@@ -250,8 +250,8 @@ jobs:
 
         # Autocompletion files
         install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'*/out/'${{ env.PROJECT_NAME }}.bash' "${DPKG_DIR}/usr/share/bash-completion/completions/${{ env.PROJECT_NAME }}"
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'*/out/_'${{ env.PROJECT_NAME }}' "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
         install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'*/out/'${{ env.PROJECT_NAME }}.fish' "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
-        install -Dm644 'contrib/completion/_fd' "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
 
         # README and LICENSE
         install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/README.md"
