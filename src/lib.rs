@@ -8,7 +8,7 @@ pub mod parser;
 pub mod random;
 mod types;
 
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 use colorspace::ColorSpace;
 pub use helper::Fraction;
@@ -262,7 +262,7 @@ impl Color {
             if rgba.alpha == 1.0 {
                 "".to_string()
             } else {
-                format!("{:02x}", (rgba.alpha * 255.) as u8)
+                format!("{:02x}", (rgba.alpha * 255.).round() as u8)
             }
         )
     }
@@ -671,6 +671,14 @@ impl fmt::Debug for Color {
 impl PartialEq for Color {
     fn eq(&self, other: &Color) -> bool {
         self.to_rgba() == other.to_rgba()
+    }
+}
+
+impl FromStr for Color {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parser::parse_color(s).ok_or("invalid color string")
     }
 }
 
@@ -1777,17 +1785,17 @@ mod tests {
     }
 
     #[test]
-    fn alpha_interchangeable_hex_to_decimal() {
+    fn alpha_roundtrip_hex_to_decimal() {
         // We use a max of 3 decimal places when displaying RGB floating point
-        // alpha values. This test insures that is sufficient to interchange
-        // back and forth between hex (values 0..256) and float (values 0..=1),
+        // alpha values. This test insures that is sufficient to "roundtrip"
+        // from hex (0 < n < 255) to float (0 < n < 1) and back again,
         // e.g. hex `80` is float `0.502`, which parses to hex `80`, and so on.
-        for alpha_int in 0..256 {
-            let alpha_float: f64 = alpha_int as f64 / 255.0;
-            let alpha_string_3digits = format!("{}", MaxPrecision::wrap(3, alpha_float));
-            let parsed_float = alpha_string_3digits.parse::<f64>().unwrap();
-            let parsed_int = (parsed_float * 255.0).round() as i32;
-            assert_eq!(alpha_int, parsed_int);
+        for alpha_int in 0..255 {
+            let hex_string = format!("#000000{:02x}", alpha_int);
+            let parsed_from_hex = hex_string.parse::<Color>().unwrap();
+            let rgba_string = parsed_from_hex.to_rgb_float_string(Format::Spaces);
+            let parsed_from_rgba = rgba_string.parse::<Color>().unwrap();
+            assert_eq!(hex_string, parsed_from_rgba.to_rgb_hex_string(true));
         }
     }
 }
