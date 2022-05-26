@@ -110,7 +110,7 @@ fn run() -> Result<ExitCode> {
         colorpicker: global_matches.value_of("color-picker"),
     };
 
-    if let (subcommand, Some(matches)) = global_matches.subcommand() {
+    if let Some((subcommand, matches)) = global_matches.subcommand() {
         let command = Command::from_string(subcommand);
         command.execute(matches, &config)?;
     } else {
