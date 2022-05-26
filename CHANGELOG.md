@@ -2,8 +2,9 @@
 
 ## Features
 
-- Added support for `NO_COLOR` environment variable
-- Added new color pickers: Gnome/Wayland via gdbus, zenity, yad
+- Added support for transparency / alpha values, see #131 and #162 (@superhawk610)
+- Added support for `NO_COLOR` environment variable, see #143 (@djmattyg007)
+- Added new color pickers: Gnome/Wayland via gdbus, zenity, yad, and wcolor (@sigmaSd, @pvonmoradi)
 
 ## Bugfixes
 
