@@ -87,13 +87,11 @@ pub fn ciede2000(color1: &Lab, color2: &Lab) -> f64 {
 }
 
 fn get_h_prime_fn(x: f64, y: f64) -> f64 {
-    let mut hue_angle;
-
     if x == 0.0 && y == 0.0 {
         return 0.0;
     }
 
-    hue_angle = radians_to_degrees(x.atan2(y));
+    let mut hue_angle = radians_to_degrees(x.atan2(y));
 
     if hue_angle < 0.0 {
         hue_angle += 360.0;
@@ -152,8 +150,8 @@ mod tests {
     use super::{ciede2000, Lab};
 
     fn round(val: f64) -> f64 {
-        let rounded = val * 10000 as f64;
-        rounded.round() / 10000 as f64
+        let rounded = val * 10000_f64;
+        rounded.round() / 10000_f64
     }
 
     fn assert_delta_e(expected: f64, lab1: &[f64; 3], lab2: &[f64; 3]) {

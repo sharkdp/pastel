@@ -658,7 +658,7 @@ impl Color {
 // by default Colors will be printed into HSLA fromat
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", HSLA::from(self).to_string())
+        write!(f, "{}", HSLA::from(self))
     }
 }
 
@@ -1268,7 +1268,7 @@ impl ColorScale {
                     .iter()
                     .position(|c| position.value() < c.position.value());
 
-                let index = next_index.unwrap_or_else(|| self.color_stops.len());
+                let index = next_index.unwrap_or(self.color_stops.len());
 
                 let color_stop = ColorStop { color, position };
 
