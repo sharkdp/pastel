@@ -73,20 +73,20 @@ pub struct SimulatedAnnealing<R: Rng> {
 }
 
 impl SimulatedAnnealing<ThreadRng> {
-    pub fn new(initial_colors: Vec<Color>, parameters: SimulationParameters) -> Self {
+    pub fn new(initial_colors: &[Color], parameters: SimulationParameters) -> Self {
         Self::with_rng(initial_colors, parameters, thread_rng())
     }
 }
 
 impl<R: Rng> SimulatedAnnealing<R> {
-    pub fn with_rng(colors: Vec<Color>, parameters: SimulationParameters, rng: R) -> Self {
-        let labs = colors
+    pub fn with_rng(initial_colors: &[Color], parameters: SimulationParameters, rng: R) -> Self {
+        let labs = initial_colors
             .iter()
             .map(|c| c.to_lab())
             .collect();
 
         SimulatedAnnealing {
-            colors,
+            colors: initial_colors.to_vec(),
             labs,
             temperature: parameters.initial_temperature,
             parameters,
@@ -261,7 +261,7 @@ pub fn distinct_colors(
     }
 
     let mut annealing = SimulatedAnnealing::new(
-        colors,
+        &colors,
         SimulationParameters {
             initial_temperature: 3.0,
             cooling_rate: 0.95,
