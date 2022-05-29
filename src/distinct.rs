@@ -80,10 +80,7 @@ impl SimulatedAnnealing<ThreadRng> {
 
 impl<R: Rng> SimulatedAnnealing<R> {
     pub fn with_rng(initial_colors: &[Color], parameters: SimulationParameters, rng: R) -> Self {
-        let labs = initial_colors
-            .iter()
-            .map(|c| c.to_lab())
-            .collect();
+        let labs = initial_colors.iter().map(|c| c.to_lab()).collect();
 
         SimulatedAnnealing {
             colors: initial_colors.to_vec(),
@@ -96,6 +93,10 @@ impl<R: Rng> SimulatedAnnealing<R> {
 }
 
 impl<R: Rng> SimulatedAnnealing<R> {
+    pub fn get_colors(&self) -> Vec<Color> {
+        self.colors.clone()
+    }
+
     fn modify_channel(&mut self, c: &mut u8) {
         if self.rng.gen::<bool>() {
             *c = c.saturating_add(self.rng.gen::<u8>() % 10);
@@ -287,11 +288,7 @@ pub fn distinct_colors(
 }
 
 impl DistanceResult {
-    fn new(
-        labs: &[Lab],
-        distance_metric: DistanceMetric,
-        num_fixed_colors: usize,
-    ) -> Self {
+    fn new(labs: &[Lab], distance_metric: DistanceMetric, num_fixed_colors: usize) -> Self {
         let mut result = DistanceResult {
             closest_distances: vec![(scalar::MAX, std::usize::MAX); labs.len()],
             closest_pair: (std::usize::MAX, std::usize::MAX),
@@ -323,7 +320,7 @@ impl DistanceResult {
         // changed_color but it's not anymore (potentially).
         let mut to_recalc = Vec::with_capacity(labs.len());
         let at_lab = labs[color];
-        
+
         for (i, l) in labs.iter().enumerate() {
             if i == color {
                 continue;
