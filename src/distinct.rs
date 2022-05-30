@@ -66,7 +66,7 @@ pub struct SimulationParameters {
 
 pub struct SimulatedAnnealing<R: Rng> {
     colors: Vec<Color>,
-    labs: Vec<Lab>,
+    lab_values: Vec<Lab>,
     temperature: Scalar,
     pub parameters: SimulationParameters,
     rng: R,
@@ -80,11 +80,11 @@ impl SimulatedAnnealing<ThreadRng> {
 
 impl<R: Rng> SimulatedAnnealing<R> {
     pub fn with_rng(initial_colors: &[Color], parameters: SimulationParameters, rng: R) -> Self {
-        let labs = initial_colors.iter().map(|c| c.to_lab()).collect();
+        let lab_values = initial_colors.iter().map(|c| c.to_lab()).collect();
 
         SimulatedAnnealing {
             colors: initial_colors.to_vec(),
-            labs,
+            lab_values,
             temperature: parameters.initial_temperature,
             parameters,
             rng,
@@ -127,7 +127,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
         self.temperature = self.parameters.initial_temperature;
 
         let mut result = DistanceResult::new(
-            &self.labs,
+            &self.lab_values,
             self.parameters.distance_metric,
             self.parameters.num_fixed_colors,
         );
@@ -162,11 +162,11 @@ impl<R: Rng> SimulatedAnnealing<R> {
 
             let mut new_colors = self.colors[random_index].clone();
 
-            let mut new_labs = self.labs.clone();
+            let mut new_lab_values = self.lab_values.clone();
 
-            self.modify_color_and_lab(&mut new_colors, &mut new_labs[random_index]);
+            self.modify_color_and_lab(&mut new_colors, &mut new_lab_values[random_index]);
 
-            let new_result = result.update(&new_labs, random_index);
+            let new_result = result.update(&new_lab_values, random_index);
 
             let (score, new_score) = match self.parameters.opt_target {
                 OptimizationTarget::Mean => (
@@ -181,13 +181,13 @@ impl<R: Rng> SimulatedAnnealing<R> {
             if new_score > score {
                 result = new_result;
                 self.colors[random_index] = new_colors;
-                self.labs = new_labs;
+                self.lab_values = new_lab_values;
             } else {
                 let bolzmann = Scalar::exp(-(score - new_score) / self.temperature);
                 if self.rng.gen::<Scalar>() <= bolzmann {
                     result = new_result;
                     self.colors[random_index] = new_colors;
-                    self.labs = new_labs;
+                    self.lab_values = new_lab_values;
                 }
             }
 
@@ -288,9 +288,9 @@ pub fn distinct_colors(
 }
 
 impl DistanceResult {
-    fn new(labs: &[Lab], distance_metric: DistanceMetric, num_fixed_colors: usize) -> Self {
+    fn new(lab_values: &[Lab], distance_metric: DistanceMetric, num_fixed_colors: usize) -> Self {
         let mut result = DistanceResult {
-            closest_distances: vec![(scalar::MAX, std::usize::MAX); labs.len()],
+            closest_distances: vec![(scalar::MAX, std::usize::MAX); lab_values.len()],
             closest_pair: (std::usize::MAX, std::usize::MAX),
             mean_closest_distance: 0.0,
             min_closest_distance: scalar::MAX,
@@ -298,30 +298,30 @@ impl DistanceResult {
             num_fixed_colors,
         };
 
-        for i in 0..labs.len() {
-            result.update_distances(labs, i, false);
+        for i in 0..lab_values.len() {
+            result.update_distances(lab_values, i, false);
         }
         result.update_totals();
 
         result
     }
 
-    fn update(&self, labs: &[Lab], changed_color: usize) -> Self {
+    fn update(&self, lab_values: &[Lab], changed_color: usize) -> Self {
         let mut result = self.clone();
-        result.update_distances(labs, changed_color, true);
+        result.update_distances(lab_values, changed_color, true);
         result.update_totals();
         result
     }
 
-    fn update_distances(&mut self, labs: &[Lab], color: usize, changed: bool) {
+    fn update_distances(&mut self, lab_values: &[Lab], color: usize, changed: bool) {
         self.closest_distances[color] = (scalar::MAX, std::usize::MAX);
 
         // we need to recalculate distances for nodes where the previous min dist was with
         // changed_color but it's not anymore (potentially).
-        let mut to_recalc = Vec::with_capacity(labs.len());
-        let at_lab = labs[color];
+        let mut to_recalc = Vec::with_capacity(lab_values.len());
+        let at_lab = lab_values[color].clone();
 
-        for (i, l) in labs.iter().enumerate() {
+        for (i, l) in lab_values.iter().enumerate() {
             if i == color {
                 continue;
             }
@@ -343,7 +343,7 @@ impl DistanceResult {
         }
 
         for i in to_recalc {
-            self.update_distances(labs, i, false);
+            self.update_distances(lab_values, i, false);
         }
     }
 
@@ -379,8 +379,8 @@ impl DistanceResult {
 
     fn distance(&self, a: &Lab, b: &Lab) -> Scalar {
         match self.distance_metric {
-            DistanceMetric::CIE76 => delta_e::cie76(&a, &b),
-            DistanceMetric::CIEDE2000 => delta_e::ciede2000(&a, &b),
+            DistanceMetric::CIE76 => delta_e::cie76(a, b),
+            DistanceMetric::CIEDE2000 => delta_e::ciede2000(a, b),
         }
     }
 }
