@@ -2,6 +2,7 @@
 
 ## Features
 
+- Added support for parsing LCh colors, see #2 and #167 (@MForster)
 
 ## Bugfixes
 
