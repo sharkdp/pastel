@@ -268,7 +268,13 @@ impl Brush {
 
     pub fn from_environment(stream: Stream) -> Self {
         let mode = if atty::is(stream) {
-            get_colormode()
+            let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
+            match env_color_mode.as_deref() {
+                Some("8bit") => Some(Mode::Ansi8Bit),
+                Some("24bit") => Some(Mode::TrueColor),
+                Some("off") => None,
+                Some(_) | None => get_colormode(),
+            }
         } else {
             None
         };
