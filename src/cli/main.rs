@@ -17,7 +17,7 @@ use commands::Command;
 use config::Config;
 use error::{PastelError, Result};
 
-use pastel::ansi::{self, Brush};
+use pastel::ansi::{self, Brush, Mode};
 use pastel::Color;
 
 type ExitCode = i32;
@@ -26,7 +26,9 @@ fn write_stderr(c: Color, title: &str, message: &str) {
     writeln!(
         io::stderr(),
         "{}: {}",
-        Brush::from_environment(Stream::Stdout).paint(format!("[{}]", title), c),
+        Brush::from_environment(Stream::Stdout)
+            .unwrap_or_default()
+            .paint(format!("[{}]", title), c),
         message
     )
     .ok();
@@ -76,12 +78,7 @@ fn run() -> Result<ExitCode> {
                 if interactive_mode {
                     let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
                     match env_color_mode.as_deref() {
-                        Some("8bit") => Some(ansi::Mode::Ansi8Bit),
-                        Some("24bit") => Some(ansi::Mode::TrueColor),
-                        Some("off") => None,
-                        Some(value) => {
-                            return Err(PastelError::UnknownColorMode(value.into()));
-                        }
+                        Some(mode_str) => Mode::from_str(mode_str)?,
                         None => {
                             let mode = ansi::get_colormode();
                             if mode == Some(ansi::Mode::Ansi8Bit)

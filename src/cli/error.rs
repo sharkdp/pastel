@@ -1,3 +1,5 @@
+use crate::ansi;
+
 #[derive(Debug)]
 pub enum PastelError {
     UnknownColorMode(String),
@@ -63,6 +65,12 @@ impl From<std::io::Error> for PastelError {
             std::io::ErrorKind::BrokenPipe => PastelError::StdoutClosed,
             _ => PastelError::IoError(err),
         }
+    }
+}
+
+impl From<ansi::UnknownColorModeError> for PastelError {
+    fn from(err: ansi::UnknownColorModeError) -> PastelError {
+        PastelError::UnknownColorMode(err.0)
     }
 }
 
