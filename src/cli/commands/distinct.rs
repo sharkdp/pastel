@@ -129,7 +129,7 @@ impl GenericCommand for DistinctCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let stderr = io::stderr();
         let mut stderr_lock = stderr.lock();
-        let brush_stderr = Brush::from_environment(Stream::Stderr);
+        let brush_stderr = Brush::from_environment(Stream::Stderr)?;
         let verbose_output = matches.is_present("verbose");
 
         let count = matches.value_of("number").expect("required argument");

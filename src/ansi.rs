@@ -18,6 +18,20 @@ pub enum Mode {
     TrueColor,
 }
 
+#[derive(Debug)]
+pub struct UnknownColorModeError(pub String);
+
+impl Mode {
+    pub fn from_str(mode_str: &str) -> Result<Option<Self>, UnknownColorModeError> {
+        match mode_str {
+            "24bit" | "truecolor" => Ok(Some(Mode::TrueColor)),
+            "8bit" => Ok(Some(Mode::Ansi8Bit)),
+            "off" => Ok(None),
+            value => Err(UnknownColorModeError(value.into())),
+        }
+    }
+}
+
 fn cube_to_8bit(code: u8) -> u8 {
     assert!(code < 6);
     match code {
@@ -256,7 +270,7 @@ pub fn get_colormode() -> Option<Mode> {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Brush {
     mode: Option<Mode>,
 }
@@ -266,19 +280,17 @@ impl Brush {
         Brush { mode }
     }
 
-    pub fn from_environment(stream: Stream) -> Self {
+    pub fn from_environment(stream: Stream) -> Result<Self, UnknownColorModeError> {
         let mode = if atty::is(stream) {
             let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
             match env_color_mode.as_deref() {
-                Some("8bit") => Some(Mode::Ansi8Bit),
-                Some("24bit") => Some(Mode::TrueColor),
-                Some("off") => None,
-                Some(_) | None => get_colormode(),
+                Some(mode_str) => Mode::from_str(mode_str)?,
+                None => get_colormode(),
             }
         } else {
             None
         };
-        Brush { mode }
+        Ok(Brush { mode })
     }
 
     pub fn paint<S>(self, text: S, style: impl Into<Style>) -> String

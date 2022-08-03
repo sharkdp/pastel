@@ -16,7 +16,7 @@ pub fn print_colorspectrum(config: &Config) -> Result<()> {
     let mut canvas = Canvas::new(
         width + 2 * config.padding,
         width + 2 * config.padding,
-        Brush::from_environment(Stream::Stderr),
+        Brush::from_environment(Stream::Stderr)?,
     );
     canvas.draw_rect(
         config.padding,
