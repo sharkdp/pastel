@@ -22,7 +22,7 @@ pub enum Mode {
 pub struct UnknownColorModeError(pub String);
 
 impl Mode {
-    pub fn from_str(mode_str: &str) -> Result<Option<Self>, UnknownColorModeError> {
+    pub fn from_mode_str(mode_str: &str) -> Result<Option<Self>, UnknownColorModeError> {
         match mode_str {
             "24bit" | "truecolor" => Ok(Some(Mode::TrueColor)),
             "8bit" => Ok(Some(Mode::Ansi8Bit)),
@@ -284,7 +284,7 @@ impl Brush {
         let mode = if atty::is(stream) {
             let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
             match env_color_mode.as_deref() {
-                Some(mode_str) => Mode::from_str(mode_str)?,
+                Some(mode_str) => Mode::from_mode_str(mode_str)?,
                 None => get_colormode(),
             }
         } else {
