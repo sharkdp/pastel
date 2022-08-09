@@ -78,7 +78,7 @@ fn run() -> Result<ExitCode> {
                 if interactive_mode {
                     let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
                     match env_color_mode.as_deref() {
-                        Some(mode_str) => Mode::from_str(mode_str)?,
+                        Some(mode_str) => Mode::from_mode_str(mode_str)?,
                         None => {
                             let mode = ansi::get_colormode();
                             if mode == Some(ansi::Mode::Ansi8Bit)
