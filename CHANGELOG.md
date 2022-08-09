@@ -6,6 +6,7 @@
 
 ## Bugfixes
 
+- `pastel pick` does not display all colors in some terminals, see #121 and #168 (@Divoolej)
 
 ## Changes
 
