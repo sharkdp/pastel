@@ -57,6 +57,24 @@ impl Color {
         })
     }
 
+    pub fn from_hsva(hue: Scalar, saturation: Scalar, value: Scalar, alpha: Scalar) -> Color {
+        Self::from(&HSVA {
+            h: hue,
+            s: saturation,
+            v: value,
+            alpha,
+        })
+    }
+
+    pub fn from_hsv(hue: Scalar, saturation: Scalar, value: Scalar) -> Color {
+        Self::from(&HSVA {
+            h: hue,
+            s: saturation,
+            v: value,
+            alpha: 1.0,
+        })
+    }
+
     /// Create a `Color` from integer RGB values between 0 and 255 and a floating
     /// point alpha value between 0.0 and 1.0.
     pub fn from_rgba(r: u8, g: u8, b: u8, alpha: Scalar) -> Color {
@@ -164,6 +182,41 @@ impl Color {
             h = self.hue.value(),
             s = 100.0 * self.saturation,
             l = 100.0 * self.lightness,
+            a = a,
+        )
+    }
+
+    /// Convert a `Color` to its hue, saturation, value and alpha values. The hue is given
+    /// in degrees, as a number between 0.0 and 360.0. Saturation, value and alpha are numbers
+    /// between 0.0 and 1.0.
+    pub fn to_hsva(&self) -> HSVA {
+        HSVA::from(self)
+    }
+
+    /// Format the color as a HSV-representation string (`hsva(123, 50.3%, 80.1%, 0.4)`). If the
+    /// alpha channel is `1.0`, the simplified `hsv()` format will be used instead.
+    pub fn to_hsv_string(&self, format: Format) -> String {
+        let hsv = HSVA::from(self);
+        let space = if format == Format::Spaces { " " } else { "" };
+        let (a_prefix, a) = if hsv.alpha == 1.0 {
+            ("", "".to_string())
+        } else {
+            (
+                "a",
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::wrap(3, hsv.alpha),
+                    space = space
+                ),
+            )
+        };
+        format!(
+            "hsv{a_prefix}({h:.0},{space}{s:.1}%,{space}{v:.1}%{a})",
+            space = space,
+            a_prefix = a_prefix,
+            h = hsv.h,
+            s = 100.0 * hsv.s,
+            v = 100.0 * hsv.v,
             a = a,
         )
     }
@@ -693,6 +746,24 @@ impl From<&HSLA> for Color {
     }
 }
 
+impl From<&HSVA> for Color {
+    fn from(color: &HSVA) -> Self {
+        let lightness = color.v * (1.0 - color.s / 2.0);
+        let saturation = if lightness > 0.0 && lightness < 1.0 {
+            (color.v - lightness) / lightness.min(1.0 - lightness)
+        } else {
+            0.0
+        };
+
+        Color {
+            hue: Hue::from(color.h),
+            saturation: clamp(0.0, 1.0, saturation),
+            lightness: clamp(0.0, 1.0, lightness),
+            alpha: clamp(0.0, 1.0, color.alpha),
+        }
+    }
+}
+
 impl From<&RGBA<u8>> for Color {
     fn from(color: &RGBA<u8>) -> Self {
         let max_chroma = u8::max(u8::max(color.r, color.g), color.b);
@@ -978,6 +1049,63 @@ impl From<&Color> for HSLA {
 impl fmt::Display for HSLA {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "hsl({h}, {s}, {l})", h = self.h, s = self.s, l = self.l,)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct HSVA {
+    pub h: Scalar,
+    pub s: Scalar,
+    pub v: Scalar,
+    pub alpha: Scalar,
+}
+
+impl ColorSpace for HSVA {
+    fn from_color(c: &Color) -> Self {
+        c.to_hsva()
+    }
+
+    fn into_color(self) -> Color {
+        Color::from_hsva(self.h, self.s, self.v, self.alpha)
+    }
+
+    fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        // make sure that the hue is preserved when mixing with gray colors
+        let self_hue = if self.s < 0.0001 { other.h } else { self.h };
+        let other_hue = if other.s < 0.0001 { self.h } else { other.h };
+
+        Self {
+            h: interpolate_angle(self_hue, other_hue, fraction),
+            s: interpolate(self.s, other.s, fraction),
+            v: interpolate(self.v, other.v, fraction),
+            alpha: interpolate(self.alpha, other.alpha, fraction),
+        }
+    }
+}
+
+impl From<&Color> for HSVA {
+    fn from(color: &Color) -> Self {
+        let lightness = color.lightness;
+
+        let value = lightness + color.saturation * lightness.min(1.0 - lightness);
+        let saturation = if value > 0.0 {
+            2.0 * (1.0 - lightness / value)
+        } else {
+            0.0
+        };
+
+        HSVA {
+            h: color.hue.value(),
+            s: saturation,
+            v: value,
+            alpha: color.alpha,
+        }
+    }
+}
+
+impl fmt::Display for HSVA {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "hsv({h}, {s}, {v})", h = self.h, s = self.s, v = self.v)
     }
 }
 
@@ -1429,6 +1557,25 @@ mod tests {
         assert_eq!(0xff0000, Color::red().to_u32());
         assert_eq!(0xffffff, Color::white().to_u32());
         assert_eq!(0xf4230f, Color::from_rgb(0xf4, 0x23, 0x0f).to_u32());
+    }
+
+    #[test]
+    fn hsva_conversion() {
+        assert_eq!(
+            Color::from_hsla(0.0, 1.0, 0.5, 0.5),
+            Color::from_hsva(0.0, 1.0, 1.0, 0.5)
+        );
+
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let hsva1 = color1.to_hsva();
+            let color2 = Color::from_hsva(hsva1.h, hsva1.s, hsva1.v, hsva1.alpha);
+            assert_almost_equal(&color1, &color2);
+        };
+
+        for hue in 0..360 {
+            roundtrip(Scalar::from(hue), 0.2, 0.8);
+        }
     }
 
     #[test]
