@@ -585,7 +585,7 @@ impl Color {
         gray
     }
 
-    /// The percieved brightness of the color (A number between 0.0 and 1.0).
+    /// The perceived brightness of the color (A number between 0.0 and 1.0).
     ///
     /// See: <https://www.w3.org/TR/AERT#color-contrast>
     pub fn brightness(&self) -> Scalar {
@@ -654,7 +654,7 @@ impl Color {
     }
 
     /// Compute the perceived 'distance' between two colors according to the CIE76 delta-E
-    /// standard. A distance below ~2.3 is not noticable.
+    /// standard. A distance below ~2.3 is not noticeable.
     ///
     /// See: <https://en.wikipedia.org/wiki/Color_difference>
     pub fn distance_delta_e_cie76(&self, other: &Color) -> Scalar {
@@ -708,7 +708,7 @@ impl Color {
     }
 }
 
-// by default Colors will be printed into HSLA fromat
+// by default Colors will be printed into HSLA format
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", HSLA::from(self))
