@@ -54,6 +54,7 @@ pub fn build_cli() -> Command<'static> {
         .arg_required_else_help(true)
         .subcommand(
             Command::new("color")
+                .alias("colour")
                 .alias("take")
                 .alias("show")
                 .alias("display")
