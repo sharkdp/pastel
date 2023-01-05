@@ -248,17 +248,16 @@ fn parse_lch(input: &str) -> IResult<&str, Color> {
 }
 
 fn parse_named(input: &str) -> IResult<&str, Color> {
-    let (input, color) = all_consuming(alpha1)(input)?;
     let nc = NAMED_COLORS
         .iter()
-        .find(|nc| color.to_lowercase() == nc.name);
+        .find(|nc| input.replace(" ", "").to_lowercase() == nc.name);
 
     match nc {
         None => Err(Err::Error(nom::error::Error::new(
             "Couldn't find matching named color",
             ErrorKind::Alpha,
         ))),
-        Some(nc) => Ok((input, nc.color.clone())),
+        Some(nc) => Ok(("", nc.color.clone())),
     }
 }
 
@@ -609,6 +608,8 @@ fn parse_named_syntax() {
     assert_eq!(Some(Color::blue()), parse_color("Blue"));
     assert_eq!(Some(Color::blue()), parse_color("BLUE"));
     assert_eq!(Some(rgb(255, 20, 147)), parse_color("deeppink"));
+    assert_eq!(Some(rgb(255, 20, 147)), parse_color("DeepPink"));
+    assert_eq!(Some(rgb(255, 20, 147)), parse_color("deep pink"));
     assert_eq!(None, parse_color("whatever"));
     assert_eq!(None, parse_color("red blue"));
 }
