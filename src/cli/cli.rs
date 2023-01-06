@@ -507,6 +507,11 @@ pub fn build_cli() -> Command<'static> {
                 .ignore_case(true)
                 .help("Use a specific tool to pick the colors")
         )
+        .arg(
+            Arg::new("css-colors-only")
+                .long("css-colors-only")
+                .help("Only use the CSS named colors (X11 specific ones not included)")
+        )
 }
 
 #[test]
