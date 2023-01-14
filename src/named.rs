@@ -1,3 +1,4 @@
+use core::fmt;
 use once_cell::sync::Lazy;
 
 use crate::Color;
@@ -6,6 +7,28 @@ use crate::Color;
 pub enum NamedColorKind {
     CSS,
     X11,
+}
+
+impl fmt::Display for NamedColorKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            NamedColorKind::CSS => write!(f, "CSS"),
+            NamedColorKind::X11 => write!(f, "X11"),
+        }
+    }
+}
+
+impl NamedColorKind {
+    pub fn match_arg(&self, lists: &Option<Vec<&str>>) -> bool {
+        match &lists {
+            None => true,
+            Some(lists) => lists.iter().any(|list| match *list {
+                "css" => self == &NamedColorKind::CSS,
+                "x11" => self == &NamedColorKind::X11,
+                _ => false,
+            }),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

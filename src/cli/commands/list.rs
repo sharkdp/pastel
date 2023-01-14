@@ -2,7 +2,7 @@ use crate::commands::prelude::*;
 use crate::commands::sort::key_function;
 
 use pastel::ansi::ToAnsiStyle;
-use pastel::named::{NamedColor, NamedColorKind, NAMED_COLORS};
+use pastel::named::{NamedColor, NAMED_COLORS};
 
 pub struct ListCommand;
 
@@ -12,7 +12,7 @@ impl GenericCommand for ListCommand {
 
         let mut colors: Vec<&NamedColor> = NAMED_COLORS
             .iter()
-            .filter(|nc| !config.css_names_only || nc.kind == NamedColorKind::CSS)
+            .filter(|nc| nc.kind.match_arg(&config.list))
             .collect();
         colors.sort_by_key(|nc| key_function(sort_order, &nc.color));
         colors.dedup_by(|n1, n2| n1.color == n2.color);

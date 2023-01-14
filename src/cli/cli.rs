@@ -508,9 +508,15 @@ pub fn build_cli() -> Command<'static> {
                 .help("Use a specific tool to pick the colors")
         )
         .arg(
-            Arg::new("css-colors-only")
-                .long("css-colors-only")
-                .help("Only use the CSS named colors (X11 specific ones not included)")
+            Arg::new("list")
+                .long("list")
+                .short('l')
+                .ignore_case(true)
+                .takes_value(true)
+                .value_delimiter(',')
+                .possible_values(&["css", "x11"])
+                .hide_possible_values(true)
+                .help("Color list(s) to use: css, x11 [comma separated, uses all color lists if not specified]")
         )
 }
 

@@ -53,7 +53,7 @@ impl Output<'_> {
         );
 
         let mut text_y_offset = 0;
-        let similar = similar_colors(color, config.css_names_only);
+        let similar = similar_colors(color, config);
 
         for (i, nc) in similar.iter().enumerate().take(3) {
             if nc.color == *color {

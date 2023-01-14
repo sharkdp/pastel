@@ -98,6 +98,10 @@ fn run() -> Result<ExitCode> {
         }
     };
 
+    let lists = global_matches
+        .values_of("list")
+        .map(|v| v.collect::<Vec<_>>());
+
     let config = Config {
         padding: 2,
         colorpicker_width: 48,
@@ -105,7 +109,7 @@ fn run() -> Result<ExitCode> {
         interactive_mode,
         brush: Brush::from_mode(color_mode),
         colorpicker: global_matches.value_of("color-picker"),
-        css_names_only: global_matches.is_present("css-colors-only"),
+        list: lists,
     };
 
     if let Some((subcommand, matches)) = global_matches.subcommand() {
