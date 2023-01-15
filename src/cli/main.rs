@@ -98,8 +98,8 @@ fn run() -> Result<ExitCode> {
         }
     };
 
-    let lists = global_matches
-        .values_of("list")
+    let color_names = global_matches
+        .values_of("color-names")
         .map(|v| v.collect::<Vec<_>>());
 
     let config = Config {
@@ -109,7 +109,7 @@ fn run() -> Result<ExitCode> {
         interactive_mode,
         brush: Brush::from_mode(color_mode),
         colorpicker: global_matches.value_of("color-picker"),
-        list: lists,
+        color_names,
     };
 
     if let Some((subcommand, matches)) = global_matches.subcommand() {

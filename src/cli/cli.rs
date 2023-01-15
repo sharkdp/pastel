@@ -508,15 +508,15 @@ pub fn build_cli() -> Command<'static> {
                 .help("Use a specific tool to pick the colors")
         )
         .arg(
-            Arg::new("list")
-                .long("list")
-                .short('l')
+            Arg::new("color-names")
+                .long("color-names")
                 .ignore_case(true)
                 .takes_value(true)
                 .value_delimiter(',')
                 .possible_values(&["css", "x11"])
+                .default_value("css,x11")
                 .hide_possible_values(true)
-                .help("Color list(s) to use: css, x11 [comma separated, uses all color lists if not specified]")
+                .help("Color names to use, in order of priority: css, x11 [comma separated, default: css,x11]")
         )
 }
 

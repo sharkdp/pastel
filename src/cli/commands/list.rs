@@ -12,7 +12,7 @@ impl GenericCommand for ListCommand {
 
         let mut colors: Vec<&NamedColor> = NAMED_COLORS
             .iter()
-            .filter(|nc| nc.kind.match_arg(&config.list))
+            .filter(|nc| nc.kind.match_names(&config.color_names))
             .collect();
         colors.sort_by_key(|nc| key_function(sort_order, &nc.color));
         colors.dedup_by(|n1, n2| n1.color == n2.color);
