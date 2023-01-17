@@ -7,6 +7,7 @@ use crate::colorpicker_tools::COLOR_PICKER_TOOL_NAMES;
 
 const SORT_OPTIONS: &[&str] = &["brightness", "luminance", "hue", "chroma", "random"];
 const DEFAULT_SORT_ORDER: &str = "hue";
+const BINARY_OPERATION_OPTIONS: &[&str] = &[ "contrast", "distance-cie76", "distance-ciede2000" ];
 
 pub fn build_cli() -> Command<'static> {
     let color_arg = Arg::new("color")
@@ -481,6 +482,38 @@ pub fn build_cli() -> Command<'static> {
             Command::new("colorcheck")
                 .about("Check if your terminal emulator supports 24-bit colors.")
                 .hide(true),
+        )
+        .subcommand(
+            Command::new("sort-by-binary-operation")
+                .about("Sort colors by the given binary operation")
+                .long_about("Sort a list of colors by applying the given binary operation with \
+                            the given operand color to each color.")
+                .alias("sort-binary-operation")
+                .arg(
+                    Arg::new("binary-operation")
+                        .help("binary-operation")
+                        .possible_values(BINARY_OPERATION_OPTIONS)
+                        .required(true),
+                )
+                .arg(
+                    Arg::new("operand")
+                        .value_name("color")
+                        .help("The operand color which will be passed to each binary operation")
+                        .required(true),
+                )
+                .arg(
+                    Arg::new("reverse")
+                        .long("reverse")
+                        .short('r')
+                        .help("Reverse the sort order"),
+                )
+                .arg(
+                    Arg::new("unique")
+                        .long("unique")
+                        .short('u')
+                        .help("Remove duplicate colors (equality is determined via RGB values)"),
+                )
+                .arg(color_arg.clone()),
         )
         .arg(
             Arg::new("color-mode")

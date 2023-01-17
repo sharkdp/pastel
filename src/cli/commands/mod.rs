@@ -17,6 +17,7 @@ mod prelude;
 mod random;
 mod show;
 mod sort;
+mod sort_binary_operation;
 mod traits;
 
 use traits::{ColorCommand, GenericCommand};
@@ -31,6 +32,7 @@ use paint::PaintCommand;
 use pick::PickCommand;
 use random::RandomCommand;
 use sort::SortCommand;
+use sort_binary_operation::SortBinaryOperationCommand;
 
 use io::ColorArgIterator;
 
@@ -64,6 +66,7 @@ impl Command {
             "paint" => Command::Generic(Box::new(PaintCommand)),
             "format" => Command::WithColor(Box::new(FormatCommand)),
             "colorcheck" => Command::Generic(Box::new(ColorCheckCommand)),
+            "sort-by-binary-operation" => Command::Generic(Box::new(SortBinaryOperationCommand)),
             _ => unreachable!("Unknown subcommand"),
         }
     }
