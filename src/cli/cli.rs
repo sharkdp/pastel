@@ -486,8 +486,8 @@ pub fn build_cli() -> Command<'static> {
         .subcommand(
             Command::new("sort-by-binary-operation")
                 .about("Sort colors by the given binary operation")
-                .long_about("Sort a list of colors by applying the given binary operation with \
-                            the given operand color to each color.")
+                .long_about("Sort a list of colors by the result of applying the given binary operation with \
+                            the given operand color.")
                 .alias("sort-binary-operation")
                 .arg(
                     Arg::new("binary-operation")
