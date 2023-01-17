@@ -491,7 +491,7 @@ pub fn build_cli() -> Command<'static> {
                 .alias("sort-binary-operation")
                 .arg(
                     Arg::new("binary-operation")
-                        .help("binary-operation")
+                        .help("Binary operation")
                         .possible_values(BINARY_OPERATION_OPTIONS)
                         .required(true),
                 )
