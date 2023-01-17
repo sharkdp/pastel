@@ -13,7 +13,9 @@ pub fn key_function(binary_operation: &str, operand: &Color, color: &Color) -> i
 
 impl GenericCommand for SortBinaryOperationCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let binary_operation = matches.value_of("binary-operation").expect("required argument");
+        let binary_operation = matches
+            .value_of("binary-operation")
+            .expect("required argument");
 
         let mut print_spectrum = PrintSpectrum::Yes;
 

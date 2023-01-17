@@ -7,7 +7,7 @@ use crate::colorpicker_tools::COLOR_PICKER_TOOL_NAMES;
 
 const SORT_OPTIONS: &[&str] = &["brightness", "luminance", "hue", "chroma", "random"];
 const DEFAULT_SORT_ORDER: &str = "hue";
-const BINARY_OPERATION_OPTIONS: &[&str] = &[ "contrast", "distance-cie76", "distance-ciede2000" ];
+const BINARY_OPERATION_OPTIONS: &[&str] = &["contrast", "distance-cie76", "distance-ciede2000"];
 
 pub fn build_cli() -> Command<'static> {
     let color_arg = Arg::new("color")
