@@ -52,7 +52,7 @@ impl PastelError {
                 format!("Error while running color picker '{}'", name)
             }
             PastelError::NoColorPickerFound => {
-                "Could not find any external color picker tool. See 'pastel pick -h' for more information.".into()
+                "Could not find any external color picker tool. See 'pastel pick --help' for more information.".into()
             }
             PastelError::IoError(err) => format!("I/O error: {}", err),
         }
