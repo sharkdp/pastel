@@ -129,7 +129,7 @@ sudo dpkg -i pastel_0.8.1_amd64.deb
 
 ### On Arch Linux
 
-You can install `pastel` from the [Community](https://archlinux.org/packages/community/x86_64/pastel/) repositories:
+You can install `pastel` from the [Extra](https://archlinux.org/packages/extra/x86_64/pastel/) repositories:
 ```
 sudo pacman -S pastel
 ```
