@@ -14,7 +14,7 @@ mod output;
 mod utility;
 
 use commands::Command;
-use config::Config;
+use config::{Config, Layout};
 use error::{PastelError, Result};
 
 use pastel::ansi::{self, Brush, Mode};
@@ -98,6 +98,9 @@ fn run() -> Result<ExitCode> {
         }
     };
 
+    let layout = std::env::var("PASTEL_LAYOUT").ok();
+    let layout = layout.as_ref().map(String::as_str);
+    let layout = global_matches.value_of("layout").or(layout);
     let config = Config {
         padding: 2,
         colorpicker_width: 48,
@@ -105,6 +108,18 @@ fn run() -> Result<ExitCode> {
         interactive_mode,
         brush: Brush::from_mode(color_mode),
         colorpicker: global_matches.value_of("color-picker"),
+        layout: match layout {
+            Some("detail") => Layout::Detail,
+            Some("vertical") | Some("v") | Some("|") => Layout::Vertical,
+            Some("horizontal") | Some("h") | Some("-") => Layout::Horizontal,
+            Some(wrong) => {
+                write_stderr(Color::red(), "pastel error", &format!("Unknown layout {wrong:?}"));
+                std::process::exit(1);
+            },
+            _ if global_matches.is_present("layout_horizontal") => Layout::Horizontal,
+            _ if global_matches.is_present("layout_vertical") => Layout::Vertical,
+            _ => Layout::Detail,
+        },
     };
 
     if let Some((subcommand, matches)) = global_matches.subcommand() {

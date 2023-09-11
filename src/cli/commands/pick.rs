@@ -22,7 +22,7 @@ impl GenericCommand for PickCommand {
 
         for color_str in color_strings {
             let color = ColorArgIterator::from_color_arg(config, &color_str, &mut print_spectrum)?;
-            out.show_color(config, &color)?;
+            out.push_color(color);
         }
 
         Ok(())

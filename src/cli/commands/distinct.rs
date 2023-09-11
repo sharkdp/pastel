@@ -180,8 +180,8 @@ impl GenericCommand for DistinctCommand {
                 print_distance_matrix(&mut stderr.lock(), brush_stderr, &colors, distance_metric)?;
             }
 
-            for color in colors {
-                out.show_color(config, &color)?;
+            for color in &colors {
+                out.push_color(color.clone());
             }
         }
 

@@ -8,4 +8,12 @@ pub struct Config<'p> {
     pub colorpicker: Option<&'p str>,
     pub interactive_mode: bool,
     pub brush: Brush,
+    pub layout: Layout,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Layout {
+    Detail,
+    Vertical,
+    Horizontal,
 }

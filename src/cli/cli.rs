@@ -506,6 +506,30 @@ pub fn build_cli() -> Command<'static> {
                 .ignore_case(true)
                 .help("Use a specific tool to pick the colors")
         )
+        .arg(
+            Arg::new("layout")
+                .long("layout")
+                .value_name("layout")
+                .max_occurrences(1)
+                .help("Controls how the colors are printed")
+                .possible_values(["detail", "vertical", "horizontal"])
+                .conflicts_with("layout_horizontal")
+                .conflicts_with("layout_vertical")
+        )
+        .arg(
+            Arg::new("layout_horizontal")
+                .short('h')
+                .help("Alias for --layout horizontal")
+                .conflicts_with("layout")
+                .conflicts_with("layout_vertical")
+        )
+        .arg(
+            Arg::new("layout_vertical")
+                .short('v')
+                .help("Alias for --layout vertical")
+                .conflicts_with("layout")
+                .conflicts_with("layout_horizontal")
+        )
 }
 
 #[test]
