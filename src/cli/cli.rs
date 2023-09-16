@@ -192,6 +192,7 @@ pub fn build_cli() -> Command<'static> {
                   - KColorChooser (https://kde.org/applications/graphics/org.kde.kcolorchooser)\n  \
                   - zenity (https://wiki.gnome.org/Projects/Zenity)\n  \
                   - yad (https://github.com/v1cont/yad)\n  \
+                  - hyprpicker (https://github.com/hyprwm/hyprpicker)\n  \
                   - macOS built-in color picker")
                 .arg(
                     Arg::new("count")

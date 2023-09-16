@@ -101,6 +101,13 @@ pub static COLOR_PICKER_TOOLS: Lazy<Vec<ColorPickerTool>> = Lazy::new(|| {
             version_output_starts_with: b"",
             post_process: None,
         },
+        ColorPickerTool {
+            command: "hyprpicker",
+            args: &[],
+            version_args: &["-h"],
+            version_output_starts_with: b"",
+            post_process: None,
+        },
         #[cfg(target_os = "linux")]
         ColorPickerTool {
             command: "gdbus",
