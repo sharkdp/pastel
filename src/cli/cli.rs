@@ -38,7 +38,7 @@ pub fn build_cli() -> Command<'static> {
         .short('s')
         .value_name("name")
         .help("The colorspace in which to interpolate")
-        .possible_values(&["Lab", "LCh", "RGB", "HSL"])
+        .possible_values(&["Lab", "LCh", "RGB", "HSL", "OkLab"])
         .ignore_case(true)
         .default_value("Lab");
 
@@ -216,6 +216,7 @@ pub fn build_cli() -> Command<'static> {
                                            "hsv", "hsv-hue", "hsv-saturation", "hsv-value",
                                            "lch", "lch-lightness", "lch-chroma", "lch-hue",
                                            "lab", "lab-a", "lab-b",
+                                           "oklab", "oklab-l", "oklab-a", "oklab-b",
                                            "luminance", "brightness",
                                            "ansi-8bit", "ansi-24bit",
                                            "ansi-8bit-escapecode", "ansi-24bit-escapecode",
@@ -356,6 +357,7 @@ pub fn build_cli() -> Command<'static> {
                         .help("The property that should be changed")
                         .possible_values(&["lightness", "hue", "chroma",
                                            "lab-a", "lab-b",
+                                           "oklab-l", "oklab-a", "oklab-b",
                                            "red", "green", "blue",
                                            "hsl-hue", "hsl-saturation", "hsl-lightness"])
                         .ignore_case(true)
