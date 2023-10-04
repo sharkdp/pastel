@@ -229,6 +229,23 @@ fn parse_lab(input: &str) -> IResult<&str, Color> {
     Ok((input, c))
 }
 
+fn parse_oklab(input: &str) -> IResult<&str, Color> {
+    let (input, _) = tag_no_case("oklab(")(input)?;
+    let (input, _) = space0(input)?;
+    let (input, l) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, a) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, b) = double(input)?;
+    let (input, alpha) = parse_alpha(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = char(')')(input)?;
+
+    let c = Color::from_oklab(l, a, b, alpha);
+
+    Ok((input, c))
+}
+
 fn parse_lch(input: &str) -> IResult<&str, Color> {
     let (input, _) = opt(tag_no_case("cie"))(input)?;
     let (input, _) = tag_no_case("lch(")(input)?;
@@ -271,6 +288,7 @@ pub fn parse_color(input: &str) -> Option<Color> {
         all_consuming(parse_hsv),
         all_consuming(parse_gray),
         all_consuming(parse_lab),
+        all_consuming(parse_oklab),
         all_consuming(parse_lch),
         all_consuming(parse_named),
     ))(input.trim())
@@ -548,6 +566,42 @@ fn parse_lab_syntax() {
     assert_eq!(
         Some(Color::from_lab(15.0, 23.0, -43.0, 1.0)),
         parse_color("CIELab(        15,  23,-43   )")
+    );
+}
+
+#[test]
+fn parse_oklab_syntax() {
+    assert_eq!(
+        Some(Color::from_oklab(12.43, -35.5, 43.4, 1.0)),
+        parse_color("okLab(12.43,-35.5,43.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklab(15.0, -23.0, 43.0, 0.5)),
+        parse_color("OKlab(15,-23,43,0.5)")
+    );
+    assert_eq!(
+        Some(Color::from_oklab(15.0, 23.0, -43.0, 1.0)),
+        parse_color("OkLab(15,23,-43)")
+    );
+    assert_eq!(
+        Some(Color::from_oklab(15.0, 35.5, -43.4, 1.0)),
+        parse_color("oKLab(15,35.5,-43.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklab(15.0, -35.5, -43.4, 0.4)),
+        parse_color("okLab(15,-35.5,-43.4,0.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklab(15.0, 23.0, -43.0, 1.0)),
+        parse_color("OKLab(        15,  23,-43   )")
+    );
+    assert_eq!(
+        Some(Color::from_oklab(15.0, -35.5, -43.4, 0.4)),
+        parse_color("OKLab(15,-35.5,-43.4,0.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklab(15.0, 23.0, -43.0, 1.0)),
+        parse_color("OkLab(        15,  23,-43   )")
     );
 }
 
