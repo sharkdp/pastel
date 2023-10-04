@@ -137,6 +137,14 @@ impl Color {
         Self::from(&Lab { l, a, b, alpha })
     }
 
+    /// Create a `Color` from L, a and b coordinates coordinates in the OkLab color
+    /// space. Note: See documentation for `from_xyz`. The same restrictions apply here.
+    ///
+    /// See: <https://bottosson.github.io/posts/oklab>
+    pub fn from_oklab(l: Scalar, a: Scalar, b: Scalar, alpha: Scalar) -> Color {
+        Self::from(&OkLab { l, a, b, alpha })
+    }
+
     /// Create a `Color` from lightness, chroma and hue coordinates in the CIE LCh color space.
     /// This is a cylindrical transform of the Lab color space. Note: See documentation for
     /// `from_xyz`. The same restrictions apply here.
@@ -366,6 +374,36 @@ impl Color {
             l = lab.l,
             a = lab.a,
             b = lab.b,
+            space = space,
+            alpha = if self.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::wrap(3, self.alpha),
+                    space = space
+                )
+            }
+        )
+    }
+
+    /// Get L, a and b coordinates according to the OkLab color space.
+    ///
+    /// See: <https://bottosson.github.io/posts/oklab>
+    pub fn to_oklab(&self) -> OkLab {
+        OkLab::from(self)
+    }
+
+    /// Format the color as an OkLab-representation string (`OkLab(0.4, 0.2, -0.1, 0.5)`).
+    /// If the alpha channel is `1.0`, it won't be included in the output.
+    pub fn to_oklab_string(&self, format: Format) -> String {
+        let oklab = OkLab::from(self);
+        let space = if format == Format::Spaces { " " } else { "" };
+        format!(
+            "OkLab({l:.4},{space}{a:.4},{space}{b:.4}{alpha})",
+            l = oklab.l,
+            a = oklab.a,
+            b = oklab.b,
             space = space,
             alpha = if self.alpha == 1.0 {
                 "".to_string()
@@ -882,6 +920,25 @@ impl From<&Lab> for Color {
     }
 }
 
+impl From<&OkLab> for Color {
+    fn from(color: &OkLab) -> Self {
+        let l = (1.0 * color.l + 0.39633779 * color.a + 0.21580376 * color.b).powi(3);
+        let m = (1.00000001 * color.l + -0.10556134 * color.a + -0.06385417 * color.b).powi(3);
+        let s = (1.00000005 * color.l + -0.08948418 * color.a + -1.29148554 * color.b).powi(3);
+
+        let x = 1.22701385 * l + -0.55779998 * m + 0.28125615 * s;
+        let y = -0.04058018 * l + 1.11225687 * m + -0.07167668 * s;
+        let z = -0.07638128 * l + -0.42148198 * m + 1.58616322 * s;
+
+        Self::from(&XYZ {
+            x,
+            y,
+            z,
+            alpha: color.alpha,
+        })
+    }
+}
+
 impl From<&LCh> for Color {
     fn from(color: &LCh) -> Self {
         #![allow(clippy::many_single_char_names)]
@@ -1238,6 +1295,73 @@ impl From<&Color> for Lab {
 impl fmt::Display for Lab {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Lab({l}, {a}, {b})", l = self.l, a = self.a, b = self.b,)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct OkLab {
+    pub l: Scalar,
+    pub a: Scalar,
+    pub b: Scalar,
+    pub alpha: Scalar,
+}
+
+impl ColorSpace for OkLab {
+    fn from_color(c: &Color) -> Self {
+        c.to_oklab()
+    }
+
+    fn into_color(self) -> Color {
+        Color::from_oklab(self.l, self.a, self.b, self.alpha)
+    }
+
+    fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        Self {
+            l: interpolate(self.l, other.l, fraction),
+            a: interpolate(self.a, other.a, fraction),
+            b: interpolate(self.b, other.b, fraction),
+            alpha: interpolate(self.alpha, other.alpha, fraction),
+        }
+    }
+}
+
+impl From<&Color> for OkLab {
+    fn from(value: &Color) -> Self {
+        let rec = XYZ::from(value);
+
+        // https://bottosson.github.io/posts/oklab/?#converting-from-xyz-to-oklab
+
+        // multiply with M1 and apply non-linearity
+        let long =
+            (0.8189330101 * rec.x + 0.3618667424 * rec.y + -0.1288597137 * rec.z).powf(1. / 3.);
+        let medium =
+            (0.0329845436 * rec.x + 0.9293118715 * rec.y + 0.0361456387 * rec.z).powf(1. / 3.);
+        let short =
+            (0.0482003018 * rec.x + 0.2643662691 * rec.y + 0.6338517070 * rec.z).powf(1. / 3.);
+
+        // multiply with M2
+        let l = 0.2104542553 * long + 0.7936177850 * medium + -0.0040720468 * short;
+        let a = 1.9779984951 * long + -2.4285922050 * medium + 0.4505937099 * short;
+        let b = 0.0259040371 * long + 0.7827717662 * medium + -0.8086757660 * short;
+
+        Self {
+            l,
+            a,
+            b,
+            alpha: rec.alpha,
+        }
+    }
+}
+
+impl fmt::Display for OkLab {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "OkLab({l}, {a}, {b})",
+            l = self.l,
+            a = self.a,
+            b = self.b,
+        )
     }
 }
 
@@ -1630,6 +1754,25 @@ mod tests {
     }
 
     #[test]
+    fn oklab_conversion() {
+        assert_eq!(
+            Color::green(),
+            Color::from_oklab(0.51976, -0.14032, 0.10763, 1.0)
+        );
+
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let oklab1 = color1.to_oklab();
+            let color2 = Color::from_oklab(oklab1.l, oklab1.a, oklab1.b, 1.0);
+            assert_almost_equal(&color1, &color2);
+        };
+
+        for hue in 0..360 {
+            roundtrip(Scalar::from(hue), 0.2, 0.8);
+        }
+    }
+
+    #[test]
     fn lch_conversion() {
         assert_eq!(
             Color::from_hsl(0.0, 1.0, 0.245),
@@ -1773,6 +1916,15 @@ mod tests {
     fn to_lab_string() {
         let c = Color::from_lab(41.0, 83.0, -93.0, 1.0);
         assert_eq!("Lab(41, 83, -93)", c.to_lab_string(Format::Spaces));
+    }
+
+    #[test]
+    fn to_oklab_string() {
+        let c = Color::from_oklab(0.520, -0.140, 0.108, 1.0);
+        assert_eq!(
+            "OkLab(0.5201, -0.1398, 0.1077)",
+            c.to_oklab_string(Format::Spaces)
+        );
     }
 
     #[test]
