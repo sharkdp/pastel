@@ -136,6 +136,22 @@ color_command!(SetCommand, config, matches, color, {
             }
             Color::from_hsla(hsla.h, hsla.s, hsla.l, hsla.alpha)
         }
+        "oklab-l" | "oklab-a" | "oklab-b" => {
+            let mut oklab = color.to_oklab();
+            match property {
+                "oklab-l" => {
+                    oklab.l = value;
+                }
+                "oklab-a" => {
+                    oklab.a = value;
+                }
+                "oklab-b" => {
+                    oklab.b = value;
+                }
+                _ => unreachable!(),
+            }
+            Color::from_oklab(oklab.l, oklab.a, oklab.b, oklab.alpha)
+        }
         "lightness" | "lab-a" | "lab-b" => {
             let mut lab = color.to_lab();
             match property {
