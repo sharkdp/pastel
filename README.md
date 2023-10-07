@@ -155,6 +155,13 @@ You can install `pastel` via [Scoop](https://github.com/ScoopInstaller/Main/blob
 scoop install pastel
 ```
 
+#### With Winget
+
+You can install `pastel` via [Winget](https://learn.microsoft.com/en-us/windows/package-manager/):
+```bash
+winget install sharkdp.pastel
+```
+
 ### Via snap package
 
 [Get it from the Snap Store](https://snapcraft.io/pastel):
