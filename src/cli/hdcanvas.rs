@@ -85,11 +85,20 @@ impl Canvas {
                     let p_bottom = self.pixel(2 * i_div_2 + 1, j);
 
                     match (p_top, p_bottom) {
-                        (Some(top), Some(bottom)) => write!(
-                            out,
-                            "{}",
-                            self.brush.paint("▀", top.ansi_style().on(bottom))
-                        )?,
+                        (Some(top), Some(bottom)) =>
+                            if top == bottom {
+                                write!(
+                                    out,
+                                    "{}",
+                                    self.brush.paint(" ", top.ansi_style().on(bottom))
+                                )?
+                            } else {
+                                write!(
+                                    out,
+                                    "{}",
+                                    self.brush.paint("▀", top.ansi_style().on(bottom))
+                                )?
+                            },
                         (Some(top), None) => write!(out, "{}", self.brush.paint("▀", top))?,
                         (None, Some(bottom)) => write!(out, "{}", self.brush.paint("▄", bottom))?,
                         (None, None) => write!(out, " ")?,
