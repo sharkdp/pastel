@@ -15,7 +15,7 @@ exclude = ["doc/pastel.gif"]
 [dependencies]
 # library dependencies
 atty = "0.2"
-nom = "7.0.0"
+nom = "7.1.3"
 once_cell = "1.18.0"
 output_vt100 = "0.1"
 rand = "0.8"
