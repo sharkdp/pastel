@@ -147,6 +147,24 @@ fn parse_numeric_rgb(input: &str) -> IResult<&str, Color> {
     Ok((input, c))
 }
 
+fn parse_cmyk(input: &str) -> IResult<&str, Color> {
+    let (input, _) = tag("cmyk(")(input)?;
+    let (input, _) = space0(input)?;
+    let (input, c) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, m) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, y) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, k) = double(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = char(')')(input)?;
+
+    let color = Color::from_cmyk(c, m, y, k);
+
+    Ok((input, color))
+}
+
 fn parse_percentage_rgb(input: &str) -> IResult<&str, Color> {
     let (input, prefixed) = opt(alt((tag("rgb("), tag("rgba("))))(input)?;
     let is_prefixed = prefixed.is_some();
@@ -284,6 +302,7 @@ pub fn parse_color(input: &str) -> Option<Color> {
         all_consuming(parse_hex),
         all_consuming(parse_numeric_rgb),
         all_consuming(parse_percentage_rgb),
+        all_consuming(parse_cmyk),
         all_consuming(parse_hsl),
         all_consuming(parse_hsv),
         all_consuming(parse_gray),
@@ -378,6 +397,16 @@ fn parse_rgb_standalone_syntax() {
     assert_eq!(rgb(255, 0, 153), parse_color("255 0 153.0").unwrap());
 
     assert_eq!(Some(rgb(1, 2, 3)), parse_color("1,2,3"));
+}
+
+#[test]
+fn parse_cmyk_syntax() {
+    assert_eq!(Some(Color::black()), parse_color("cmyk(0, 0, 0, 100)"));
+    assert_eq!(Some(Color::white()), parse_color("cmyk(0, 0, 0, 0)"));
+    assert_eq!(Some(Color::red()), parse_color("cmyk(0, 100, 100, 0)"));
+    assert_eq!(Some(Color::green()), parse_color("cmyk(100, 0, 100, 50)"));
+    assert_eq!(Some(Color::blue()), parse_color("cmyk(100, 100,0,0)"));
+    assert_eq!(Some(Color::yellow()), parse_color("cmyk(  0,0, 100,   0)"));
 }
 
 #[test]

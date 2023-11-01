@@ -960,11 +960,11 @@ impl From<&LCh> for Color {
 impl From<&CMYK> for Color {
     fn from(color: &CMYK) -> Self {
         #![allow(clippy::many_single_char_names)]
-        let r = 255.0 * ((1.0 - color.c) / 100.0) * ((1.0 - color.k) / 100.0);
-        let g = 255.0 * ((1.0 - color.m) / 100.0) * ((1.0 - color.k) / 100.0);
-        let b = 255.0 * ((1.0 - color.y) / 100.0) * ((1.0 - color.k) / 100.0);
+        let r = Scalar::round(255.0 * (1.0 - color.c / 100.0) * (1.0 - color.k / 100.0)) as u8;
+        let g = Scalar::round(255.0 * (1.0 - color.m / 100.0) * (1.0 - color.k / 100.0)) as u8;
+        let b = Scalar::round(255.0 * (1.0 - color.y / 100.0) * (1.0 - color.k / 100.0)) as u8;
 
-        Color::from(&RGBA::<f64> {
+        Color::from(&RGBA::<u8> {
             r,
             g,
             b,
@@ -1429,13 +1429,7 @@ impl From<&Color> for CMYK {
         let r = (rgba.r as f64) / 255.0;
         let g = (rgba.g as f64) / 255.0;
         let b = (rgba.b as f64) / 255.0;
-        let biggest = if r >= g && r >= b {
-            r
-        } else if g >= r && g >= b {
-            g
-        } else {
-            b
-        };
+        let biggest = r.max(g).max(b);
         let out_k = 1.0 - biggest;
         let out_c = (1.0 - r - out_k) / biggest;
         let out_m = (1.0 - g - out_k) / biggest;
