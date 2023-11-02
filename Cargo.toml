@@ -11,6 +11,7 @@ version = "0.9.0"
 edition = "2021"
 build = "build.rs"
 exclude = ["doc/pastel.gif"]
+rust-version = "1.70.0"
 
 [dependencies]
 # library dependencies
@@ -47,3 +48,8 @@ criterion = "0.4"
 [[bench]]
 name = "parse_color"
 harness = false
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
