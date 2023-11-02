@@ -68,8 +68,9 @@ fn run() -> Result<ExitCode> {
         Some(ansi::Mode::TrueColor)
     } else {
         match global_matches
-            .value_of("color-mode")
+            .get_one::<String>("color-mode")
             .expect("required argument")
+            .as_str()
         {
             "24bit" => Some(ansi::Mode::TrueColor),
             "8bit" => Some(ansi::Mode::Ansi8Bit),
@@ -104,7 +105,7 @@ fn run() -> Result<ExitCode> {
         colorcheck_width: 8,
         interactive_mode,
         brush: Brush::from_mode(color_mode),
-        colorpicker: global_matches.value_of("color-picker"),
+        colorpicker: global_matches.get_one("color-picker"),
     };
 
     if let Some((subcommand, matches)) = global_matches.subcommand() {

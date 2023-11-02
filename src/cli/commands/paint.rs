@@ -11,7 +11,7 @@ pub struct PaintCommand;
 
 impl GenericCommand for PaintCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let fg = matches.value_of("color").expect("required argument");
+        let fg = matches.get_one("color").expect("required argument");
         let fg = if fg.trim() == "default" {
             None
         } else {
@@ -23,7 +23,7 @@ impl GenericCommand for PaintCommand {
             )?)
         };
 
-        let bg = if let Some(bg) = matches.value_of("on") {
+        let bg = if let Some(bg) = matches.get_one("on") {
             Some(parse_color(bg).ok_or_else(|| PastelError::ColorParseError(bg.into()))?)
         } else {
             None
