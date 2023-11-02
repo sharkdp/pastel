@@ -75,6 +75,13 @@ impl Canvas {
         }
     }
 
+    // The kitty terminal has a feature text_fg_override_threshold that
+    // checks the difference in luminosity between text and background and
+    // changes the text to black or white to make it readable if the
+    // luminosity difference percentage is below the specified threshold.
+    // Using block characters for graphics display can trigger this, causing
+    // black or white lines or blocks, if the color is the same or too close.
+    // The checkerboard should be ok unless the theshold is set fairly high.
     pub fn print(&self, out: &mut dyn Write) -> Result<()> {
         for i_div_2 in 0..self.height / 2 {
             for j in 0..self.width {
