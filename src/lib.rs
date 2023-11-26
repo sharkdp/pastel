@@ -340,6 +340,16 @@ impl Color {
         u32::from(rgba.r).wrapping_shl(16) + u32::from(rgba.g).wrapping_shl(8) + u32::from(rgba.b)
     }
 
+    /// Parse the RGBA representation (`0xRRGGBBAA`) of an u32 into a Color.
+    pub fn from_u32(n: u32) -> Color {
+        let a = n >> 24;
+        let r = (n >> 16) & 0xff;
+        let g = (n >> 8) & 0xff;
+        let b = n & 0xff;
+
+        Color::from_rgba(r as u8, g as u8, b as u8, a as f64)
+    }
+
     /// Get XYZ coordinates according to the CIE 1931 color space.
     ///
     /// See:
