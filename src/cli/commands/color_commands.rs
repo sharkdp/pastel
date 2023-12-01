@@ -67,19 +67,27 @@ color_command!(MixCommand, config, matches, color, {
 
     let base = ColorArgIterator::from_color_arg(
         config,
-        matches.value_of("base").expect("required argument"),
+        matches
+            .get_one::<String>("base")
+            .expect("required argument"),
         &mut print_spectrum,
     )?;
     let fraction = Fraction::from(1.0 - number_arg(matches, "fraction")?);
 
-    let mix = get_mixing_function(matches.value_of("colorspace").expect("required argument"));
+    let mix = get_mixing_function(
+        matches
+            .get_one::<String>("colorspace")
+            .expect("required argument"),
+    );
 
     mix(&base, color, fraction)
 });
 
 color_command!(ColorblindCommand, config, matches, color, {
     // The type of colorblindness selected (protanopia, deuteranopia, tritanopia)
-    let cb_ty = matches.value_of("type").expect("required argument");
+    let cb_ty = matches
+        .get_one::<String>("type")
+        .expect("required argument");
     let cb_ty = cb_ty.to_lowercase();
 
     // Convert the string to the corresponding enum variant
@@ -96,7 +104,9 @@ color_command!(ColorblindCommand, config, matches, color, {
 });
 
 color_command!(SetCommand, config, matches, color, {
-    let property = matches.value_of("property").expect("required argument");
+    let property = matches
+        .get_one::<String>("property")
+        .expect("required argument");
     let property = property.to_lowercase();
     let property = property.as_ref();
 
