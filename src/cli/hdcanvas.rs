@@ -81,7 +81,7 @@ impl Canvas {
     // luminosity difference percentage is below the specified threshold.
     // Using block characters for graphics display can trigger this, causing
     // black or white lines or blocks, if the color is the same or too close.
-    // The checkerboard should be ok unless the theshold is set fairly high.
+    // The checkerboard should be ok unless the threshold is set fairly high.
     pub fn print(&self, out: &mut dyn Write) -> Result<()> {
         for i_div_2 in 0..self.height / 2 {
             for j in 0..self.width {
