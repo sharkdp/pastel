@@ -24,7 +24,8 @@ pub fn build_cli() -> Command<'static> {
              \n  - 789\
              \n  - 'rgb(119, 136, 153)'\
              \n  - '119,136,153'\
-             \n  - 'hsl(210, 14.3%, 53.3%)'\n\
+             \n  - 'hsl(210, 14.3%, 53.3%)'\
+             \n  - 'cmyk(22, 11, 0, 40)'\n\
              Alpha transparency is also supported:\
              \n  - '#77889980'\
              \n  - 'rgba(119, 136, 153, 0.5)'\
