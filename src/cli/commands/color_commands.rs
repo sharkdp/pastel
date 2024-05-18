@@ -20,8 +20,8 @@ macro_rules! color_command {
                 $config: &Config,
                 $color: &Color,
             ) -> Result<()> {
-                let output = $body;
-                out.show_color($config, &output)
+                out.push_color($body);
+                Ok(())
             }
         }
     };
@@ -77,7 +77,7 @@ color_command!(MixCommand, config, matches, color, {
     mix(&base, color, fraction)
 });
 
-color_command!(ColorblindCommand, config, matches, color, {
+color_command!(ColorblindCommand, _config, matches, color, {
     // The type of colorblindness selected (protanopia, deuteranopia, tritanopia)
     let cb_ty = matches.value_of("type").expect("required argument");
     let cb_ty = cb_ty.to_lowercase();
@@ -95,7 +95,7 @@ color_command!(ColorblindCommand, config, matches, color, {
     color.simulate_colorblindness(cb_ty)
 });
 
-color_command!(SetCommand, config, matches, color, {
+color_command!(SetCommand, _config, matches, color, {
     let property = matches.value_of("property").expect("required argument");
     let property = property.to_lowercase();
     let property = property.as_ref();
