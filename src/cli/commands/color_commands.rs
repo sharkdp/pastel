@@ -181,6 +181,11 @@ color_command!(SetCommand, config, matches, color, {
             }
             Color::from_lch(lch.l, lch.c, lch.h, lch.alpha)
         }
+        "alpha" => {
+            let mut hsla = color.to_hsla();
+            hsla.alpha = value;
+            Color::from_hsla(hsla.h, hsla.s, hsla.l, hsla.alpha)
+        }
         &_ => {
             unreachable!("Unknown property");
         }
