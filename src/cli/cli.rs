@@ -359,7 +359,8 @@ pub fn build_cli() -> Command<'static> {
                                            "lab-a", "lab-b",
                                            "oklab-l", "oklab-a", "oklab-b",
                                            "red", "green", "blue",
-                                           "hsl-hue", "hsl-saturation", "hsl-lightness"])
+                                           "hsl-hue", "hsl-saturation", "hsl-lightness",
+                                           "alpha"])
                         .ignore_case(true)
                         .required(true),
                 )
