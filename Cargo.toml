@@ -53,3 +53,6 @@ harness = false
 lto = true
 strip = true
 codegen-units = 1
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(pastel_normal_build)'] }
