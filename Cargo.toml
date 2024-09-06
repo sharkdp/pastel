@@ -7,11 +7,11 @@ license = "MIT/Apache-2.0"
 name = "pastel"
 readme = "README.md"
 repository = "https://github.com/sharkdp/pastel"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 build = "build.rs"
 exclude = ["doc/pastel.gif"]
-rust-version = "1.70.0"
+rust-version = "1.74.0"
 
 [dependencies]
 # library dependencies
