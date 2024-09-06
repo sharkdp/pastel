@@ -2,20 +2,40 @@
 
 ## Features
 
+## Bugfixes
+
+## Changes
+
+## Other
+
+## Packaging
+
+
+# v0.10.0
+
+## Features
+
+- Added alpha property to set command, see #218 (@kanielrkirby)
+- Add support for HSV, see #169 (@jameshurst)
 - Added support for parsing LCh colors, see #2 and #167 (@MForster)
+- Added hyprpicker as --color-picker, see #186 (@mrusme)
+- Implement Color::from_u32 for the rgba, see #202 (@irevoire)
 
 ## Bugfixes
 
 - `pastel pick` does not display all colors in some terminals, see #121 and #168 (@Divoolej)
+- Fix lines in kitty terminal with text_fg_override_threshold set, see #197 (@joveian)
 
 ## Changes
 
+- Use PASTEL_COLOR_MODE in ansi::Brush::from_environment, see #168 (@Divoolej)
+- Unhide colorcheck command, see #182 (@CheshireSwift)
 
 ## Other
 
-
-## Packaging
-
+- Optimization for eliminating redundant memory operations, see #165 (@yyzdtccjdtc)
+- Add colour as an alias for the colour command, see #173 (@BuyMyMojo)
+- Suggest to use pastel pick --help instead of -h, see #181 (@sharkdp)
 
 
 ## v0.9.0
