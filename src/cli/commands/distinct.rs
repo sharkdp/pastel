@@ -71,7 +71,7 @@ fn print_distance_matrix(
         DistanceMetric::CIEDE2000 => c1.distance_delta_e_ciede2000(c2),
     };
 
-    let mut min = std::f64::MAX;
+    let mut min = f64::MAX;
     let mut max = 0.0;
     for i in 0..count {
         for j in 0..count {
