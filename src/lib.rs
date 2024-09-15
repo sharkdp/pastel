@@ -47,7 +47,6 @@ impl Color {
         })
     }
 
-    ///
     pub fn from_hsl(hue: Scalar, saturation: Scalar, lightness: Scalar) -> Color {
         Self::from(&HSLA {
             h: hue,
@@ -1978,7 +1977,10 @@ mod tests {
             .add_stop(Color::gray(), Fraction::from(0.0))
             .add_stop(Color::blue(), Fraction::from(1.0));
 
-        assert_eq!(color_scale.color_stops.get(0).unwrap().color, Color::gray());
+        assert_eq!(
+            color_scale.color_stops.first().unwrap().color,
+            Color::gray()
+        );
         assert_eq!(color_scale.color_stops.get(1).unwrap().color, Color::red());
         assert_eq!(color_scale.color_stops.get(2).unwrap().color, Color::blue());
     }

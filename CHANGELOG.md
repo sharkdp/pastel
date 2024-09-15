@@ -8,6 +8,8 @@
 
 ## Other
 
+- Minor optimizations and cleanup
+
 ## Packaging
 
 

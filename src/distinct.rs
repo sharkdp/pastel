@@ -1,5 +1,3 @@
-use core::f64 as scalar;
-
 use rand::prelude::*;
 
 use crate::delta_e;
@@ -217,18 +215,18 @@ impl<R: Rng> SimulatedAnnealing<R> {
 /// the sequence).
 ///
 /// See: <https://en.wikipedia.org/wiki/Farthest-first_traversal>
-pub fn rearrange_sequence(colors: &mut Vec<Color>, metric: DistanceMetric) {
+pub fn rearrange_sequence(colors: &mut [Color], metric: DistanceMetric) {
     let distance = |c1: &Color, c2: &Color| match metric {
         DistanceMetric::CIE76 => c1.distance_delta_e_cie76(c2),
         DistanceMetric::CIEDE2000 => c1.distance_delta_e_ciede2000(c2),
     };
 
     // vector where the i-th element contains the minimum distance to the colors from 0 to i-1.
-    let mut min_distances = vec![i32::max_value(); colors.len()];
+    let mut min_distances = vec![i32::MAX; colors.len()];
 
     for i in 1..colors.len() {
         let mut max_i = colors.len();
-        let mut max_d = i32::min_value();
+        let mut max_d = i32::MIN;
 
         for j in i..colors.len() {
             min_distances[j] =
@@ -290,10 +288,10 @@ pub fn distinct_colors(
 impl DistanceResult {
     fn new(lab_values: &[Lab], distance_metric: DistanceMetric, num_fixed_colors: usize) -> Self {
         let mut result = DistanceResult {
-            closest_distances: vec![(scalar::MAX, std::usize::MAX); lab_values.len()],
-            closest_pair: (std::usize::MAX, std::usize::MAX),
+            closest_distances: vec![(Scalar::MAX, usize::MAX); lab_values.len()],
+            closest_pair: (usize::MAX, usize::MAX),
             mean_closest_distance: 0.0,
-            min_closest_distance: scalar::MAX,
+            min_closest_distance: Scalar::MAX,
             distance_metric,
             num_fixed_colors,
         };
@@ -314,7 +312,7 @@ impl DistanceResult {
     }
 
     fn update_distances(&mut self, lab_values: &[Lab], color: usize, changed: bool) {
-        self.closest_distances[color] = (scalar::MAX, std::usize::MAX);
+        self.closest_distances[color] = (Scalar::MAX, usize::MAX);
 
         // we need to recalculate distances for nodes where the previous min dist was with
         // changed_color but it's not anymore (potentially).
@@ -349,7 +347,7 @@ impl DistanceResult {
 
     fn update_totals(&mut self) {
         self.mean_closest_distance = 0.0;
-        self.min_closest_distance = scalar::MAX;
+        self.min_closest_distance = Scalar::MAX;
 
         let mut closest_pair_set = false;
 
