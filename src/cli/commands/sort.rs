@@ -29,7 +29,7 @@ impl GenericCommand for SortCommand {
             colors.dedup_by_key(|c| c.to_u32());
         }
 
-        colors.sort_by_key(|c| key_function(sort_order, c));
+        colors.sort_by_cached_key(|c| key_function(sort_order, c));
 
         if matches.is_present("reverse") {
             colors.reverse();
