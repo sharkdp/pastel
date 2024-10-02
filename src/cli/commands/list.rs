@@ -10,7 +10,10 @@ impl GenericCommand for ListCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let sort_order = matches.value_of("sort-order").expect("required argument");
 
-        let mut colors: Vec<&NamedColor> = NAMED_COLORS.iter().collect();
+        let mut colors: Vec<&NamedColor> = NAMED_COLORS
+            .iter()
+            .filter(|nc| nc.kind.match_names(&config.color_names))
+            .collect();
         colors.sort_by_key(|nc| key_function(sort_order, &nc.color));
         colors.dedup_by(|n1, n2| n1.color == n2.color);
 
