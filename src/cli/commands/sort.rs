@@ -36,7 +36,7 @@ impl GenericCommand for SortCommand {
         }
 
         for color in colors {
-            out.show_color(config, &color)?;
+            out.push_color(color);
         }
 
         Ok(())

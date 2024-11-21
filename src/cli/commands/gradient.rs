@@ -42,10 +42,8 @@ impl GenericCommand for GradientCommand {
             let position = Fraction::from(i as f64 / (count as f64 - 1.0));
 
             let color = color_scale.sample(position, &mix).expect("gradient color");
-
-            out.show_color(config, &color)?;
+            out.push_color(color);
         }
-
         Ok(())
     }
 }
