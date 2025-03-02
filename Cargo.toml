@@ -11,7 +11,7 @@ version = "0.10.0"
 edition = "2021"
 build = "build.rs"
 exclude = ["doc/pastel.gif"]
-rust-version = "1.74.0"
+rust-version = "1.83.0"
 
 [dependencies]
 # library dependencies
@@ -19,7 +19,7 @@ atty = "0.2"
 nom = "7.1.3"
 once_cell = "1.20.2"
 output_vt100 = "0.1"
-rand = "0.8"
+rand = "0.9"
 
 # binary-only dependencies (see https://github.com/rust-lang/cargo/issues/1982)
 regex = "1.11"
@@ -42,7 +42,7 @@ path = "src/cli/main.rs"
 [dev-dependencies]
 approx = "0.5.0"
 assert_cmd = "2.0.13"
-rand_xoshiro = "0.6.0"
+rand_xoshiro = "0.7.0"
 criterion = "0.5"
 
 [[bench]]

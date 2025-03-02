@@ -1,4 +1,4 @@
-use rand::prelude::*;
+use rand::{prelude::*, rng};
 
 use crate::delta_e;
 use crate::random::{self, RandomizationStrategy};
@@ -72,7 +72,7 @@ pub struct SimulatedAnnealing<R: Rng> {
 
 impl SimulatedAnnealing<ThreadRng> {
     pub fn new(initial_colors: &[Color], parameters: SimulationParameters) -> Self {
-        Self::with_rng(initial_colors, parameters, thread_rng())
+        Self::with_rng(initial_colors, parameters, rng())
     }
 }
 
@@ -96,10 +96,10 @@ impl<R: Rng> SimulatedAnnealing<R> {
     }
 
     fn modify_channel(&mut self, c: &mut u8) {
-        if self.rng.gen::<bool>() {
-            *c = c.saturating_add(self.rng.gen::<u8>() % 10);
+        if self.rng.random::<bool>() {
+            *c = c.saturating_add(self.rng.random::<u8>() % 10);
         } else {
-            *c = c.saturating_sub(self.rng.gen::<u8>() % 10);
+            *c = c.saturating_sub(self.rng.random::<u8>() % 10);
         }
     }
 
@@ -137,7 +137,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
         for iter in 0..self.parameters.num_iterations {
             let random_index = if self.parameters.opt_target == OptimizationTarget::Mean {
                 self.rng
-                    .gen_range(self.parameters.num_fixed_colors..self.colors.len())
+                    .random_range(self.parameters.num_fixed_colors..self.colors.len())
             } else {
                 // first check if any of the colors cannot change, if that's the case just return
                 // the other color. Note that the closest_pair cannot contain only fixed colors.
@@ -146,7 +146,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
                     result.closest_pair.1
                 } else if result.closest_pair.1 < self.parameters.num_fixed_colors {
                     result.closest_pair.0
-                } else if self.rng.gen() {
+                } else if self.rng.random() {
                     result.closest_pair.0
                 } else {
                     result.closest_pair.1
@@ -182,7 +182,7 @@ impl<R: Rng> SimulatedAnnealing<R> {
                 self.lab_values = new_lab_values;
             } else {
                 let bolzmann = Scalar::exp(-(score - new_score) / self.temperature);
-                if self.rng.gen::<Scalar>() <= bolzmann {
+                if self.rng.random::<Scalar>() <= bolzmann {
                     result = new_result;
                     self.colors[random_index] = new_colors;
                     self.lab_values = new_lab_values;
@@ -391,8 +391,7 @@ mod tests {
     };
     use crate::Color;
 
-    use rand::prelude::*;
-    use rand_xoshiro::Xoshiro256StarStar;
+    use rand_xoshiro::{rand_core::SeedableRng, Xoshiro256StarStar};
 
     #[test]
     fn test_rearrange_sequence() {
