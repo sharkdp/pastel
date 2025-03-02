@@ -59,7 +59,7 @@ pub fn print_colorspectrum(config: &Config) -> Result<()> {
 pub fn run_external_colorpicker(picker: Option<&str>) -> Result<String> {
     for tool in COLOR_PICKER_TOOLS
         .iter()
-        .filter(|t| picker.map_or(true, |p| t.command.eq_ignore_ascii_case(p)))
+        .filter(|t| picker.is_none_or(|p| t.command.eq_ignore_ascii_case(p)))
     {
         let result = Command::new(tool.command).args(tool.version_args).output();
 
