@@ -85,7 +85,7 @@ impl<'a> ColorArgIterator<'a> {
     }
 }
 
-impl<'a> Iterator for ColorArgIterator<'a> {
+impl Iterator for ColorArgIterator<'_> {
     type Item = Result<Color>;
 
     fn next(&mut self) -> Option<Self::Item> {

@@ -1,6 +1,7 @@
 use pastel::Color;
 use pastel::{Fraction, LCh, Lab, OkLab, HSLA, RGBA};
 
+#[allow(clippy::type_complexity)]
 pub fn get_mixing_function(
     colorspace_name: &str,
 ) -> Box<dyn Fn(&Color, &Color, Fraction) -> Color> {
