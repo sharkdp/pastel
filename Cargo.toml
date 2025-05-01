@@ -41,7 +41,7 @@ path = "src/cli/main.rs"
 
 [dev-dependencies]
 approx = "0.5.0"
-assert_cmd = "2.0.13"
+assert_cmd = "2.0.17"
 rand_xoshiro = "0.7.0"
 criterion = "0.5"
 
