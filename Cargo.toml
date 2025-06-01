@@ -30,7 +30,7 @@ features = ["suggestions", "color", "wrap_help", "cargo"]
 
 [build-dependencies]
 clap = { version = "3", features = ["cargo"] }
-clap_complete = "3"
+clap_complete = "4"
 once_cell = "1.20.2"
 output_vt100 = "0.1"
 
