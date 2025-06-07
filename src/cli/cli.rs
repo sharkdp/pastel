@@ -219,6 +219,7 @@ pub fn build_cli() -> Command<'static> {
                                            "oklab", "oklab-l", "oklab-a", "oklab-b",
                                            "luminance", "brightness",
                                            "ansi-8bit", "ansi-24bit",
+                                           "ansi-8bit-value",
                                            "ansi-8bit-escapecode", "ansi-24bit-escapecode",
                                            "cmyk", "name"])
                         .ignore_case(true)
