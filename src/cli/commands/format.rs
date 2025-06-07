@@ -49,6 +49,7 @@ impl ColorCommand for FormatCommand {
             "brightness" => format!("{:.3}", color.brightness()),
             "ansi-8bit" => replace_escape(&color.to_ansi_sequence(Mode::Ansi8Bit)),
             "ansi-24bit" => replace_escape(&color.to_ansi_sequence(Mode::TrueColor)),
+            "ansi-8bit-value" => color.to_ansi_8bit().to_string() + "\n",
             "ansi-8bit-escapecode" => color.to_ansi_sequence(Mode::Ansi8Bit),
             "ansi-24bit-escapecode" => color.to_ansi_sequence(Mode::TrueColor),
             "cmyk" => color.to_cmyk_string(Format::Spaces),
@@ -60,7 +61,7 @@ impl ColorCommand for FormatCommand {
 
         let write_colored_line = !matches!(
             format_type.as_ref(),
-            "ansi-8bit-escapecode" | "ansi-24bit-escapecode"
+            "ansi-8bit-escapecode" | "ansi-24bit-escapecode" | "ansi-8bit-value"
         );
 
         if write_colored_line {
