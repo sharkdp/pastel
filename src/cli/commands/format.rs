@@ -21,6 +21,9 @@ impl ColorCommand for FormatCommand {
 
         let output = match format_type.as_ref() {
             "rgb" => color.to_rgb_string(Format::Spaces),
+            "rgb-r" => format!("{:.0}", color.to_rgba().r),
+            "rgb-g" => format!("{:.0}", color.to_rgba().g),
+            "rgb-b" => format!("{:.0}", color.to_rgba().b),
             "rgb-float" => color.to_rgb_float_string(Format::Spaces),
             "hex" => color.to_rgb_hex_string(true),
             "hsl" => color.to_hsl_string(Format::Spaces),

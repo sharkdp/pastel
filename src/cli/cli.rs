@@ -211,7 +211,7 @@ pub fn build_cli() -> Command<'static> {
                         .help("Output format type. Note that the 'ansi-*-escapecode' formats print \
                                ansi escape sequences to the terminal that will not be visible \
                                unless something else is printed in addition.")
-                        .possible_values(["rgb", "rgb-float", "hex",
+                        .possible_values(["rgb", "rgb-r", "rgb-g", "rgb-b", "rgb-float", "hex",
                                            "hsl", "hsl-hue", "hsl-saturation", "hsl-lightness",
                                            "hsv", "hsv-hue", "hsv-saturation", "hsv-value",
                                            "lch", "lch-lightness", "lch-chroma", "lch-hue",
