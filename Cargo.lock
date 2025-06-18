@@ -285,6 +285,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7914353092ddf589ad78f25c5c1c21b7f80b0ff8621e7c814c3485b5306da9d"
 
 [[package]]
+name = "empfindung"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8af095ec32b4a626b56a2e188515e4e5480d82b02e5d8a830fdb61934226b0df"
+
+[[package]]
 name = "errno"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -486,6 +492,7 @@ dependencies = [
  "clap 3.2.25",
  "clap_complete",
  "criterion",
+ "empfindung",
  "nom",
  "once_cell",
  "output_vt100",

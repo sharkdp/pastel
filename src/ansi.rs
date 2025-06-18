@@ -3,7 +3,6 @@ use std::borrow::Borrow;
 pub use atty::Stream;
 use once_cell::sync::Lazy;
 
-use crate::delta_e::ciede2000;
 use crate::{Color, Lab};
 
 static ANSI_LAB_REPRESENTATIONS: Lazy<Vec<(u8, Lab)>> = Lazy::new(|| {
@@ -101,7 +100,7 @@ impl AnsiColor for Color {
         let self_lab = self.to_lab();
         ANSI_LAB_REPRESENTATIONS
             .iter()
-            .min_by_key(|(_, lab)| ciede2000(&self_lab, lab) as i32)
+            .min_by_key(|(_, lab)| empfindung::cie00::diff(&self_lab, lab) as i32)
             .expect("list of codes can not be empty")
             .0
     }

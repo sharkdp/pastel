@@ -1,6 +1,5 @@
 pub mod ansi;
 pub mod colorspace;
-pub mod delta_e;
 pub mod distinct;
 mod helper;
 pub mod named;
@@ -705,7 +704,7 @@ impl Color {
     ///
     /// See: <https://en.wikipedia.org/wiki/Color_difference>
     pub fn distance_delta_e_cie76(&self, other: &Color) -> Scalar {
-        delta_e::cie76(&self.to_lab(), &other.to_lab())
+        empfindung::cie76::diff(self.to_lab(), other.to_lab()).into()
     }
 
     /// Compute the perceived 'distance' between two colors according to the CIEDE2000 delta-E
@@ -713,7 +712,7 @@ impl Color {
     ///
     /// See: <https://en.wikipedia.org/wiki/Color_difference>
     pub fn distance_delta_e_ciede2000(&self, other: &Color) -> Scalar {
-        delta_e::ciede2000(&self.to_lab(), &other.to_lab())
+        empfindung::cie00::diff(self.to_lab(), other.to_lab()).into()
     }
 
     /// Mix two colors by linearly interpolating between them in the specified color space.
@@ -1270,6 +1269,12 @@ impl ColorSpace for Lab {
             b: interpolate(self.b, other.b, fraction),
             alpha: interpolate(self.alpha, other.alpha, fraction),
         }
+    }
+}
+
+impl empfindung::ToLab for Lab {
+    fn to_lab(&self) -> (f32, f32, f32) {
+        (self.l as f32, self.a as f32, self.b as f32)
     }
 }
 

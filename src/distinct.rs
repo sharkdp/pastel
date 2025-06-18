@@ -1,6 +1,5 @@
 use rand::{prelude::*, rng};
 
-use crate::delta_e;
 use crate::random::{self, RandomizationStrategy};
 use crate::{Color, Lab};
 
@@ -377,8 +376,8 @@ impl DistanceResult {
 
     fn distance(&self, a: &Lab, b: &Lab) -> Scalar {
         match self.distance_metric {
-            DistanceMetric::CIE76 => delta_e::cie76(a, b),
-            DistanceMetric::CIEDE2000 => delta_e::ciede2000(a, b),
+            DistanceMetric::CIE76 => empfindung::cie76::diff(a, b).into(),
+            DistanceMetric::CIEDE2000 => empfindung::cie00::diff(a, b).into(),
         }
     }
 }
