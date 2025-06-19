@@ -215,6 +215,7 @@ pub fn build_cli() -> Command<'static> {
                                            "hsl", "hsl-hue", "hsl-saturation", "hsl-lightness",
                                            "hsv", "hsv-hue", "hsv-saturation", "hsv-value",
                                            "lch", "lch-lightness", "lch-chroma", "lch-hue",
+                                           "oklch", "oklch-lightness", "oklch-chroma", "oklch-hue",
                                            "lab", "lab-a", "lab-b",
                                            "oklab", "oklab-l", "oklab-a", "oklab-b",
                                            "luminance", "brightness",
