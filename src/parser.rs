@@ -264,6 +264,23 @@ fn parse_lch(input: &str) -> IResult<&str, Color> {
     Ok((input, c))
 }
 
+fn parse_oklch(input: &str) -> IResult<&str, Color> {
+    let (input, _) = tag_no_case("oklch(")(input)?;
+    let (input, _) = space0(input)?;
+    let (input, l) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, c) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, h) = parse_angle(input)?;
+    let (input, alpha) = parse_alpha(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = char(')')(input)?;
+
+    let c = Color::from_oklch(l, c, h, alpha);
+
+    Ok((input, c))
+}
+
 fn parse_named(input: &str) -> IResult<&str, Color> {
     let (input, color) = all_consuming(alpha1)(input)?;
     let nc = NAMED_COLORS
@@ -290,6 +307,7 @@ pub fn parse_color(input: &str) -> Option<Color> {
         all_consuming(parse_lab),
         all_consuming(parse_oklab),
         all_consuming(parse_lch),
+        all_consuming(parse_oklch),
         all_consuming(parse_named),
     ))(input.trim())
     .ok()
@@ -654,6 +672,42 @@ fn parse_lch_syntax() {
     );
 
     assert_eq!(None, parse_color("lch(15%,-23,43)"));
+}
+
+#[test]
+fn parse_oklch_syntax() {
+    assert_eq!(
+        Some(Color::from_oklch(0.1243, 0.0355, 43.4, 1.0)),
+        parse_color("oklch(0.1243,0.0355,43.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklch(0.15, 0.023, 43.0, 0.5)),
+        parse_color("OKlch(0.15,0.023,43,0.5)")
+    );
+    assert_eq!(
+        Some(Color::from_oklch(0.15, 0.023, 43.0, 1.0)),
+        parse_color("OkLch(0.15,0.023,43)")
+    );
+    assert_eq!(
+        Some(Color::from_oklch(0.15, 0.0355, 43.4, 1.0)),
+        parse_color("oKLch(0.15,0.0355,43.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklch(0.15, 0.0355, 43.4, 0.4)),
+        parse_color("okLch(0.15,0.0355,43.4,0.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklch(0.15, 23.0, 43.0, 1.0)),
+        parse_color("OKLch(        0.15,  23,43   )")
+    );
+    assert_eq!(
+        Some(Color::from_oklch(0.15, 0.0355, 43.4, 0.4)),
+        parse_color("OKLch(0.15,0.0355,43.4,0.4)")
+    );
+    assert_eq!(
+        Some(Color::from_oklch(0.15, 0.02, 43.0, 1.0)),
+        parse_color("OkLch(        0.15,  0.02,43   )")
+    );
 }
 
 #[test]

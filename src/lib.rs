@@ -152,6 +152,15 @@ impl Color {
     pub fn from_lch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
         Self::from(&LCh { l, c, h, alpha })
     }
+    
+    /// Create a `Color` from lightness, chroma and hue coordinates in the OkLCh color space.
+    /// This is a cylindrical transform of the OkLab color space. Note: See documentation for
+    /// `from_xyz`. The same restrictions apply here.
+    ///
+    /// See: <https://bottosson.github.io/posts/oklab>
+    pub fn from_oklch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
+        Self::from(&OkLCh { l, c, h, alpha })
+    }
 
     /// Create a `Color` from  the four colours of the CMYK model: Cyan, Magenta, Yellow and Black.
     /// The CMYK colours are subtractive. This means the colours get darker as you blend them together
@@ -443,6 +452,36 @@ impl Color {
             l = lch.l,
             c = lch.c,
             h = lch.h,
+            space = space,
+            alpha = if self.alpha == 1.0 {
+                "".to_string()
+            } else {
+                format!(
+                    ",{space}{alpha}",
+                    alpha = MaxPrecision::wrap(3, self.alpha),
+                    space = space
+                )
+            }
+        )
+    }
+
+    /// Get L, C and h coordinates according to the OkLCh color space.
+    ///
+    /// See: <https://bottosson.github.io/posts/oklab>
+    pub fn to_oklch(&self) -> OkLCh {
+        OkLCh::from(self)
+    }
+
+    /// Format the color as a OkLCh-representation string (`OkLCh(0.4, 0.2, 1.0, 0.5)`).
+    /// If the alpha channel is `1.0`, it won't be included in the output.
+    pub fn to_oklch_string(&self, format: Format) -> String {
+        let oklch = OkLCh::from(self);
+        let space = if format == Format::Spaces { " " } else { "" };
+        format!(
+            "OkLCh({l:.4},{space}{c:.4},{space}{h:.4}{alpha})",
+            l = oklch.l,
+            c = oklch.c,
+            h = oklch.h,
             space = space,
             alpha = if self.alpha == 1.0 {
                 "".to_string()
@@ -965,6 +1004,23 @@ impl From<&LCh> for Color {
     }
 }
 
+impl From<&OkLCh> for Color {
+    fn from(color: &OkLCh) -> Self {
+        #![allow(clippy::many_single_char_names)]
+        const DEG2RAD: Scalar = std::f64::consts::PI / 180.0;
+
+        let a = color.c * Scalar::cos(color.h * DEG2RAD);
+        let b = color.c * Scalar::sin(color.h * DEG2RAD);
+
+        Self::from(&OkLab {
+            l: color.l,
+            a,
+            b,
+            alpha: color.alpha,
+        })
+    }
+}
+
 // from CMYK to Color so you can do -> let new_color = Color::from(&some_cmyk);
 impl From<&CMYK> for Color {
     fn from(color: &CMYK) -> Self {
@@ -1425,6 +1481,56 @@ impl fmt::Display for LCh {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct OkLCh {
+    pub l: Scalar,
+    pub c: Scalar,
+    pub h: Scalar,
+    pub alpha: Scalar,
+}
+
+impl ColorSpace for OkLCh {
+    fn from_color(c: &Color) -> Self {
+        c.to_oklch()
+    }
+
+    fn into_color(self) -> Color {
+        Color::from_oklch(self.l, self.c, self.h, self.alpha)
+    }
+
+    fn mix(&self, other: &Self, fraction: Fraction) -> Self {
+        // make sure that the hue is preserved when mixing with gray colors
+        let self_hue = if self.c < 0.0003 { other.h } else { self.h };
+        let other_hue = if other.c < 0.0003 { self.h } else { other.h };
+
+        Self {
+            l: interpolate(self.l, other.l, fraction),
+            c: interpolate(self.c, other.c, fraction),
+            h: interpolate_angle(self_hue, other_hue, fraction),
+            alpha: interpolate(self.alpha, other.alpha, fraction),
+        }
+    }
+}
+
+impl From<&Color> for OkLCh {
+    fn from(color: &Color) -> Self {
+        let OkLab { l, a, b, alpha } = OkLab::from(color);
+
+        const RAD2DEG: Scalar = 180.0 / std::f64::consts::PI;
+
+        let c = Scalar::sqrt(a * a + b * b);
+        let h = mod_positive(Scalar::atan2(b, a) * RAD2DEG, 360.0);
+
+        OkLCh { l, c, h, alpha }
+    }
+}
+
+impl fmt::Display for OkLCh {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "OkLCh({l}, {c}, {h})", l = self.l, c = self.c, h = self.h,)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct CMYK {
     pub c: Scalar,
     pub m: Scalar,
@@ -1792,6 +1898,29 @@ mod tests {
             let color1 = Color::from_hsl(h, s, l);
             let lch1 = color1.to_lch();
             let color2 = Color::from_lch(lch1.l, lch1.c, lch1.h, 1.0);
+            assert_almost_equal(&color1, &color2);
+        };
+
+        for hue in 0..360 {
+            roundtrip(Scalar::from(hue), 0.2, 0.8);
+        }
+    }
+
+    #[test]
+    fn oklch_conversion() {
+        assert_eq!(
+            Color::from_hsl(0.0, 1.0, 0.369),
+            Color::from_oklch(0.5, 0.205, 29.23, 1.0)
+        );
+        assert_eq!(
+            Color::blue(),
+            Color::from_oklch(0.4520, 0.3132, 264.1, 1.0)
+        );
+
+        let roundtrip = |h, s, l| {
+            let color1 = Color::from_hsl(h, s, l);
+            let oklch1 = color1.to_oklch();
+            let color2 = Color::from_oklch(oklch1.l, oklch1.c, oklch1.h, 1.0);
             assert_almost_equal(&color1, &color2);
         };
 
