@@ -152,7 +152,7 @@ impl Color {
     pub fn from_lch(l: Scalar, c: Scalar, h: Scalar, alpha: Scalar) -> Color {
         Self::from(&LCh { l, c, h, alpha })
     }
-    
+
     /// Create a `Color` from lightness, chroma and hue coordinates in the OkLCh color space.
     /// This is a cylindrical transform of the OkLab color space. Note: See documentation for
     /// `from_xyz`. The same restrictions apply here.
@@ -1526,7 +1526,13 @@ impl From<&Color> for OkLCh {
 
 impl fmt::Display for OkLCh {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "OkLCh({l}, {c}, {h})", l = self.l, c = self.c, h = self.h,)
+        write!(
+            f,
+            "OkLCh({l}, {c}, {h})",
+            l = self.l,
+            c = self.c,
+            h = self.h,
+        )
     }
 }
 
@@ -1912,10 +1918,7 @@ mod tests {
             Color::from_hsl(0.0, 1.0, 0.369),
             Color::from_oklch(0.5, 0.205, 29.23, 1.0)
         );
-        assert_eq!(
-            Color::blue(),
-            Color::from_oklch(0.4520, 0.3132, 264.1, 1.0)
-        );
+        assert_eq!(Color::blue(), Color::from_oklch(0.4520, 0.3132, 264.1, 1.0));
 
         let roundtrip = |h, s, l| {
             let color1 = Color::from_hsl(h, s, l);
