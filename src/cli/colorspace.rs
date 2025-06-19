@@ -1,5 +1,5 @@
 use pastel::Color;
-use pastel::{Fraction, LCh, Lab, OkLab, HSLA, RGBA};
+use pastel::{Fraction, LCh, Lab, OkLab, OkLCh, HSLA, RGBA};
 
 #[allow(clippy::type_complexity)]
 pub fn get_mixing_function(
@@ -11,6 +11,7 @@ pub fn get_mixing_function(
         "lab" => Box::new(|c1: &Color, c2: &Color, f: Fraction| c1.mix::<Lab>(c2, f)),
         "lch" => Box::new(|c1: &Color, c2: &Color, f: Fraction| c1.mix::<LCh>(c2, f)),
         "oklab" => Box::new(|c1: &Color, c2: &Color, f: Fraction| c1.mix::<OkLab>(c2, f)),
+        "oklch" => Box::new(|c1: &Color, c2: &Color, f: Fraction| c1.mix::<OkLCh>(c2, f)),
         _ => unreachable!("Unknown color space"),
     }
 }
