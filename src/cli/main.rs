@@ -63,8 +63,9 @@ fn run() -> Result<ExitCode> {
     let global_matches = app.get_matches();
 
     let interactive_mode = atty::is(Stream::Stdout);
+    let force_color = global_matches.is_present("force-color");
 
-    let color_mode = if global_matches.is_present("force-color") {
+    let color_mode = if force_color {
         Some(ansi::Mode::TrueColor)
     } else {
         match global_matches
@@ -102,7 +103,7 @@ fn run() -> Result<ExitCode> {
         padding: 2,
         colorpicker_width: 48,
         colorcheck_width: 8,
-        interactive_mode,
+        interactive_mode: interactive_mode || force_color,
         brush: Brush::from_mode(color_mode),
         colorpicker: global_matches.value_of("color-picker"),
     };
