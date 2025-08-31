@@ -36,7 +36,7 @@
 ## Other
 
 - Optimization for eliminating redundant memory operations, see #165 (@yyzdtccjdtc)
-- Add colour as an alias for the colour command, see #173 (@BuyMyMojo)
+- Add colour as an alias for the color command, see #173 (@BuyMyMojo)
 - Suggest to use pastel pick --help instead of -h, see #181 (@sharkdp)
 
 
