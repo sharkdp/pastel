@@ -127,6 +127,12 @@ wget "https://github.com/sharkdp/pastel/releases/download/v0.8.1/pastel_0.8.1_am
 sudo dpkg -i pastel_0.8.1_amd64.deb
 ```
 
+Alternatively, `pastel` is available in the official Debian repositories (currently in testing and unstable):
+```bash
+sudo apt update
+sudo apt install pastel
+```
+
 ### On Arch Linux
 
 You can install `pastel` from the [Extra](https://archlinux.org/packages/extra/x86_64/pastel/) repositories:
