@@ -79,9 +79,9 @@ impl Command {
                 for color in ColorArgIterator::from_args(config, matches.values_of("color"))? {
                     cmd.run(&mut out, matches, config, &color?)?;
                 }
-
                 Ok(())
             }
-        }
+        }?;
+        out.finish_colors(config)
     }
 }
