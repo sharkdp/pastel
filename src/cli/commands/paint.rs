@@ -11,7 +11,9 @@ pub struct PaintCommand;
 
 impl GenericCommand for PaintCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let fg = matches.value_of("color").expect("required argument");
+        let fg = matches
+            .get_one::<String>("color")
+            .expect("required argument");
         let fg = if fg.trim() == "default" {
             None
         } else {
@@ -23,14 +25,14 @@ impl GenericCommand for PaintCommand {
             )?)
         };
 
-        let bg = if let Some(bg) = matches.value_of("on") {
+        let bg = if let Some(bg) = matches.get_one::<String>("on") {
             Some(parse_color(bg).ok_or_else(|| PastelError::ColorParseError(bg.into()))?)
         } else {
             None
         };
 
-        let text = match matches.values_of("text") {
-            Some(values) => values.map(|v| v.to_string()).collect::<Vec<_>>().join(" "),
+        let text = match matches.get_many::<String>("text") {
+            Some(values) => values.cloned().collect::<Vec<_>>().join(" "),
             _ => {
                 let mut buffer = String::new();
                 io::stdin().read_to_string(&mut buffer)?;
@@ -48,15 +50,15 @@ impl GenericCommand for PaintCommand {
             style.on(bg);
         }
 
-        style.bold(matches.is_present("bold"));
-        style.italic(matches.is_present("italic"));
-        style.underline(matches.is_present("underline"));
+        style.bold(matches.get_flag("bold"));
+        style.italic(matches.get_flag("italic"));
+        style.underline(matches.get_flag("underline"));
 
         write!(
             out.handle,
             "{}{}",
             config.brush.paint(text, style),
-            if matches.is_present("no-newline") {
+            if matches.get_flag("no-newline") {
                 ""
             } else {
                 "\n"

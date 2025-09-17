@@ -130,9 +130,11 @@ impl GenericCommand for DistinctCommand {
         let stderr = io::stderr();
         let mut stderr_lock = stderr.lock();
         let brush_stderr = Brush::from_environment(Stream::Stderr)?;
-        let verbose_output = matches.is_present("verbose");
+        let verbose_output = matches.get_flag("verbose");
 
-        let count = matches.value_of("number").expect("required argument");
+        let count = matches
+            .get_one::<String>("number")
+            .expect("required argument");
         let count = count
             .parse::<usize>()
             .map_err(|_| PastelError::CouldNotParseNumber(count.into()))?;
@@ -141,13 +143,17 @@ impl GenericCommand for DistinctCommand {
             return Err(PastelError::DistinctColorCountMustBeLargerThanOne);
         }
 
-        let distance_metric = match matches.value_of("metric").expect("required argument") {
+        let distance_metric = match matches
+            .get_one::<String>("metric")
+            .expect("required argument")
+            .as_str()
+        {
             "CIE76" => DistanceMetric::CIE76,
             "CIEDE2000" => DistanceMetric::CIEDE2000,
             _ => unreachable!("Unknown distance metric"),
         };
 
-        let fixed_colors = match matches.values_of("color") {
+        let fixed_colors = match matches.get_many::<String>("color") {
             None => vec![],
             Some(positionals) => {
                 ColorArgIterator::FromPositionalArguments(config, positionals, PrintSpectrum::Yes)
@@ -171,7 +177,7 @@ impl GenericCommand for DistinctCommand {
         let (mut colors, distance_result) =
             distinct::distinct_colors(count, distance_metric, fixed_colors, callback.as_mut());
 
-        if matches.is_present("print-minimal-distance") {
+        if matches.get_flag("print-minimal-distance") {
             writeln!(out.handle, "{:.3}", distance_result.min_closest_distance)?;
         } else {
             distinct::rearrange_sequence(&mut colors, distance_metric);
