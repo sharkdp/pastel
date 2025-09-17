@@ -8,7 +8,9 @@ pub struct GradientCommand;
 
 impl GenericCommand for GradientCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let count = matches.value_of("number").expect("required argument");
+        let count = matches
+            .get_one::<String>("number")
+            .expect("required argument");
         let count = count
             .parse::<usize>()
             .map_err(|_| PastelError::CouldNotParseNumber(count.into()))?;
@@ -18,10 +20,14 @@ impl GenericCommand for GradientCommand {
 
         let mut print_spectrum = PrintSpectrum::Yes;
 
-        let mix = get_mixing_function(matches.value_of("colorspace").expect("required argument"));
+        let mix = get_mixing_function(
+            matches
+                .get_one::<String>("colorspace")
+                .expect("required argument"),
+        );
 
         let colors = matches
-            .values_of("color")
+            .get_many::<String>("color")
             .expect("required argument")
             .map(|color| ColorArgIterator::from_color_arg(config, color, &mut print_spectrum));
 

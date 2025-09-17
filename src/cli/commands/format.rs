@@ -14,7 +14,9 @@ impl ColorCommand for FormatCommand {
         config: &Config,
         color: &Color,
     ) -> Result<()> {
-        let format_type = matches.value_of("type").expect("required argument");
+        let format_type = matches
+            .get_one::<String>("type")
+            .expect("required argument");
         let format_type = format_type.to_lowercase();
 
         let replace_escape = |code: &str| code.replace('\x1b', "\\x1b");

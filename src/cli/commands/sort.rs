@@ -15,21 +15,23 @@ pub fn key_function(sort_order: &str, color: &Color) -> i32 {
 
 impl GenericCommand for SortCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let sort_order = matches.value_of("sort-order").expect("required argument");
+        let sort_order = matches
+            .get_one::<String>("sort-order")
+            .expect("required argument");
 
         let mut colors: Vec<Color> = vec![];
-        for color in ColorArgIterator::from_args(config, matches.values_of("color"))? {
+        for color in ColorArgIterator::from_args(config, matches.get_many::<String>("color"))? {
             colors.push(color?);
         }
 
-        if matches.is_present("unique") {
+        if matches.get_flag("unique") {
             colors.sort_by_key(|c| c.to_u32());
             colors.dedup_by_key(|c| c.to_u32());
         }
 
         colors.sort_by_cached_key(|c| key_function(sort_order, c));
 
-        if matches.is_present("reverse") {
+        if matches.get_flag("reverse") {
             colors.reverse();
         }
 

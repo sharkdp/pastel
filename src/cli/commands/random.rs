@@ -7,14 +7,18 @@ pub struct RandomCommand;
 
 impl GenericCommand for RandomCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
-        let strategy_arg = matches.value_of("strategy").expect("required argument");
+        let strategy_arg = matches
+            .get_one::<String>("strategy")
+            .expect("required argument");
 
-        let count = matches.value_of("number").expect("required argument");
+        let count = matches
+            .get_one::<String>("number")
+            .expect("required argument");
         let count = count
             .parse::<usize>()
             .map_err(|_| PastelError::CouldNotParseNumber(count.into()))?;
 
-        let mut strategy: Box<dyn RandomizationStrategy> = match strategy_arg {
+        let mut strategy: Box<dyn RandomizationStrategy> = match strategy_arg.as_str() {
             "vivid" => Box::new(strategies::Vivid),
             "rgb" => Box::new(strategies::UniformRGB),
             "gray" => Box::new(strategies::UniformGray),

@@ -1,6 +1,7 @@
 use std::io::{self, BufRead};
 
-use clap::{ArgMatches, Values};
+use clap::parser::ValuesRef;
+use clap::ArgMatches;
 
 use crate::colorpicker::{print_colorspectrum, run_external_colorpicker};
 use crate::config::Config;
@@ -10,7 +11,7 @@ use pastel::parser::parse_color;
 use pastel::Color;
 
 pub fn number_arg(matches: &ArgMatches, name: &str) -> Result<f64> {
-    let value_str = matches.value_of(name).expect("required argument");
+    let value_str = matches.get_one::<String>(name).expect("required argument");
     value_str
         .parse::<f64>()
         .map_err(|_| PastelError::CouldNotParseNumber(value_str.into()))
@@ -23,12 +24,12 @@ pub enum PrintSpectrum {
 }
 
 pub enum ColorArgIterator<'a> {
-    FromPositionalArguments(&'a Config<'a>, Values<'a>, PrintSpectrum),
+    FromPositionalArguments(&'a Config<'a>, ValuesRef<'a, String>, PrintSpectrum),
     FromStdin,
 }
 
 impl<'a> ColorArgIterator<'a> {
-    pub fn from_args(config: &'a Config, args: Option<Values<'a>>) -> Result<Self> {
+    pub fn from_args(config: &'a Config, args: Option<ValuesRef<'a, String>>) -> Result<Self> {
         match args {
             Some(positionals) => Ok(ColorArgIterator::FromPositionalArguments(
                 config,
