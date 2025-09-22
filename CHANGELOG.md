@@ -40,7 +40,7 @@
 - Suggest to use pastel pick --help instead of -h, see #181 (@sharkdp)
 
 
-## v0.9.0
+# v0.9.0
 
 ## Features
 
