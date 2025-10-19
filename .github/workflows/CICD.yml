@@ -170,6 +170,7 @@ jobs:
         ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
         mkdir -p "${ARCHIVE_DIR}"
         mkdir -p "${ARCHIVE_DIR}/autocomplete"
+        mkdir -p "${ARCHIVE_DIR}/man"
 
         # Binary
         cp "${{ steps.bin.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
@@ -178,7 +179,7 @@ jobs:
         cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
 
         # Man pages
-        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/*.1 "$ARCHIVE_DIR"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/*.1 "$ARCHIVE_DIR/man/"
 
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/'${{ needs.crate_metadata.outputs.name }}.bash' "$ARCHIVE_DIR/autocomplete/"
