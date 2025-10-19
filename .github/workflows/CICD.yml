@@ -177,6 +177,9 @@ jobs:
         # README, LICENSE and CHANGELOG files
         cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
 
+        # Man pages
+        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/*.1 "$ARCHIVE_DIR"
+
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/'${{ needs.crate_metadata.outputs.name }}.bash' "$ARCHIVE_DIR/autocomplete/"
         cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/_'${{ needs.crate_metadata.outputs.name }}' "$ARCHIVE_DIR/autocomplete/"
@@ -223,6 +226,13 @@ jobs:
 
         # Binary
         install -Dm755 "${{ steps.bin.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.bin.outputs.BIN_NAME }}"
+
+        # Man pages
+        for manpage in 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/*.1; do
+          manpage_name=$(basename "$manpage")
+          install -Dm644 "$manpage" "${DPKG_DIR}/usr/share/man/man1/${manpage_name}"
+          gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${manpage_name}"
+        done
 
         # Autocompletion files
         install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'*/out/'${{ needs.crate_metadata.outputs.name }}.bash' "${DPKG_DIR}/usr/share/bash-completion/completions/${{ needs.crate_metadata.outputs.name }}"
