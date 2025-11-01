@@ -22,7 +22,7 @@ output_vt100 = "0.1"
 rand = "0.9"
 
 # binary-only dependencies (see https://github.com/rust-lang/cargo/issues/1982)
-regex = "1.11"
+regex = "1.12"
 
 [dependencies.clap]
 version = "4"
