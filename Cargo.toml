@@ -44,7 +44,7 @@ path = "src/cli/main.rs"
 approx = "0.5.0"
 assert_cmd = "2.1.1"
 rand_xoshiro = "0.7.0"
-criterion = "0.7"
+criterion = "0.8"
 
 [[bench]]
 name = "parse_color"
