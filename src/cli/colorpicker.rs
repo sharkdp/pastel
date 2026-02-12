@@ -6,7 +6,7 @@ use crate::config::Config;
 use crate::error::{PastelError, Result};
 use crate::hdcanvas::Canvas;
 
-use pastel::ansi::{Brush, Stream};
+use pastel::ansi::Brush;
 use pastel::Color;
 
 /// Print a color spectrum to STDERR.
@@ -16,7 +16,7 @@ pub fn print_colorspectrum(config: &Config) -> Result<()> {
     let mut canvas = Canvas::new(
         width + 2 * config.padding,
         width + 2 * config.padding,
-        Brush::from_environment(Stream::Stderr)?,
+        Brush::from_environment(&io::stderr())?,
     );
     canvas.draw_rect(
         config.padding,

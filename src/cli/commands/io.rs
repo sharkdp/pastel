@@ -1,4 +1,4 @@
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, IsTerminal};
 
 use clap::parser::ValuesRef;
 use clap::ArgMatches;
@@ -37,8 +37,7 @@ impl<'a> ColorArgIterator<'a> {
                 PrintSpectrum::Yes,
             )),
             None => {
-                use atty::Stream;
-                if atty::is(Stream::Stdin) {
+                if io::stdin().is_terminal() {
                     return Err(PastelError::ColorArgRequired);
                 }
                 Ok(ColorArgIterator::FromStdin)
