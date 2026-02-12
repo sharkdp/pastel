@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
+use std::io::IsTerminal;
 
-pub use atty::Stream;
 use once_cell::sync::Lazy;
 
 use crate::delta_e::ciede2000;
@@ -280,8 +280,8 @@ impl Brush {
         Brush { mode }
     }
 
-    pub fn from_environment(stream: Stream) -> Result<Self, UnknownColorModeError> {
-        let mode = if atty::is(stream) {
+    pub fn from_environment<T: IsTerminal>(stream: &T) -> Result<Self, UnknownColorModeError> {
+        let mode = if stream.is_terminal() {
             let env_color_mode = std::env::var("PASTEL_COLOR_MODE").ok();
             match env_color_mode.as_deref() {
                 Some(mode_str) => Mode::from_mode_str(mode_str)?,

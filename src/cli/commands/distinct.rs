@@ -2,7 +2,6 @@ use std::io::{self, Write};
 
 use crate::commands::prelude::*;
 
-use pastel::ansi::Stream;
 use pastel::distinct::{self, DistanceMetric, IterationStatistics};
 use pastel::{Fraction, HSLA};
 
@@ -129,7 +128,7 @@ impl GenericCommand for DistinctCommand {
     fn run(&self, out: &mut Output, matches: &ArgMatches, config: &Config) -> Result<()> {
         let stderr = io::stderr();
         let mut stderr_lock = stderr.lock();
-        let brush_stderr = Brush::from_environment(Stream::Stderr)?;
+        let brush_stderr = Brush::from_environment(&io::stderr())?;
         let verbose_output = matches.get_flag("verbose");
 
         let count = matches

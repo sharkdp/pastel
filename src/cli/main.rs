@@ -1,6 +1,4 @@
-use std::io::{self, Write};
-
-use atty::Stream;
+use std::io::{self, IsTerminal, Write};
 
 mod cli;
 mod colorpicker;
@@ -26,7 +24,7 @@ fn write_stderr(c: Color, title: &str, message: &str) {
     writeln!(
         io::stderr(),
         "{}: {}",
-        Brush::from_environment(Stream::Stdout)
+        Brush::from_environment(&io::stdout())
             .unwrap_or_default()
             .paint(format!("[{}]", title), c),
         message
@@ -62,7 +60,7 @@ fn run() -> Result<ExitCode> {
     let app = cli::build_cli();
     let global_matches = app.get_matches();
 
-    let interactive_mode = atty::is(Stream::Stdout);
+    let interactive_mode = io::stdout().is_terminal();
 
     let color_mode = if global_matches.get_flag("force-color") {
         Some(ansi::Mode::TrueColor)
