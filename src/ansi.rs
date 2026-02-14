@@ -7,7 +7,7 @@ use crate::delta_e::ciede2000;
 use crate::{Color, Lab};
 
 static ANSI_LAB_REPRESENTATIONS: Lazy<Vec<(u8, Lab)>> = Lazy::new(|| {
-    (16..255)
+    (16..=255)
         .map(|code| (code, Color::from_ansi_8bit(code).to_lab()))
         .collect()
 });
@@ -365,6 +365,7 @@ mod tests {
     fn to_ansi_8bit_grays() {
         assert_eq!(232, Color::from_rgb(8, 8, 8).to_ansi_8bit());
         assert_eq!(242, Color::from_rgb(108, 108, 108).to_ansi_8bit());
+        assert_eq!(255, Color::from_rgb(238, 238, 238).to_ansi_8bit());
     }
 
     #[test]
