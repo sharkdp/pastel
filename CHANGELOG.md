@@ -1,17 +1,12 @@
-# unreleased
+# v0.12.0
 
 ## Features
 
+- Added support for parsing ANSI 8-bit color codes
+
 ## Bugfixes
 
-## Changes
-
-## Other
-
-- Minor optimizations and cleanup
-
-## Packaging
-
+- Fixed `ansi-8bit-value` not returning SGR code 255, see #289
 
 # v0.10.0
 

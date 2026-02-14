@@ -435,7 +435,7 @@ dependencies = [
 
 [[package]]
 name = "pastel"
-version = "0.11.0"
+version = "0.12.0"
 dependencies = [
  "approx",
  "assert_cmd",
