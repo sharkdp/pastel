@@ -7,6 +7,7 @@ use nom::number::complete::double;
 use nom::Err;
 use nom::IResult;
 
+use crate::ansi::AnsiColor;
 use crate::named::NAMED_COLORS;
 use crate::Color;
 
@@ -281,6 +282,24 @@ fn parse_oklch(input: &str) -> IResult<&str, Color> {
     Ok((input, c))
 }
 
+fn parse_ansi_8bit(input: &str) -> IResult<&str, Color> {
+    let (input, _) = tag_no_case("ansi_8bit(")(input)?;
+    let (input, _) = space0(input)?;
+    let (input, code) = double(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = char(')')(input)?;
+
+    let code = code as i64;
+    if !(0..=255).contains(&code) {
+        return Err(Err::Error(nom::error::Error::new(
+            "ANSI 8-bit code must be between 0 and 255",
+            ErrorKind::Verify,
+        )));
+    }
+
+    Ok((input, Color::from_ansi_8bit(code as u8)))
+}
+
 fn parse_named(input: &str) -> IResult<&str, Color> {
     let (input, color) = all_consuming(alpha1)(input)?;
     let nc = NAMED_COLORS
@@ -298,17 +317,22 @@ fn parse_named(input: &str) -> IResult<&str, Color> {
 
 pub fn parse_color(input: &str) -> Option<Color> {
     alt((
-        all_consuming(parse_hex),
-        all_consuming(parse_numeric_rgb),
-        all_consuming(parse_percentage_rgb),
-        all_consuming(parse_hsl),
-        all_consuming(parse_hsv),
-        all_consuming(parse_gray),
-        all_consuming(parse_lab),
-        all_consuming(parse_oklab),
-        all_consuming(parse_lch),
-        all_consuming(parse_oklch),
-        all_consuming(parse_named),
+        alt((
+            all_consuming(parse_hex),
+            all_consuming(parse_numeric_rgb),
+            all_consuming(parse_percentage_rgb),
+            all_consuming(parse_hsl),
+            all_consuming(parse_hsv),
+            all_consuming(parse_gray),
+        )),
+        alt((
+            all_consuming(parse_lab),
+            all_consuming(parse_oklab),
+            all_consuming(parse_lch),
+            all_consuming(parse_oklch),
+            all_consuming(parse_ansi_8bit),
+            all_consuming(parse_named),
+        )),
     ))(input.trim())
     .ok()
     .map(|(_, c)| c)
@@ -708,6 +732,43 @@ fn parse_oklch_syntax() {
         Some(Color::from_oklch(0.15, 0.02, 43.0, 1.0)),
         parse_color("OkLch(        0.15,  0.02,43   )")
     );
+}
+
+#[test]
+fn parse_ansi_8bit_syntax() {
+    assert_eq!(Some(Color::black()), parse_color("ansi_8bit(0)"));
+    assert_eq!(Some(Color::red()), parse_color("ansi_8bit(9)"));
+    assert_eq!(Some(Color::white()), parse_color("ansi_8bit(15)"));
+    assert_eq!(
+        Some(Color::from_rgb(255, 215, 95)),
+        parse_color("ansi_8bit(221)")
+    );
+    assert_eq!(Some(Color::white()), parse_color("ansi_8bit(231)"));
+    assert_eq!(
+        Some(Color::from_rgb(8, 8, 8)),
+        parse_color("ansi_8bit(232)")
+    );
+    assert_eq!(
+        Some(Color::from_rgb(238, 238, 238)),
+        parse_color("ansi_8bit(255)")
+    );
+
+    // whitespace
+    assert_eq!(Some(Color::black()), parse_color("  ansi_8bit( 0 )  "));
+    assert_eq!(Some(Color::red()), parse_color("ansi_8bit(  9  )"));
+
+    // case insensitive
+    assert_eq!(Some(Color::black()), parse_color("ANSI_8BIT(0)"));
+    assert_eq!(Some(Color::black()), parse_color("Ansi_8bit(0)"));
+    assert_eq!(Some(Color::black()), parse_color("Ansi_8Bit(0)"));
+
+    // out of range
+    assert_eq!(None, parse_color("ansi_8bit(256)"));
+    assert_eq!(None, parse_color("ansi_8bit(-1)"));
+
+    // invalid syntax
+    assert_eq!(None, parse_color("ansi_8bit()"));
+    assert_eq!(None, parse_color("ansi_8bit(0"));
 }
 
 #[test]
