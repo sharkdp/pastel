@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 
 fn pastel() -> Command {
-    let mut cmd = Command::cargo_bin("pastel").unwrap();
+    let mut cmd = assert_cmd::cargo_bin_cmd!("pastel");
     cmd.env_remove("PASTEL_COLOR_MODE");
     cmd
 }
