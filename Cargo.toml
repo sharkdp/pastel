@@ -16,7 +16,7 @@ rust-version = "1.83.0"
 [dependencies]
 # library dependencies
 nom = "7.1.3"
-once_cell = "1.21.3"
+once_cell = "1.21.4"
 output_vt100 = "0.1"
 rand = "0.9"
 
@@ -31,7 +31,7 @@ features = ["suggestions", "color", "wrap_help", "cargo"]
 clap = { version = "4", features = ["cargo"] }
 clap_complete = "4"
 clap_mangen = "0.2"
-once_cell = "1.21.3"
+once_cell = "1.21.4"
 output_vt100 = "0.1"
 
 [[bin]]
