@@ -18,7 +18,7 @@ rust-version = "1.83.0"
 nom = "7.1.3"
 once_cell = "1.21.3"
 output_vt100 = "0.1"
-rand = "0.9"
+rand = "0.10"
 
 # binary-only dependencies (see https://github.com/rust-lang/cargo/issues/1982)
 regex = "1.12"
