@@ -148,6 +148,31 @@ fn parse_numeric_rgb(input: &str) -> IResult<&str, Color> {
     Ok((input, c))
 }
 
+fn parse_numeric_rgb_normalized(input: &str) -> IResult<&str, Color> {
+    let (input, prefixed) = opt(alt((tag("rgb("), tag("rgba("))))(input)?;
+    let is_prefixed = prefixed.is_some();
+    let (input, _) = space0(input)?;
+    let (input, r) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, g) = double(input)?;
+    let (input, _) = parse_separator(input)?;
+    let (input, b) = double(input)?;
+    let (input, alpha) = parse_alpha(input)?;
+    let (input, _) = space0(input)?;
+    let (input, _) = cond(is_prefixed, char(')'))(input)?;
+
+    if !(0.0..=1.0).contains(&r) || !(0.0..=1.0).contains(&g) || !(0.0..=1.0).contains(&b) {
+        return Err(Err::Error(nom::error::Error::new(
+            "Expected RGB values to be in range [0.0, 1.0]",
+            ErrorKind::TooLarge,
+        )));
+    }
+
+    let c = Color::from_rgba_float(r, g, b, alpha);
+
+    Ok((input, c))
+}
+
 fn parse_percentage_rgb(input: &str) -> IResult<&str, Color> {
     let (input, prefixed) = opt(alt((tag("rgb("), tag("rgba("))))(input)?;
     let is_prefixed = prefixed.is_some();
@@ -319,6 +344,7 @@ pub fn parse_color(input: &str) -> Option<Color> {
     alt((
         alt((
             all_consuming(parse_hex),
+            all_consuming(parse_numeric_rgb_normalized),
             all_consuming(parse_numeric_rgb),
             all_consuming(parse_percentage_rgb),
             all_consuming(parse_hsl),
@@ -401,6 +427,9 @@ fn parse_rgb_functional_syntax() {
     assert_eq!(None, parse_color("rgb (256,0,0)"));
     assert_eq!(None, parse_color("rgb(100%,0,0)"));
     assert_eq!(None, parse_color("rgb(2550119)"));
+
+    assert_eq!(Some(rgb(102, 128, 179)), parse_color("rgb(0.4,0.5,0.7)"));
+    assert_eq!(Some(rgb(51, 46, 38)), parse_color("rgb(0.2,0.18,0.15)"));
 }
 
 #[test]
@@ -420,6 +449,9 @@ fn parse_rgb_standalone_syntax() {
     assert_eq!(rgb(255, 0, 153), parse_color("255 0 153.0").unwrap());
 
     assert_eq!(Some(rgb(1, 2, 3)), parse_color("1,2,3"));
+
+    assert_eq!(Some(rgb(102, 128, 179)), parse_color("0.4,0.5,0.7"));
+    assert_eq!(Some(rgb(51, 46, 38)), parse_color("0.2,0.18,0.15"));
 }
 
 #[test]
