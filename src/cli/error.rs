@@ -9,6 +9,7 @@ pub enum PastelError {
     ColorArgRequired,
     CouldNotParseNumber(String),
     StdoutClosed,
+    ContrastColorCountMustBeLargerThanOne,
     GradientNumberMustBeLargerThanOne,
     GradientColorCountMustBeLargerThanOne,
     DistinctColorCountMustBeLargerThanOne,
@@ -36,6 +37,9 @@ impl PastelError {
                 format!("Could not parse number '{}'", number)
             }
             PastelError::StdoutClosed => "Output pipe has been closed".into(),
+            PastelError::ContrastColorCountMustBeLargerThanOne => {
+                "The number of color arguments must be larger than one".into()
+            }
             PastelError::GradientNumberMustBeLargerThanOne => {
                 "The specified color count must be larger than one".into()
             }

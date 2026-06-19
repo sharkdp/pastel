@@ -495,6 +495,26 @@ pub fn build_cli() -> Command {
             Command::new("colorcheck")
                 .about("Check if your terminal emulator supports 24-bit colors."),
         )
+        .subcommand(
+            Command::new("contrast")
+                .about("Compute WCAG contrast ratio between colors")
+                .long_about(
+                    "Compute the WCAG contrast ratio between a base color and one or more other \
+                     colors. The ratio ranges from 1:1 (no contrast) to 21:1 (black on white).\n  \
+                     \n  \
+                     WCAG accessibility thresholds:\n  \
+                       AA  normal text:  4.5:1\n  \
+                       AA  large text:   3.0:1\n  \
+                       AAA normal text:  7.0:1\n  \
+                       AAA large text:   4.5:1\n\
+                     \n  \
+                     See: https://www.w3.org/TR/WCAG20/#contrast-ratiodef\n\
+                     \n\
+                     Example:\n  \
+                       pastel contrast 556270 4ecdc4 c7f484",
+                )
+                .arg(color_arg.clone()),
+        )
         .arg(
             Arg::new("color-mode")
                 .long("color-mode")
