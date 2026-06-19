@@ -19,7 +19,7 @@ impl GenericCommand for ContrastCommand {
                 out.handle,
                 "Base: {}",
                 config.brush.paint(
-                    format!("{}", &base.to_rgb_hex_string(true)),
+                    base.to_rgb_hex_string(true),
                     base.text_color().ansi_style().on(base)
                 )
             )?;
@@ -30,10 +30,9 @@ impl GenericCommand for ContrastCommand {
                 writeln!(
                     out.handle,
                     "{}",
-                    config.brush.paint(
-                        format!("{}", &text),
-                        color.text_color().ansi_style().on(color)
-                    )
+                    config
+                        .brush
+                        .paint(&text, color.text_color().ansi_style().on(color))
                 )?;
             }
         } else {
