@@ -123,3 +123,25 @@ fn set_basic() {
         .success()
         .stdout("hsl(0,0.0%,50.0%)\n");
 }
+
+#[test]
+fn set_luminance() {
+    let adjusted = pastel()
+        .args(["set", "luminance", "0.4", "rgba(51, 102, 153, 0.4)"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert!(String::from_utf8_lossy(&adjusted)
+        .trim_end()
+        .ends_with(",0.4)"));
+
+    pastel()
+        .args(["format", "luminance"])
+        .write_stdin(adjusted)
+        .assert()
+        .success()
+        .stdout("0.400\n");
+}

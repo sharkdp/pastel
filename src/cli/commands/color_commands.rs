@@ -8,6 +8,35 @@ fn clamp(lower: f64, upper: f64, x: f64) -> f64 {
     f64::max(f64::min(upper, x), lower)
 }
 
+fn with_luminance(color: &Color, target: f64) -> Color {
+    let target = clamp(0.0, 1.0, target);
+    let lab = color.to_lab();
+    let mut lower = -100.0;
+    let mut upper = 200.0;
+
+    // Color is stored as 8-bit sRGB, so the exact target may not be representable. Narrow down
+    // the Lab L channel, then return whichever side of the final interval is closer.
+    for _ in 0..24 {
+        let lightness = (lower + upper) / 2.0;
+        let candidate = Color::from_lab(lightness, lab.a, lab.b, lab.alpha);
+
+        if candidate.luminance() < target {
+            lower = lightness;
+        } else {
+            upper = lightness;
+        }
+    }
+
+    let lower_color = Color::from_lab(lower, lab.a, lab.b, lab.alpha);
+    let upper_color = Color::from_lab(upper, lab.a, lab.b, lab.alpha);
+
+    if (lower_color.luminance() - target).abs() <= (upper_color.luminance() - target).abs() {
+        lower_color
+    } else {
+        upper_color
+    }
+}
+
 macro_rules! color_command {
     ($cmd_name:ident, $config:ident, $matches:ident, $color:ident, $body:block) => {
         pub struct $cmd_name;
@@ -113,6 +142,7 @@ color_command!(SetCommand, config, matches, color, {
     let value = number_arg(matches, "value")?;
 
     match property {
+        "luminance" => with_luminance(color, value),
         "red" | "green" | "blue" => {
             let mut rgba = color.to_rgba();
             let value = clamp(0.0, 255.0, value) as u8;

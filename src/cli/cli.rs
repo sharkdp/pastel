@@ -365,7 +365,7 @@ pub fn build_cli() -> Command {
                 .arg(
                     Arg::new("property")
                         .help("The property that should be changed")
-                        .value_parser(["lightness", "hue", "chroma",
+                        .value_parser(["lightness", "luminance", "hue", "chroma",
                                            "lab-a", "lab-b",
                                            "oklab-l", "oklab-a", "oklab-b",
                                            "red", "green", "blue",
