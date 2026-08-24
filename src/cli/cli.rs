@@ -165,6 +165,13 @@ pub fn build_cli() -> Command {
                         .default_value(DEFAULT_SORT_ORDER)
                 )
                 .arg(
+                    Arg::new("secondary")
+                        .long("secondary")
+                        .value_name("sort-order")
+                        .value_parser(SORT_OPTIONS.to_vec())
+                        .help("Secondary sort order, used to break ties in the primary sort order"),
+                )
+                .arg(
                     Arg::new("reverse")
                         .long("reverse")
                         .short('r')

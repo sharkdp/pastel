@@ -18,6 +18,7 @@ impl GenericCommand for SortCommand {
         let sort_order = matches
             .get_one::<String>("sort-order")
             .expect("required argument");
+        let secondary = matches.get_one::<String>("secondary");
 
         let mut colors: Vec<Color> = vec![];
         for color in ColorArgIterator::from_args(config, matches.get_many::<String>("color"))? {
@@ -29,7 +30,12 @@ impl GenericCommand for SortCommand {
             colors.dedup_by_key(|c| c.to_u32());
         }
 
-        colors.sort_by_cached_key(|c| key_function(sort_order, c));
+        colors.sort_by_cached_key(|c| {
+            (
+                key_function(sort_order, c),
+                secondary.map_or(0, |order| key_function(order, c)),
+            )
+        });
 
         if matches.get_flag("reverse") {
             colors.reverse();

@@ -95,6 +95,23 @@ fn sort_by_basic() {
 }
 
 #[test]
+fn sort_by_secondary_breaks_ties() {
+    // The grays all share the same hue, so the secondary order decides their
+    // relative position.
+    pastel()
+        .arg("sort-by")
+        .arg("hue")
+        .arg("--secondary")
+        .arg("brightness")
+        .arg("white")
+        .arg("black")
+        .arg("gray")
+        .assert()
+        .success()
+        .stdout("hsl(0,0.0%,0.0%)\nhsl(0,0.0%,50.2%)\nhsl(0,0.0%,100.0%)\n");
+}
+
+#[test]
 fn set_basic() {
     pastel()
         .arg("set")
