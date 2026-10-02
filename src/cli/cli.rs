@@ -211,6 +211,14 @@ pub fn build_cli() -> Command {
                 Example:\n  \
                   pastel random -n 20 | pastel format rgb")
                 .arg(
+                    Arg::new("braced")
+                    .help("Replaces the color formatting to a C-like brace syntax.")
+                    .long("braced")
+                    .short('b')
+                    .action(ArgAction::SetTrue)
+                    .required(false)
+                )
+                .arg(
                     Arg::new("type")
                         .help("Output format type. Note that the 'ansi-*-escapecode' formats print \
                                ansi escape sequences to the terminal that will not be visible \
