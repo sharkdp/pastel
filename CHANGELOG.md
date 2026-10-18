@@ -1,3 +1,9 @@
+# Unreleased
+
+## Bugfixes
+
+- Retain fractional Lab and LCh coordinates when formatting colors to reduce roundtrip errors.
+
 # v0.12.0
 
 ## Features
