@@ -63,6 +63,23 @@ fn format_basic() {
 }
 
 #[test]
+fn lab_and_lch_formats_roundtrip_rgb_colors() {
+    for format in ["lab", "lch"] {
+        let encoded = pastel()
+            .args(["format", format, "#00ff00", "#010203", "#ff69b4"])
+            .assert()
+            .success();
+
+        pastel()
+            .args(["format", "hex"])
+            .write_stdin(encoded.get_output().stdout.clone())
+            .assert()
+            .success()
+            .stdout("#00ff00\n#010203\n#ff69b4\n");
+    }
+}
+
+#[test]
 fn pipe_into_format_command() {
     let first = pastel()
         .arg("color")

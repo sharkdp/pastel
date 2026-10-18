@@ -382,13 +382,14 @@ impl Color {
         Lab::from(self)
     }
 
-    /// Format the color as a Lab-representation string (`Lab(41, 83, -93, 0.5)`). If the alpha channel
-    /// is `1.0`, it won't be included in the output.
+    /// Format the color as a Lab-representation string (`Lab(41.1055, 83.0458, -92.9746, 0.5)`).
+    /// Coordinates use four decimal places to limit rounding when parsing the output again.
+    /// If the alpha channel is `1.0`, it won't be included in the output.
     pub fn to_lab_string(&self, format: Format) -> String {
         let lab = Lab::from(self);
         let space = if format == Format::Spaces { " " } else { "" };
         format!(
-            "Lab({l:.0},{space}{a:.0},{space}{b:.0}{alpha})",
+            "Lab({l:.4},{space}{a:.4},{space}{b:.4}{alpha})",
             l = lab.l,
             a = lab.a,
             b = lab.b,
@@ -442,13 +443,14 @@ impl Color {
         LCh::from(self)
     }
 
-    /// Format the color as a LCh-representation string (`LCh(0.3, 0.2, 0.1, 0.5)`). If the alpha channel
-    /// is `1.0`, it won't be included in the output.
+    /// Format the color as a LCh-representation string (`LCh(52.0792, 43.7352, 270.5395, 0.5)`).
+    /// Coordinates use four decimal places to limit rounding when parsing the output again.
+    /// If the alpha channel is `1.0`, it won't be included in the output.
     pub fn to_lch_string(&self, format: Format) -> String {
         let lch = LCh::from(self);
         let space = if format == Format::Spaces { " " } else { "" };
         format!(
-            "LCh({l:.0},{space}{c:.0},{space}{h:.0}{alpha})",
+            "LCh({l:.4},{space}{c:.4},{space}{h:.4}{alpha})",
             l = lch.l,
             c = lch.c,
             h = lch.h,
@@ -2056,7 +2058,36 @@ mod tests {
     #[test]
     fn to_lab_string() {
         let c = Color::from_lab(41.0, 83.0, -93.0, 1.0);
-        assert_eq!("Lab(41, 83, -93)", c.to_lab_string(Format::Spaces));
+        assert_eq!(
+            "Lab(41.1055, 83.0458, -92.9746)",
+            c.to_lab_string(Format::Spaces)
+        );
+    }
+
+    #[test]
+    fn lab_and_lch_strings_preserve_rgb_channels() {
+        for (r, g, b) in [
+            (0, 0, 0),
+            (255, 255, 255),
+            (255, 0, 0),
+            (0, 255, 0),
+            (0, 0, 255),
+            (1, 2, 3),
+            (18, 52, 86),
+            (171, 205, 239),
+            (255, 105, 180),
+            (255, 255, 235),
+        ] {
+            for alpha in [1.0, 0.5] {
+                let color = Color::from_rgba(r, g, b, alpha);
+                for format in [Format::Spaces, Format::NoSpaces] {
+                    for encoded in [color.to_lab_string(format), color.to_lch_string(format)] {
+                        let decoded = encoded.parse::<Color>().unwrap();
+                        assert_eq!(color.to_rgba(), decoded.to_rgba(), "{encoded}");
+                    }
+                }
+            }
+        }
     }
 
     #[test]
@@ -2071,7 +2102,10 @@ mod tests {
     #[test]
     fn to_lch_string() {
         let c = Color::from_lch(52.0, 44.0, 271.0, 1.0);
-        assert_eq!("LCh(52, 44, 271)", c.to_lch_string(Format::Spaces));
+        assert_eq!(
+            "LCh(52.0792, 43.7352, 270.5395)",
+            c.to_lch_string(Format::Spaces)
+        );
     }
 
     #[test]
